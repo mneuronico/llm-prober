@@ -1,0 +1,53 @@
+import os
+from dataclasses import dataclass
+from typing import Any, Dict, List
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+from .utils import torch_dtype_from_str
+
+
+def attention_mask_from_ids(input_ids: torch.Tensor) -> torch.Tensor:
+    return torch.ones_like(input_ids, dtype=torch.long)
+
+
+def apply_chat(tokenizer, messages: List[Dict[str, str]], add_generation_prompt: bool) -> torch.Tensor:
+    return tokenizer.apply_chat_template(
+        messages,
+        add_generation_prompt=add_generation_prompt,
+        return_tensors="pt",
+    )
+
+
+@dataclass
+class ModelBundle:
+    model_id: str
+    tokenizer: Any
+    model: Any
+
+    @classmethod
+    def load(cls, model_cfg: Dict[str, Any]) -> "ModelBundle":
+        model_id = model_cfg["model_id"]
+        hf_token = os.environ.get(model_cfg.get("hf_token_env", "HF_TOKEN"), None)
+        dtype = torch_dtype_from_str(model_cfg.get("dtype", "bfloat16"))
+        use_4bit = bool(model_cfg.get("use_4bit", False))
+
+        tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
+        if tokenizer.pad_token_id is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+        quant = BitsAndBytesConfig(load_in_4bit=True) if use_4bit else None
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            token=hf_token,
+            device_map=model_cfg.get("device_map", "auto"),
+            torch_dtype=dtype,
+            quantization_config=quant if use_4bit else None,
+        )
+        model.eval()
+        return cls(model_id=model_id, tokenizer=tokenizer, model=model)
+
+    @property
+    def num_layers(self) -> int:
+        return len(self.model.model.layers)
