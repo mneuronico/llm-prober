@@ -301,69 +301,144 @@ class ConceptProbe:
 
         self.logger.log("config", {"config": self.config, "concept": self.concept.to_dict()})
 
-        train_prompts = list(self.config["prompts"]["train_questions"])
         readout = self.config["readout"]
         train_cfg = self.config["training"]
         eval_cfg = self.config["evaluation"]
         out_cfg = self.config["output"]
         plot_cfg = self.config["plots"]
+        prompts_cfg = self.config["prompts"]
+        train_prompt_mode = train_cfg.get("train_prompt_mode", "shared")
+        train_prompts = list(prompts_cfg.get("train_questions", []))
+        train_prompts_pos = list(prompts_cfg.get("train_questions_pos", []))
+        train_prompts_neg = list(prompts_cfg.get("train_questions_neg", []))
 
         tokenizer = self.model_bundle.tokenizer
         model = self.model_bundle.model
         num_layers = self.model_bundle.num_layers
 
         self._status(f"Training concept '{self.concept.name}' with model {self.model_bundle.model_id}")
-        self._status("[Phase 1/4] Generating training completions")
+        self._status(f"[Phase 1/4] Generating training completions ({train_prompt_mode})")
         train_pos_ids, train_neg_ids = [], []
         train_pos_plens, train_neg_plens = [], []
 
-        for i, q in enumerate(train_prompts):
-            ids_pos, plen_pos = generate_once(
-                model,
-                tokenizer,
-                self.concept.pos_system,
-                q,
-                train_cfg["train_max_new_tokens"],
-                train_cfg["train_greedy"],
-                temperature=train_cfg.get("train_temperature", 0.7),
-                top_p=train_cfg.get("train_top_p", 0.9),
-                warn=self._warn,
-                warn_prefix=f"train_questions[{i}] (pos_system)",
-            )
-            ids_neg, plen_neg = generate_once(
-                model,
-                tokenizer,
-                self.concept.neg_system,
-                q,
-                train_cfg["train_max_new_tokens"],
-                train_cfg["train_greedy"],
-                temperature=train_cfg.get("train_temperature", 0.7),
-                top_p=train_cfg.get("train_top_p", 0.9),
-                warn=self._warn,
-                warn_prefix=f"train_questions[{i}] (neg_system)",
-            )
-            train_pos_ids.append(ids_pos)
-            train_neg_ids.append(ids_neg)
-            train_pos_plens.append(plen_pos)
-            train_neg_plens.append(plen_neg)
+        if train_prompt_mode == "shared":
+            if not train_prompts:
+                raise ValueError("prompts.train_questions is empty; provide training prompts.")
+            if train_prompts_pos or train_prompts_neg:
+                self._warn(
+                    "train_prompt_mode=shared; ignoring prompts.train_questions_pos/train_questions_neg."
+                )
+            for i, q in enumerate(train_prompts):
+                ids_pos, plen_pos = generate_once(
+                    model,
+                    tokenizer,
+                    self.concept.pos_system,
+                    q,
+                    train_cfg["train_max_new_tokens"],
+                    train_cfg["train_greedy"],
+                    temperature=train_cfg.get("train_temperature", 0.7),
+                    top_p=train_cfg.get("train_top_p", 0.9),
+                    warn=self._warn,
+                    warn_prefix=f"train_questions[{i}] (pos_system)",
+                )
+                ids_neg, plen_neg = generate_once(
+                    model,
+                    tokenizer,
+                    self.concept.neg_system,
+                    q,
+                    train_cfg["train_max_new_tokens"],
+                    train_cfg["train_greedy"],
+                    temperature=train_cfg.get("train_temperature", 0.7),
+                    top_p=train_cfg.get("train_top_p", 0.9),
+                    warn=self._warn,
+                    warn_prefix=f"train_questions[{i}] (neg_system)",
+                )
+                train_pos_ids.append(ids_pos)
+                train_neg_ids.append(ids_neg)
+                train_pos_plens.append(plen_pos)
+                train_neg_plens.append(plen_neg)
 
-            pos_completion = tokenizer.decode(ids_pos[plen_pos:], skip_special_tokens=True)
-            neg_completion = tokenizer.decode(ids_neg[plen_neg:], skip_special_tokens=True)
-            self.logger.log(
-                "train_gen",
-                {
-                    "i": i,
-                    "question": q,
-                    "pos_label": self.concept.pos_label,
-                    "neg_label": self.concept.neg_label,
-                    "pos_system": self.concept.pos_system,
-                    "neg_system": self.concept.neg_system,
-                    "pos_text": tokenizer.decode(ids_pos, skip_special_tokens=False),
-                    "neg_text": tokenizer.decode(ids_neg, skip_special_tokens=False),
-                    "pos_completion": pos_completion,
-                    "neg_completion": neg_completion,
-                },
-            )
+                pos_completion = tokenizer.decode(ids_pos[plen_pos:], skip_special_tokens=True)
+                neg_completion = tokenizer.decode(ids_neg[plen_neg:], skip_special_tokens=True)
+                self.logger.log(
+                    "train_gen",
+                    {
+                        "i": i,
+                        "question": q,
+                        "pos_label": self.concept.pos_label,
+                        "neg_label": self.concept.neg_label,
+                        "pos_system": self.concept.pos_system,
+                        "neg_system": self.concept.neg_system,
+                        "pos_text": tokenizer.decode(ids_pos, skip_special_tokens=False),
+                        "neg_text": tokenizer.decode(ids_neg, skip_special_tokens=False),
+                        "pos_completion": pos_completion,
+                        "neg_completion": neg_completion,
+                    },
+                )
+        elif train_prompt_mode == "opposed":
+            if train_prompts:
+                self._warn("train_prompt_mode=opposed; ignoring prompts.train_questions.")
+            if not train_prompts_pos or not train_prompts_neg:
+                raise ValueError(
+                    "train_prompt_mode=opposed requires prompts.train_questions_pos and prompts.train_questions_neg."
+                )
+            for i, q in enumerate(train_prompts_pos):
+                ids_pos, plen_pos = generate_once(
+                    model,
+                    tokenizer,
+                    self.concept.pos_system,
+                    q,
+                    train_cfg["train_max_new_tokens"],
+                    train_cfg["train_greedy"],
+                    temperature=train_cfg.get("train_temperature", 0.7),
+                    top_p=train_cfg.get("train_top_p", 0.9),
+                    warn=self._warn,
+                    warn_prefix=f"train_questions_pos[{i}] (pos_system)",
+                )
+                train_pos_ids.append(ids_pos)
+                train_pos_plens.append(plen_pos)
+                pos_completion = tokenizer.decode(ids_pos[plen_pos:], skip_special_tokens=True)
+                self.logger.log(
+                    "train_gen_pos",
+                    {
+                        "i": i,
+                        "question": q,
+                        "label": self.concept.pos_label,
+                        "system": self.concept.pos_system,
+                        "text": tokenizer.decode(ids_pos, skip_special_tokens=False),
+                        "completion": pos_completion,
+                    },
+                )
+
+            for i, q in enumerate(train_prompts_neg):
+                ids_neg, plen_neg = generate_once(
+                    model,
+                    tokenizer,
+                    self.concept.neg_system,
+                    q,
+                    train_cfg["train_max_new_tokens"],
+                    train_cfg["train_greedy"],
+                    temperature=train_cfg.get("train_temperature", 0.7),
+                    top_p=train_cfg.get("train_top_p", 0.9),
+                    warn=self._warn,
+                    warn_prefix=f"train_questions_neg[{i}] (neg_system)",
+                )
+                train_neg_ids.append(ids_neg)
+                train_neg_plens.append(plen_neg)
+                neg_completion = tokenizer.decode(ids_neg[plen_neg:], skip_special_tokens=True)
+                self.logger.log(
+                    "train_gen_neg",
+                    {
+                        "i": i,
+                        "question": q,
+                        "label": self.concept.neg_label,
+                        "system": self.concept.neg_system,
+                        "text": tokenizer.decode(ids_neg, skip_special_tokens=False),
+                        "completion": neg_completion,
+                    },
+                )
+        else:
+            raise ValueError(f"Unknown train_prompt_mode: {train_prompt_mode}")
 
         self._status("[Phase 2/4] Forward passes for training reps")
         reps_pos = np.stack(
@@ -374,7 +449,7 @@ class ConceptProbe:
                     mode=readout["train_mode"],
                     last_k=readout["train_last_k"],
                 )
-                for i in range(len(train_prompts))
+                for i in range(len(train_pos_ids))
             ],
             axis=0,
         ).astype(np.float32)
@@ -387,7 +462,7 @@ class ConceptProbe:
                     mode=readout["train_mode"],
                     last_k=readout["train_last_k"],
                 )
-                for i in range(len(train_prompts))
+                for i in range(len(train_neg_ids))
             ],
             axis=0,
         ).astype(np.float32)
@@ -664,13 +739,23 @@ class ConceptProbe:
         npz_path = os.path.join(self.run_dir, "tensors.npz")
         np.savez_compressed(npz_path, **tensors)
 
+        n_train_pos = len(train_pos_ids)
+        n_train_neg = len(train_neg_ids)
+        if train_prompt_mode == "shared":
+            n_train = n_train_pos
+        else:
+            n_train = n_train_pos + n_train_neg
+
         metrics = {
             "best_layer": best_layer,
             "best_d": float(sweep_d[best_layer]),
             "best_p": None if np.isnan(sweep_p[best_layer]) else float(sweep_p[best_layer]),
             "proj_std_best_layer": proj_std,
             "num_layers": num_layers,
-            "n_train": len(train_prompts),
+            "n_train": n_train,
+            "n_train_pos": n_train_pos,
+            "n_train_neg": n_train_neg,
+            "train_prompt_mode": train_prompt_mode,
             "n_eval": len(eval_prompts),
         }
         json_dump(os.path.join(self.run_dir, "metrics.json"), metrics)

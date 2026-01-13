@@ -141,6 +141,7 @@ Most places that accept a prompt can take either:
 
 Supported locations:
 - `prompts.train_questions` (training questions)
+- `prompts.train_questions_pos` / `prompts.train_questions_neg` (opposed training questions)
 - `prompts.eval_questions` (evaluation questions)
 - `ConceptSpec.eval_pos_texts` / `ConceptSpec.eval_neg_texts` (read-mode eval texts)
 - `ConceptProbe.score_prompts(prompts=...)`
@@ -255,7 +256,9 @@ Used when scoring or plotting probe values.
 ## Training Behavior
 
 Training uses:
-- `prompts.train_questions`
+- `training.train_prompt_mode`
+- `prompts.train_questions` (shared mode)
+- `prompts.train_questions_pos` / `prompts.train_questions_neg` (opposed mode)
 - `ConceptSpec.pos_system` / `neg_system`
 - `readout.train_mode`
 - `training.train_max_new_tokens`, `training.train_greedy`, etc
@@ -265,6 +268,20 @@ It computes:
 - Sweep metrics (`sweep_d`, `sweep_p`)
 - Best layer (effect size or p-value)
 - Projection std at best layer (for sigma-scaled steering)
+
+### Training prompt modes
+
+`training.train_prompt_mode` controls how prompts are paired during training:
+- `shared` (default): use `prompts.train_questions` for both sides; systems differ.
+- `opposed`: use `prompts.train_questions_pos` and `prompts.train_questions_neg`; systems can be the same or different.
+
+This enables training where the system prompt is fixed and only the user prompts differ.
+
+### Math utilities
+
+`concept_probe.math_eval` includes helpers for arithmetic evals:
+- `generate_addition_problems(...)`
+- `evaluate_answer(...)` / `extract_answer(...)`
 
 ---
 
