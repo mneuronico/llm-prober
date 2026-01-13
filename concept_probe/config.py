@@ -1,7 +1,10 @@
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
+
+PromptMessage = Dict[str, str]
+PromptLike = Union[str, List[PromptMessage]]
 
 from .utils import deep_merge
 
@@ -32,8 +35,8 @@ class ConceptSpec:
     neg_label: str
     pos_system: str
     neg_system: str
-    eval_pos_texts: List[str] = field(default_factory=list)
-    eval_neg_texts: List[str] = field(default_factory=list)
+    eval_pos_texts: List[PromptLike] = field(default_factory=list)
+    eval_neg_texts: List[PromptLike] = field(default_factory=list)
 
     @classmethod
     def from_config(cls, config: Dict[str, Any], overrides: Optional[Dict[str, Any]] = None) -> "ConceptSpec":

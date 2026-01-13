@@ -96,6 +96,16 @@ workspace = ProbeWorkspace(
 )
 ```
 
+You can also load an existing run directory (no retraining) by pointing `project_directory` at a previously created run folder:
+
+```python
+workspace = ProbeWorkspace(
+    project_directory="outputs/sad_vs_happy/20260109_150734",
+)
+
+probe = workspace.get_probe(name="sad_vs_happy")
+```
+
 ### `ConceptSpec`
 
 Defines a concept and optional eval texts.
@@ -119,6 +129,43 @@ If `eval_pos_texts` and `eval_neg_texts` are provided, evaluation defaults to re
 Returned by `workspace.train_concept(...)`. Provides:
 - `score_texts(...)` for read-only scoring.
 - `score_prompts(...)` for generation + optional steering.
+
+---
+
+## Prompt Formats (Text or Conversation)
+
+Most places that accept a prompt can take either:
+
+- A plain string ("text prompt")
+- A conversation, represented as a list of dicts: `[{"role": "system"|"user"|"assistant", "content": "..."}, ...]`
+
+Supported locations:
+- `prompts.train_questions` (training questions)
+- `prompts.eval_questions` (evaluation questions)
+- `ConceptSpec.eval_pos_texts` / `ConceptSpec.eval_neg_texts` (read-mode eval texts)
+- `ConceptProbe.score_prompts(prompts=...)`
+
+### System prompt precedence
+
+When a prompt is provided as a conversation:
+
+- If the conversation contains a `system` message, that system is used.
+    The system prompt passed elsewhere (e.g. `pos_system`, `neg_system`, `system_prompt=...`, or `evaluation.eval_system`) is not injected.
+    A warning is logged to make this explicit.
+- If the conversation contains no `system` message, the relevant system prompt is prepended as a system message.
+
+Example conversation prompt:
+
+```python
+prompt = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "I feel stuck and anxious about my deadline."},
+        {"role": "assistant", "content": "Tell me what the deadline is and what you have so far."},
+        {"role": "user", "content": "Tomorrow morning, and my draft is half done."},
+]
+
+probe.score_prompts(prompts=[prompt], alphas=[0.0])
+```
 
 ---
 
@@ -224,7 +271,7 @@ It computes:
 ## Scoring API
 
 ### `score_texts(texts, ...)`
-Scores a list of texts as read-only.
+Scores a list of texts or conversations as read-only.
 
 ```python
 probe.score_texts(
@@ -234,6 +281,7 @@ probe.score_texts(
 ```
 
 Outputs:
+- Each call writes to a fresh subfolder under `scores/` (see Output Structure).
 - `.npz` per text with token ids and scores.
 - `.html` per text (if enabled).
 - `batch_texts.html` with a shared color scale.
@@ -251,11 +299,26 @@ probe.score_prompts(
 ```
 
 Outputs:
+- Each call writes to a fresh subfolder under `scores/` (see Output Structure).
 - `.npz` per prompt/alpha.
 - `.html` per prompt/alpha.
 - `batch_prompts.html` with shared scale.
 
 Names include prompt snippets and alpha labels for clarity.
+
+### Keeping outputs together (batch folders)
+
+By default, each call to `score_prompts(...)` or `score_texts(...)` writes into a unique subfolder:
+
+```
+scores/
+    batch_YYYYMMDD_HHMMSS/
+        ...
+```
+
+This prevents batch HTML and per-item files from mixing across multiple scoring runs.
+
+If you explicitly want to write directly into `scores/` (not recommended for repeated runs), pass `batch_subdir=""`.
 
 ---
 
@@ -309,12 +372,13 @@ outputs/
         sweep.png
         score_hist.png
       scores/
-        prompt_000_<slug>_<alpha>.npz
-        prompt_000_<slug>_<alpha>.html
-        batch_prompts.html
-        text_000_<slug>.npz
-        text_000_<slug>.html
-        batch_texts.html
+                batch_YYYYMMDD_HHMMSS/
+                    prompt_000_<slug>_<alpha>.npz
+                    prompt_000_<slug>_<alpha>.html
+                    batch_prompts.html
+                    text_000_<slug>.npz
+                    text_000_<slug>.html
+                    batch_texts.html
 ```
 
 Key files:

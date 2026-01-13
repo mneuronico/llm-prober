@@ -1,0 +1,119 @@
+{
+  "concept": {
+    "name": "concept",
+    "neg_label": "negative",
+    "neg_system": "You are a helpful assistant. Answer clearly and concisely.",
+    "pos_label": "positive",
+    "pos_system": "You are a helpful assistant. Answer clearly and concisely."
+  },
+  "evaluation": {
+    "do_eval": true,
+    "eval_greedy": true,
+    "eval_max_new_tokens": 64,
+    "eval_mode": "auto",
+    "eval_system": "You are a helpful assistant. Answer clearly and concisely.",
+    "eval_temperature": 0.7,
+    "eval_top_p": 0.9,
+    "layer_selection": {
+      "layers": [],
+      "mode": "best",
+      "window_radius": 2
+    },
+    "score_aggregate": "mean"
+  },
+  "model": {
+    "device_map": "auto",
+    "dtype": "bfloat16",
+    "hf_token_env": "HF_TOKEN",
+    "model_id": "meta-llama/Llama-3.2-3B-Instruct",
+    "use_4bit": true
+  },
+  "output": {
+    "console": true,
+    "log_jsonl": true,
+    "pretty_json_log": true,
+    "root_dir": "outputs",
+    "save_reps_to_npz": true,
+    "save_token_scores_npz": true
+  },
+  "plots": {
+    "enabled": true,
+    "heatmap_html": true,
+    "score_hist": true,
+    "sweep_plot": true
+  },
+  "prompts": {
+    "eval_questions": [
+      "I can\u2019t believe I failed that exam. I feel like an idiot. What do I do next?",
+      "LOL I just broke production with one line. Tell me how to fix it without roasting me too hard.",
+      "I\u2019m furious. Customer support just copy-pasted a useless template response again.",
+      "I\u2019m honestly kind of scared to open my inbox right now.",
+      "I\u2019M SO EXCITED\u2014my paper got accepted!! What should I do to celebrate + follow up professionally?",
+      "I don\u2019t care anymore. Nothing feels worth it. What\u2019s one small step that isn\u2019t fake motivation?",
+      "Can you draft a message asking my neighbor to stop blasting music at 2am? Keep it firm.",
+      "I need a calm reply to a passive-aggressive Slack message. I don\u2019t want drama.",
+      "I feel embarrassed asking this, but how do I ask for a raise without sounding entitled?",
+      "My model started outputting NaNs after a refactor and I\u2019m losing my mind. Checklist me, please.",
+      "I\u2019m grateful you\u2019re here. I\u2019m just\u2026 tired. What can I do tonight to feel a bit more grounded?",
+      "This is fine. Everything is fine. (It is not fine.) Help me prioritize before I implode."
+    ],
+    "neutral_system": "You are a helpful assistant.",
+    "train_questions": [
+      "Oh my god I just realized I sent the wrong file to the client\u2014like the *wrong* one\u2014and I\u2019m freaking out. What do I do right now?",
+      "I have 30 minutes before an interview and my brain is just static. Help. Quickly.",
+      "This is ridiculous. My landlord is ignoring the leak for the THIRD time. What can I say that actually gets results?",
+      "I\u2019m so mad I can\u2019t think straight. My teammate took credit for my work again. What should I do?",
+      "I can\u2019t stop crying today. I thought I was over it, but I\u2019m not. What am I supposed to do with this?",
+      "My dog is getting older and I\u2019m dreading what\u2019s coming. I don\u2019t know how to handle it.",
+      "I GOT THE JOB!!! I\u2019m buzzing. What should I do in the first week to make a great impression?",
+      "I just shipped my first open-source project and people are starring it!! Any tips for keeping momentum?",
+      "Sure, yeah, love it when my code works on my machine and nowhere else. Any idea what fresh hell this is?",
+      "Amazing. Another meeting that could\u2019ve been an email. How do I tell my manager without sounding like a jerk?",
+      "I said something dumb in a meeting and now I\u2019m replaying it on loop. How do I stop?",
+      "I accidentally replied-all with a typo in the subject line. I want to evaporate. What now?",
+      "I feel weirdly numb. I\u2019m doing everything I \u2018should\u2019 do and still don\u2019t care. Any practical steps?",
+      "Ugh. I can\u2019t get myself to start anything. Even easy stuff. How do I break the inertia?",
+      "Could you help me draft a professional message to request a two-week timeline extension due to external dependencies?",
+      "I need a structured approach to decide between two offers: higher pay with travel vs lower pay remote. Please propose a method.",
+      "Okay so I may have tried to \u2018quick fix\u2019 my kitchen sink and now it\u2019s doing a tiny fountain impression. What do I do?",
+      "If procrastination were an Olympic sport I\u2019d medal. Can you give me a plan that doesn\u2019t feel like punishment?",
+      "Be honest: is journaling actually useful or is it just vibes? Convince me with something concrete.",
+      "People keep saying \u2018set boundaries\u2019 like it\u2019s easy. What does that even look like in real words?",
+      "I want to quit my volunteer role because I\u2019m overwhelmed, but I also feel guilty. How do I step back fairly?",
+      "I\u2019m excited about moving in with my partner, but also freaked out about losing space. How do I talk about it?",
+      "I need a brutally efficient study plan for linear algebra in 10 days. No fluff.",
+      "Thanks for helping earlier. I\u2019m still stuck though\u2014can we try a different approach to prioritizing my tasks?",
+      "My coworker\u2019s \u2018feedback\u2019 is basically noise. How do I filter what matters without wasting time?"
+    ]
+  },
+  "random": {
+    "seed": 0
+  },
+  "readout": {
+    "read_last_k": 12,
+    "read_mode": "sequence_all_mean",
+    "train_last_k": 12,
+    "train_mode": "assistant_all_mean"
+  },
+  "steering": {
+    "do_steering": false,
+    "steer_distribute": true,
+    "steer_layers": "window",
+    "steer_max_new_tokens": 64,
+    "steer_sampling": true,
+    "steer_system": "You are a helpful assistant. Answer clearly and concisely.",
+    "steer_temperature": 0.7,
+    "steer_top_p": 0.9,
+    "steer_window_radius": 2
+  },
+  "training": {
+    "do_layer_sweep": true,
+    "layer_frac": 0.75,
+    "layer_idx": null,
+    "sweep_select": "effect_size",
+    "train_greedy": true,
+    "train_max_new_tokens": 64,
+    "train_temperature": 0.7,
+    "train_top_p": 0.9
+  }
+}

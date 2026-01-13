@@ -1,7 +1,7 @@
 import json
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -62,6 +62,84 @@ def _prompt_slug(text: str, max_words: int = 8, max_len: int = 48) -> str:
     snippet = " ".join(words[:max_words])
     slug = safe_slug(snippet)[:max_len]
     return slug or "prompt"
+
+
+PromptMessage = Dict[str, str]
+PromptLike = Union[str, List[PromptMessage]]
+
+
+def _prompt_to_text(prompt: PromptLike) -> str:
+    if isinstance(prompt, str):
+        return prompt
+    if not isinstance(prompt, list):
+        return str(prompt)
+    parts: List[str] = []
+    for m in prompt:
+        if not isinstance(m, dict):
+            parts.append(str(m))
+            continue
+        role = str(m.get("role", ""))
+        content = str(m.get("content", ""))
+        if role:
+            parts.append(f"{role}: {content}")
+        else:
+            parts.append(content)
+    return "\n".join(parts)
+
+
+def _prompt_slug_any(prompt: PromptLike, max_words: int = 8, max_len: int = 48) -> str:
+    return _prompt_slug(_prompt_to_text(prompt), max_words=max_words, max_len=max_len)
+
+
+def _normalize_messages(
+    prompt: PromptLike,
+    default_system: str,
+    *,
+    warn: Optional[Callable[[str], None]] = None,
+    warn_prefix: str = "prompt",
+) -> Tuple[List[PromptMessage], bool]:
+    """Return (messages, used_prompt_system).
+
+    - If prompt is a string: wrap as system+user.
+    - If prompt is a message list:
+        - If it contains any system message, do not inject default_system; warn if default_system is non-empty.
+        - If it contains no system message, prepend default_system as a system message.
+    """
+    if isinstance(prompt, str):
+        return (
+            [
+                {"role": "system", "content": str(default_system)},
+                {"role": "user", "content": prompt},
+            ],
+            False,
+        )
+
+    if not isinstance(prompt, list):
+        raise TypeError(f"{warn_prefix} must be str or list of messages; got {type(prompt)}")
+
+    messages: List[PromptMessage] = []
+    system_count = 0
+    for i, m in enumerate(prompt):
+        if not isinstance(m, dict):
+            raise TypeError(f"{warn_prefix}[{i}] must be a dict with role/content; got {type(m)}")
+        if "role" not in m or "content" not in m:
+            raise ValueError(f"{warn_prefix}[{i}] must have 'role' and 'content' keys")
+        role = str(m["role"])
+        content = str(m["content"])
+        if role == "system":
+            system_count += 1
+        messages.append({"role": role, "content": content})
+
+    if system_count > 0:
+        if default_system and warn is not None:
+            warn(
+                f"{warn_prefix} includes a system message; overriding the provided default system prompt."
+            )
+        if system_count > 1 and warn is not None:
+            warn(f"{warn_prefix} includes multiple system messages; using them as provided.")
+        return (messages, True)
+
+    return ([{"role": "system", "content": str(default_system)}] + messages, False)
 
 
 def _alpha_label(alpha: float, unit: str) -> str:
@@ -165,13 +243,20 @@ def generate_once(
     model,
     tokenizer,
     system: str,
-    user: str,
+    prompt: PromptLike,
     max_new_tokens: int,
     greedy: bool,
     temperature: Optional[float],
     top_p: Optional[float],
+    warn: Optional[Callable[[str], None]] = None,
+    warn_prefix: str = "prompt",
 ) -> Tuple[torch.Tensor, int]:
-    messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+    messages, _ = _normalize_messages(prompt, system, warn=warn, warn_prefix=warn_prefix)
+    if warn is not None and len(messages) > 0 and messages[-1].get("role") != "user":
+        warn(
+            f"{warn_prefix} ends with role='{messages[-1].get('role')}'; generation typically expects the last message to be a user turn."
+        )
+
     input_ids = apply_chat(tokenizer, messages, add_generation_prompt=True)
     prompt_len = int(input_ids.shape[-1])
     attn = attention_mask_from_ids(input_ids).to(model.device)
@@ -242,6 +327,8 @@ class ConceptProbe:
                 train_cfg["train_greedy"],
                 temperature=train_cfg.get("train_temperature", 0.7),
                 top_p=train_cfg.get("train_top_p", 0.9),
+                warn=self._warn,
+                warn_prefix=f"train_questions[{i}] (pos_system)",
             )
             ids_neg, plen_neg = generate_once(
                 model,
@@ -252,6 +339,8 @@ class ConceptProbe:
                 train_cfg["train_greedy"],
                 temperature=train_cfg.get("train_temperature", 0.7),
                 top_p=train_cfg.get("train_top_p", 0.9),
+                warn=self._warn,
+                warn_prefix=f"train_questions[{i}] (neg_system)",
             )
             train_pos_ids.append(ids_pos)
             train_neg_ids.append(ids_neg)
@@ -338,45 +427,43 @@ class ConceptProbe:
                 eval_system = eval_cfg.get("eval_system", self.config["prompts"]["neutral_system"])
                 if len(eval_pos_texts) > 0 and len(eval_neg_texts) > 0:
                     self._status("[Phase 3/4] Reading eval texts")
-                    eval_pos_reps = np.stack(
-                        [
+                    eval_pos_reps_list: List[np.ndarray] = []
+                    for i, s in enumerate(eval_pos_texts):
+                        messages, _ = _normalize_messages(
+                            s,
+                            eval_system,
+                            warn=self._warn,
+                            warn_prefix=f"eval_pos_texts[{i}]",
+                        )
+                        input_ids = apply_chat(tokenizer, messages, add_generation_prompt=False)
+                        eval_pos_reps_list.append(
                             reps_from_hs_layers(
-                                forward_hidden_states_all_layers(
-                                    model,
-                                    apply_chat(
-                                        tokenizer,
-                                        [{"role": "system", "content": eval_system}, {"role": "user", "content": s}],
-                                        add_generation_prompt=False,
-                                    ),
-                                ),
+                                forward_hidden_states_all_layers(model, input_ids),
                                 prompt_len=None,
                                 mode=readout["read_mode"],
                                 last_k=readout["read_last_k"],
                             )
-                            for s in eval_pos_texts
-                        ],
-                        axis=0,
-                    ).astype(np.float32)
+                        )
+                    eval_pos_reps = np.stack(eval_pos_reps_list, axis=0).astype(np.float32)
 
-                    eval_neg_reps = np.stack(
-                        [
+                    eval_neg_reps_list: List[np.ndarray] = []
+                    for i, s in enumerate(eval_neg_texts):
+                        messages, _ = _normalize_messages(
+                            s,
+                            eval_system,
+                            warn=self._warn,
+                            warn_prefix=f"eval_neg_texts[{i}]",
+                        )
+                        input_ids = apply_chat(tokenizer, messages, add_generation_prompt=False)
+                        eval_neg_reps_list.append(
                             reps_from_hs_layers(
-                                forward_hidden_states_all_layers(
-                                    model,
-                                    apply_chat(
-                                        tokenizer,
-                                        [{"role": "system", "content": eval_system}, {"role": "user", "content": s}],
-                                        add_generation_prompt=False,
-                                    ),
-                                ),
+                                forward_hidden_states_all_layers(model, input_ids),
                                 prompt_len=None,
                                 mode=readout["read_mode"],
                                 last_k=readout["read_last_k"],
                             )
-                            for s in eval_neg_texts
-                        ],
-                        axis=0,
-                    ).astype(np.float32)
+                        )
+                    eval_neg_reps = np.stack(eval_neg_reps_list, axis=0).astype(np.float32)
 
                     eval_pos_scores_mat = np.zeros((eval_pos_reps.shape[0], num_layers), dtype=np.float32)
                     eval_neg_scores_mat = np.zeros((eval_neg_reps.shape[0], num_layers), dtype=np.float32)
@@ -414,6 +501,8 @@ class ConceptProbe:
                             eval_cfg["eval_greedy"],
                             temperature=eval_cfg.get("eval_temperature", 0.7),
                             top_p=eval_cfg.get("eval_top_p", 0.9),
+                            warn=self._warn,
+                            warn_prefix=f"eval_questions[{i}] (pos_system)",
                         )
                         ids_neg, plen_neg = generate_once(
                             model,
@@ -424,6 +513,8 @@ class ConceptProbe:
                             eval_cfg["eval_greedy"],
                             temperature=eval_cfg.get("eval_temperature", 0.7),
                             top_p=eval_cfg.get("eval_top_p", 0.9),
+                            warn=self._warn,
+                            warn_prefix=f"eval_questions[{i}] (neg_system)",
                         )
                         eval_pos_ids.append(ids_pos)
                         eval_neg_ids.append(ids_neg)
@@ -617,6 +708,7 @@ class ConceptProbe:
         layer_selection: Optional[Dict[str, Any]] = None,
         output_subdir: str = "scores",
         save_html: Optional[bool] = None,
+        batch_subdir: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         self._require_trained()
         tokenizer = self.model_bundle.tokenizer
@@ -626,7 +718,11 @@ class ConceptProbe:
         sys_prompt = system_prompt or self.config["prompts"]["neutral_system"]
         save_html = self.config["plots"].get("heatmap_html", True) if save_html is None else save_html
 
-        out_dir = os.path.join(self.run_dir, output_subdir)
+        base_dir = os.path.join(self.run_dir, output_subdir)
+        ensure_dir(base_dir)
+        if batch_subdir is None:
+            batch_subdir = f"batch_{now_tag()}"
+        out_dir = base_dir if batch_subdir == "" else os.path.join(base_dir, batch_subdir)
         ensure_dir(out_dir)
         results = []
         batch_entries = []
@@ -678,7 +774,7 @@ class ConceptProbe:
 
     def score_prompts(
         self,
-        prompts: List[str],
+        prompts: List[PromptLike],
         system_prompt: Optional[str] = None,
         max_new_tokens: Optional[int] = None,
         greedy: Optional[bool] = None,
@@ -692,6 +788,7 @@ class ConceptProbe:
         steer_window_radius: Optional[int] = None,
         steer_distribute: Optional[bool] = None,
         save_html: Optional[bool] = None,
+        batch_subdir: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         self._require_trained()
         tokenizer = self.model_bundle.tokenizer
@@ -709,7 +806,11 @@ class ConceptProbe:
         if alphas is None:
             alphas = [0.0]
 
-        out_dir = os.path.join(self.run_dir, output_subdir)
+        base_dir = os.path.join(self.run_dir, output_subdir)
+        ensure_dir(base_dir)
+        if batch_subdir is None:
+            batch_subdir = f"batch_{now_tag()}"
+        out_dir = base_dir if batch_subdir == "" else os.path.join(base_dir, batch_subdir)
         ensure_dir(out_dir)
         results = []
         batch_entries = []
@@ -733,7 +834,7 @@ class ConceptProbe:
             steer_layer_list = list(map(int, steer_layers))
 
         for i, prompt in enumerate(prompts):
-            prompt_slug = _prompt_slug(prompt)
+            prompt_slug = _prompt_slug_any(prompt)
             for j, alpha in enumerate(alphas):
                 alpha_val = float(alpha)
                 if alpha_unit == "sigma":
@@ -741,7 +842,12 @@ class ConceptProbe:
                         raise ValueError("proj_std_best_layer is not available for sigma scaling.")
                     alpha_val = alpha_val * float(self.proj_std_best_layer)
 
-                messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": prompt}]
+                messages, used_prompt_system = _normalize_messages(
+                    prompt,
+                    sys_prompt,
+                    warn=self._warn,
+                    warn_prefix=f"score_prompts.prompts[{i}]",
+                )
                 input_ids = apply_chat(tokenizer, messages, add_generation_prompt=True).to(model.device)
                 attn = attention_mask_from_ids(input_ids).to(model.device)
                 prompt_len = int(input_ids.shape[-1])
@@ -792,6 +898,7 @@ class ConceptProbe:
                 rec = {
                     "prompt": prompt,
                     "system_prompt": sys_prompt,
+                    "system_prompt_overridden": bool(used_prompt_system),
                     "alpha": float(alpha),
                     "alpha_unit": alpha_unit,
                     "alpha_value": float(alpha_val),
@@ -844,7 +951,33 @@ class ProbeWorkspace:
         config_overrides: Optional[Dict[str, Any]] = None,
         defaults_path: Optional[str] = None,
         model_id: Optional[str] = None,
+        project_directory: Optional[str] = None,
     ) -> None:
+        self.project_directory = project_directory
+
+        if project_directory:
+            run_dir = os.path.abspath(project_directory)
+            cfg_path = os.path.join(run_dir, "config.json")
+            if not os.path.exists(cfg_path):
+                raise FileNotFoundError(f"project_directory must point to a trained run dir containing config.json: {run_dir}")
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                cfg = json.loads(f.read())
+            if config_overrides:
+                cfg = deep_merge(cfg, config_overrides)
+            if model_id:
+                cfg["model"]["model_id"] = model_id
+            # root_dir isn't used for loading, but keep it consistent for callers.
+            if root_dir:
+                cfg["output"]["root_dir"] = root_dir
+
+            self.config = cfg
+            self.root_dir = cfg["output"].get("root_dir", "outputs")
+            self.console = ConsoleLogger(cfg["output"].get("console", False))
+            self.console.info(f"Loading model {cfg['model']['model_id']}...")
+            self.model_bundle = ModelBundle.load(cfg["model"])
+            self.console.info(f"Model loaded ({self.model_bundle.num_layers} layers).")
+            return
+
         cfg = resolve_config(config_overrides, defaults_path=defaults_path)
         if model_id:
             cfg["model"]["model_id"] = model_id
@@ -857,6 +990,27 @@ class ProbeWorkspace:
         self.console.info(f"Loading model {cfg['model']['model_id']}...")
         self.model_bundle = ModelBundle.load(cfg["model"])
         self.console.info(f"Model loaded ({self.model_bundle.num_layers} layers).")
+
+    def get_probe(self, name: Optional[str] = None, project_directory: Optional[str] = None) -> "ConceptProbe":
+        """Load a previously trained probe without retraining.
+
+        If this workspace was created with project_directory=..., that directory is used by default.
+        """
+        run_dir = os.path.abspath(project_directory or self.project_directory or "")
+        if not run_dir:
+            raise ValueError("No project_directory provided. Create ProbeWorkspace(project_directory=...) or pass it to get_probe().")
+
+        probe = ConceptProbe.load(run_dir, model_bundle=self.model_bundle)
+        # Use the workspace's config + console so scoring behavior matches workspace.config.
+        probe.config = self.config
+        probe.console = self.console
+
+        if name is not None:
+            if safe_slug(str(probe.concept.name)) != safe_slug(str(name)):
+                raise ValueError(
+                    f"Loaded probe concept name '{probe.concept.name}' does not match requested name '{name}'."
+                )
+        return probe
 
     def train_concept(
         self,

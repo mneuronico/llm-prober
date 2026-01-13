@@ -13,6 +13,14 @@ _SPECIAL_MARKERS = {
 }
 
 
+def _visible_scores(tokens: List[str], scores: List[float]) -> List[float]:
+    blocks = _split_chat_blocks(tokens, scores)
+    out: List[float] = []
+    for _, _, block_scores in blocks:
+        out.extend(block_scores)
+    return out
+
+
 def _color_for_score(value: float, max_abs: float) -> str:
     if max_abs <= 1e-12:
         return "rgba(0,0,0,0)"
@@ -92,9 +100,11 @@ def render_token_heatmap(
     title: Optional[str] = None,
     max_abs: Optional[float] = None,
 ) -> None:
-    max_abs = float(max_abs) if max_abs is not None else (
-        float(np.max(np.abs(np.array(scores, dtype=np.float32)))) if scores else 0.0
-    )
+    if max_abs is None:
+        vis = _visible_scores(tokens, scores)
+        max_abs = float(np.max(np.abs(np.array(vis, dtype=np.float32)))) if vis else 0.0
+    else:
+        max_abs = float(max_abs)
     title_html = f"<h3>{html.escape(title)}</h3>" if title else ""
     body = _render_blocks_html(tokens, scores, max_abs=max_abs)
     html_doc = f"""<!doctype html>
@@ -127,9 +137,9 @@ def render_token_heatmap(
 
 
 def render_batch_heatmap(entries: List[Tuple[str, List[str], List[float]]], out_path: str, title: str) -> None:
-    all_scores = []
-    for _, _, scores in entries:
-        all_scores.extend(scores)
+    all_scores: List[float] = []
+    for _, tokens, scores in entries:
+        all_scores.extend(_visible_scores(tokens, scores))
     max_abs = float(np.max(np.abs(np.array(all_scores, dtype=np.float32)))) if all_scores else 0.0
 
     sections = []
