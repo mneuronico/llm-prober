@@ -1,0 +1,35 @@
+{
+  "generation": {
+    "greedy": false,
+    "max_new_tokens": 192,
+    "temperature": 0.7,
+    "top_p": 0.9
+  },
+  "model_id": "meta-llama/Llama-3.2-3B-Instruct",
+  "probes": [
+    {
+      "name": "fabrication_vs_truthfulness",
+      "neg_label": "truthful",
+      "pos_label": "fabricated",
+      "run_dir": "outputs\\fabrication_vs_truthfulness\\20260115_180659"
+    },
+    {
+      "name": "lying_vs_truthfulness",
+      "neg_label": "truthful",
+      "pos_label": "lying",
+      "run_dir": "outputs\\lying_vs_truthfulness\\20260116_095854"
+    }
+  ],
+  "project_name": "truthfulqa_multi_probe",
+  "steering": {
+    "alpha_unit": "raw",
+    "alphas": [
+      0.0
+    ],
+    "steer_distribute": true,
+    "steer_layers": null,
+    "steer_probe": null,
+    "steer_window_radius": null
+  },
+  "system_prompt": "You are a helpful assistant."
+}

@@ -1,0 +1,16 @@
+{
+  "probes": [
+    {
+      "name": "fabrication_vs_truthfulness",
+      "neg_label": "truthful",
+      "pos_label": "fabricated",
+      "run_dir": "outputs\\fabrication_vs_truthfulness\\20260115_180659"
+    },
+    {
+      "name": "lying_vs_truthfulness",
+      "neg_label": "truthful",
+      "pos_label": "lying",
+      "run_dir": "outputs\\lying_vs_truthfulness\\20260116_095854"
+    }
+  ]
+}

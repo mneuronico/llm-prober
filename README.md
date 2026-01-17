@@ -323,6 +323,60 @@ Outputs:
 
 Names include prompt snippets and alpha labels for clarity.
 
+### `multi_probe_score_prompts(...)`
+Generate each prompt once (or once per alpha if steering) and score the same generation with multiple probes.
+This is useful when you want a shared set of activations that can be compared across probes.
+
+Key behavior:
+- Uses a single model forward pass per prompt/alpha, then scores all probes on the resulting tokens.
+- Optionally steers using a single probe (choose which probe to steer with).
+- Writes outputs to a dedicated multi-probe run directory (not inside any single-probe run).
+- HTML heatmaps include a dropdown to switch between probes.
+
+Example (no steering):
+
+```python
+import json
+from concept_probe import ConceptProbe, multi_probe_score_prompts
+from concept_probe.modeling import ModelBundle
+
+probe_runs = [
+    "outputs/fabrication_vs_truthfulness/20260115_180659",
+    "outputs/lying_vs_truthfulness/20260116_095854",
+]
+
+# Load a single model bundle for all probes.
+with open(f"{probe_runs[0]}/config.json", "r", encoding="utf-8") as f:
+    cfg = json.load(f)
+bundle = ModelBundle.load(cfg["model"])
+probes = [ConceptProbe.load(run_dir=p, model_bundle=bundle) for p in probe_runs]
+
+results = multi_probe_score_prompts(
+    probes,
+    prompts=["Why does the Moon have phases?"],
+    system_prompt="You are a helpful assistant.",
+    output_root="outputs_multi",
+    project_name="truthfulqa_multi_probe",
+)
+```
+
+Example (steer with one probe and multiple alphas):
+
+```python
+results = multi_probe_score_prompts(
+    probes,
+    prompts=["Explain how vaccines work."],
+    steer_probe="lying_vs_truthfulness",  # or index 1, or the ConceptProbe object
+    alphas=[-5.0, 0.0, 5.0],
+    alpha_unit="raw",
+)
+```
+
+Notes:
+- All probes must be trained on the same `model_id`.
+- If `steer_probe` is `None`, steering is disabled and only a single alpha (`0.0`) is used.
+- `scores_agg` in the `.npz` is shaped `(num_probes, num_tokens)`.
+
 ### Keeping outputs together (batch folders)
 
 By default, each call to `score_prompts(...)` or `score_texts(...)` writes into a unique subfolder:
@@ -364,6 +418,7 @@ HTML heatmaps:
 
 Batch HTML:
 - `batch_texts.html` and `batch_prompts.html` compare multiple runs using a shared scale.
+- Multi-probe batch HTML includes a probe dropdown to switch highlights.
 
 Plots (if `matplotlib` installed):
 - `plots/sweep.png`
@@ -397,6 +452,28 @@ outputs/
                     text_000_<slug>.html
                     batch_texts.html
 ```
+
+Multi-probe runs write to a separate root:
+
+```
+outputs_multi/
+  <project_name>/
+    <timestamp>/
+      config.json
+      probes.json
+      log.jsonl
+      scores/
+        batch_YYYYMMDD_HHMMSS/
+          prompt_000_<slug>_<alpha>.npz
+          prompt_000_<slug>_<alpha>.html
+          batch_prompts.html
+```
+
+Multi-probe `.npz` contents:
+- `token_ids`: full token ids for the prompt + completion.
+- `prompt_len`: length of the prompt portion.
+- `scores_agg`: array of shape `(num_probes, num_tokens)`.
+- `probe_names`: list of probe names aligned with `scores_agg`.
 
 Key files:
 - `config.json`: full resolved config.

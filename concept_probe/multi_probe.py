@@ -1,0 +1,284 @@
+import os
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+
+from .logger import JsonlLogger
+from .modeling import apply_chat, attention_mask_from_ids
+from .probe import (
+    ConceptProbe,
+    PromptLike,
+    _alpha_label,
+    _decode_tokens,
+    _normalize_messages,
+    _prompt_slug_any,
+    forward_hidden_states_all_layers,
+    token_scores_from_hs_layers,
+)
+from .steering import MultiLayerSteererLayerwise
+from .utils import ensure_dir, json_dump, now_tag, safe_slug
+from .visuals import render_batch_heatmap_multi, render_token_heatmap_multi
+
+
+def _resolve_steer_probe(
+    probes: List[ConceptProbe], steer_probe: Optional[Union[int, str, ConceptProbe]]
+) -> Optional[ConceptProbe]:
+    if steer_probe is None:
+        return None
+    if isinstance(steer_probe, ConceptProbe):
+        return steer_probe
+    if isinstance(steer_probe, int):
+        if steer_probe < 0 or steer_probe >= len(probes):
+            raise IndexError(f"steer_probe index out of range: {steer_probe}")
+        return probes[steer_probe]
+    target = safe_slug(str(steer_probe))
+    for probe in probes:
+        if safe_slug(str(probe.concept.name)) == target:
+            return probe
+    raise ValueError(f"steer_probe '{steer_probe}' not found in probes.")
+
+
+def _steer_layer_list(
+    probe: ConceptProbe,
+    steer_layers: Optional[Union[str, List[int]]],
+    steer_window_radius: Optional[int],
+) -> List[int]:
+    if steer_layers is None:
+        steer_layers = probe.config["steering"]["steer_layers"]
+    if steer_window_radius is None:
+        steer_window_radius = probe.config["steering"]["steer_window_radius"]
+
+    if steer_layers == "probe":
+        return [int(probe.best_layer)]
+    if steer_layers == "window":
+        lo = max(0, int(probe.best_layer) - int(steer_window_radius))
+        hi = min(probe.model_bundle.num_layers - 1, int(probe.best_layer) + int(steer_window_radius))
+        return list(range(lo, hi + 1))
+    if isinstance(steer_layers, list):
+        return list(map(int, steer_layers))
+    return list(map(int, steer_layers))
+
+
+def multi_probe_score_prompts(
+    probes: List[ConceptProbe],
+    prompts: List[PromptLike],
+    *,
+    system_prompt: Optional[str] = None,
+    max_new_tokens: Optional[int] = None,
+    greedy: Optional[bool] = None,
+    temperature: Optional[float] = None,
+    top_p: Optional[float] = None,
+    layer_selection: Optional[Dict[str, Any]] = None,
+    output_root: str = "outputs_multi",
+    project_name: str = "multi_probe",
+    run_name: Optional[str] = None,
+    output_subdir: str = "scores",
+    alphas: Optional[List[float]] = None,
+    alpha_unit: str = "raw",
+    steer_probe: Optional[Union[int, str, ConceptProbe]] = None,
+    steer_layers: Optional[Union[str, List[int]]] = None,
+    steer_window_radius: Optional[int] = None,
+    steer_distribute: Optional[bool] = None,
+    save_html: Optional[bool] = None,
+    batch_subdir: Optional[str] = None,
+) -> Dict[str, Any]:
+    if not probes:
+        raise ValueError("probes must be a non-empty list of ConceptProbe objects.")
+    if not prompts:
+        return {"run_dir": None, "results": []}
+
+    for probe in probes:
+        probe._require_trained()
+
+    model_bundle = probes[0].model_bundle
+    for probe in probes[1:]:
+        if probe.model_bundle.model_id != model_bundle.model_id:
+            raise ValueError("All probes must use the same model_id for multi-probe scoring.")
+
+    steer_probe_obj = _resolve_steer_probe(probes, steer_probe)
+
+    if alphas is None or len(alphas) == 0:
+        alphas = [0.0]
+    if steer_probe_obj is None:
+        alphas = [0.0]
+
+    sys_prompt = system_prompt or probes[0].config["prompts"].get("neutral_system", "You are a helpful assistant.")
+    steer_cfg = probes[0].config.get("steering", {})
+    max_new_tokens = max_new_tokens if max_new_tokens is not None else steer_cfg.get("steer_max_new_tokens", 128)
+    greedy = greedy if greedy is not None else (not steer_cfg.get("steer_sampling", False))
+    temperature = temperature if temperature is not None else steer_cfg.get("steer_temperature", 0.7)
+    top_p = top_p if top_p is not None else steer_cfg.get("steer_top_p", 0.9)
+    save_html = probes[0].config["plots"].get("heatmap_html", True) if save_html is None else save_html
+    if steer_distribute is None:
+        steer_distribute = steer_cfg.get("steer_distribute", True)
+
+    run_tag = run_name or now_tag()
+    run_dir = os.path.join(output_root, safe_slug(project_name), run_tag)
+    ensure_dir(run_dir)
+    log_path = os.path.join(run_dir, "log.jsonl")
+    logger = JsonlLogger(log_path)
+
+    probes_info = [
+        {
+            "name": probe.concept.name,
+            "pos_label": probe.concept.pos_label,
+            "neg_label": probe.concept.neg_label,
+            "run_dir": probe.run_dir,
+        }
+        for probe in probes
+    ]
+
+    config = {
+        "project_name": project_name,
+        "model_id": model_bundle.model_id,
+        "system_prompt": sys_prompt,
+        "generation": {
+            "max_new_tokens": max_new_tokens,
+            "greedy": greedy,
+            "temperature": temperature,
+            "top_p": top_p,
+        },
+        "steering": {
+            "alpha_unit": alpha_unit,
+            "alphas": alphas,
+            "steer_probe": None if steer_probe_obj is None else steer_probe_obj.concept.name,
+            "steer_layers": steer_layers,
+            "steer_window_radius": steer_window_radius,
+            "steer_distribute": steer_distribute,
+        },
+        "probes": probes_info,
+    }
+    json_dump(os.path.join(run_dir, "config.json"), config)
+    json_dump(os.path.join(run_dir, "probes.json"), {"probes": probes_info})
+    logger.log("config", config)
+
+    base_dir = os.path.join(run_dir, output_subdir)
+    ensure_dir(base_dir)
+    if batch_subdir is None:
+        batch_subdir = f"batch_{now_tag()}"
+    out_dir = base_dir if batch_subdir == "" else os.path.join(base_dir, batch_subdir)
+    ensure_dir(out_dir)
+
+    tokenizer = model_bundle.tokenizer
+    model = model_bundle.model
+    results: List[Dict[str, Any]] = []
+    batch_entries: List[Tuple[str, List[str], Dict[str, List[float]]]] = []
+
+    if steer_probe_obj is not None:
+        steer_layer_list = _steer_layer_list(steer_probe_obj, steer_layers, steer_window_radius)
+    else:
+        steer_layer_list = []
+
+    warn_fn = probes[0]._warn if probes[0].console is not None else None
+
+    for i, prompt in enumerate(prompts):
+        prompt_slug = _prompt_slug_any(prompt)
+        for alpha in alphas:
+            alpha_val = float(alpha)
+            if steer_probe_obj is not None and alpha_unit == "sigma":
+                if steer_probe_obj.proj_std_best_layer is None or np.isnan(steer_probe_obj.proj_std_best_layer):
+                    raise ValueError("proj_std_best_layer is not available for sigma scaling.")
+                alpha_val = alpha_val * float(steer_probe_obj.proj_std_best_layer)
+
+            messages, used_prompt_system = _normalize_messages(
+                prompt,
+                sys_prompt,
+                warn=warn_fn,
+                warn_prefix=f"multi_probe.prompts[{i}]",
+            )
+            input_ids = apply_chat(tokenizer, messages, add_generation_prompt=True).to(model.device)
+            attn = attention_mask_from_ids(input_ids).to(model.device)
+            prompt_len = int(input_ids.shape[-1])
+
+            if steer_probe_obj is not None:
+                with MultiLayerSteererLayerwise(
+                    model,
+                    steer_layer_list,
+                    steer_probe_obj.concept_vectors,
+                    float(alpha_val),
+                    distribute=steer_distribute,
+                ):
+                    gen_ids = model.generate(
+                        input_ids=input_ids,
+                        attention_mask=attn,
+                        max_new_tokens=max_new_tokens,
+                        do_sample=not greedy,
+                        temperature=temperature if not greedy else None,
+                        top_p=top_p if not greedy else None,
+                        pad_token_id=tokenizer.eos_token_id,
+                    )[0].detach().cpu()
+            else:
+                gen_ids = model.generate(
+                    input_ids=input_ids,
+                    attention_mask=attn,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=not greedy,
+                    temperature=temperature if not greedy else None,
+                    top_p=top_p if not greedy else None,
+                    pad_token_id=tokenizer.eos_token_id,
+                )[0].detach().cpu()
+
+            hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
+            token_ids = gen_ids.numpy().astype(np.int32)
+            tokens = _decode_tokens(tokenizer, token_ids)
+            completion_ids = token_ids[prompt_len:]
+            completion_text = tokenizer.decode(completion_ids, skip_special_tokens=True)
+
+            scores_agg_list: List[np.ndarray] = []
+            for probe in probes:
+                layers = probe._layer_selection(layer_selection)
+                aggregate = probe.config["evaluation"]["score_aggregate"]
+                _, scores_agg = token_scores_from_hs_layers(
+                    hs_layers, probe.concept_vectors, layers, aggregate=aggregate
+                )
+                scores_agg_list.append(scores_agg.astype(np.float32))
+
+            scores_agg_stack = np.stack(scores_agg_list, axis=0)
+            probe_names = [probe.concept.name for probe in probes]
+
+            alpha_label = _alpha_label(float(alpha), alpha_unit)
+            base = f"prompt_{i:03d}_{prompt_slug}_{alpha_label}"
+            npz_path = os.path.join(out_dir, f"{base}.npz")
+            np.savez_compressed(
+                npz_path,
+                token_ids=token_ids,
+                prompt_len=np.array([prompt_len], dtype=np.int32),
+                scores_agg=scores_agg_stack,
+                probe_names=np.array(probe_names),
+            )
+
+            if save_html:
+                html_path = os.path.join(out_dir, f"{base}.html")
+                scores_by_probe = {
+                    name: scores_agg_stack[idx].tolist() for idx, name in enumerate(probe_names)
+                }
+                title = f"prompt {i:03d} | {prompt_slug} | {alpha_label}"
+                render_token_heatmap_multi(tokens, scores_by_probe, html_path, title=title)
+                batch_entries.append((title, tokens, scores_by_probe))
+            else:
+                html_path = None
+
+            rec = {
+                "prompt": prompt,
+                "system_prompt": sys_prompt,
+                "system_prompt_overridden": bool(used_prompt_system),
+                "alpha": float(alpha),
+                "alpha_unit": alpha_unit,
+                "alpha_value": float(alpha_val),
+                "steer_probe": None if steer_probe_obj is None else steer_probe_obj.concept.name,
+                "steer_layers": steer_layer_list,
+                "completion": completion_text,
+                "prompt_len": prompt_len,
+                "probe_names": probe_names,
+                "npz_path": npz_path,
+                "html_path": html_path,
+            }
+            results.append(rec)
+            logger.log("multi_score_prompt", rec)
+
+    if save_html and batch_entries:
+        batch_path = os.path.join(out_dir, "batch_prompts.html")
+        render_batch_heatmap_multi(batch_entries, batch_path, title="Batch prompt scores")
+        logger.log("multi_score_prompt_batch", {"html_path": batch_path, "count": len(batch_entries)})
+
+    return {"run_dir": run_dir, "results": results, "probes": probes_info}
