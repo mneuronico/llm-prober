@@ -1,0 +1,562 @@
+[
+  {
+    "example": "prompt_000_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_000_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_000_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_000_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_000_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_000_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_000_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_001_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_001_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_001_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_001_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_001_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_001_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_001_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_002_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_002_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_002_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_002_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_002_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_002_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_002_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_003_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_003_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_003_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_003_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_003_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_003_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "PARTIALLY_COHERENT"
+  },
+  {
+    "example": "prompt_003_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_004_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_004_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_004_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_004_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_004_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_004_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_004_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_005_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_005_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_005_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_005_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_005_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_005_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "PARTIALLY_COHERENT"
+  },
+  {
+    "example": "prompt_005_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_006_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_006_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_006_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_006_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_006_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_006_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_006_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_007_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_007_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_007_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_007_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_007_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_007_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_007_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_008_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_008_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "PARTIALLY_COHERENT"
+  },
+  {
+    "example": "prompt_008_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_008_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_008_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_008_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_008_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_009_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_009_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_009_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_009_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_009_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_009_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_009_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_010_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_010_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_010_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_010_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_010_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_010_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_010_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_011_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_011_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_011_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_011_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_011_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_011_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_011_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_012_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_012_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_012_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_012_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_012_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_012_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_012_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_013_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_013_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_013_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_013_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_013_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_013_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_013_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_014_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_014_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_014_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_014_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_014_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_014_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_014_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_015_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_015_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_015_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_015_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_015_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_015_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "NONSENSE"
+  },
+  {
+    "example": "prompt_015_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_016_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_016_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_016_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_016_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_016_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_016_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_016_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_017_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_017_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_017_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_017_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_017_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_017_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_017_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_018_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_018_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_018_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_018_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_018_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_018_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "PARTIALLY_COHERENT"
+  },
+  {
+    "example": "prompt_018_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_019_Solve_the_arithmetic_problem._Show_brief_working_sigmam12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_019_Solve_the_arithmetic_problem._Show_brief_working_sigmam30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_019_Solve_the_arithmetic_problem._Show_brief_working_sigmam4p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_019_Solve_the_arithmetic_problem._Show_brief_working_sigmap0p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_019_Solve_the_arithmetic_problem._Show_brief_working_sigmap12p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_019_Solve_the_arithmetic_problem._Show_brief_working_sigmap30p00.npz",
+    "rating": "COHERENT"
+  },
+  {
+    "example": "prompt_019_Solve_the_arithmetic_problem._Show_brief_working_sigmap4p00.npz",
+    "rating": "COHERENT"
+  }
+]

@@ -253,6 +253,58 @@ Used when scoring or plotting probe values.
 
 ---
 
+## How Scores Are Computed
+
+This section documents the exact score definitions used in plots, `.npz` files, and HTML heatmaps.
+
+### Concept vectors (per layer)
+For each layer `l`:
+1. Run the model on training prompts and collect hidden states for all layers.
+2. Convert hidden states into a single representation per layer using `readout.train_mode` (see Readout Modes).
+3. Compute the mean vector for the positive and negative training sets at layer `l`.
+4. Define the concept vector as a normalized difference:
+   `v_l = normalize(mean_pos_l - mean_neg_l)`.
+
+This yields one concept vector per layer (same dimensionality as the hidden state for that layer).
+
+### `score_hist.png`
+`score_hist.png` is a histogram of evaluation scores at a single layer:
+1. During evaluation, compute per-layer representations for each eval item:
+   - Read mode uses `readout.read_mode`.
+   - Generate mode uses `readout.train_mode`.
+2. For each layer `l`, compute a scalar score per item:
+   `score_l = rep_l dot v_l`.
+3. Choose `best_layer`:
+   - If `training.do_layer_sweep` is true and eval data exists, pick the layer with the best sweep metric
+     (`effect_size` uses max Cohen's d; `p_value` uses min p).
+   - Otherwise use `training.layer_idx` or `training.layer_frac`.
+4. Plot histograms of `eval_pos_scores_mat[:, best_layer]` and
+   `eval_neg_scores_mat[:, best_layer]` (20 bins).
+
+So `score_hist.png` always uses one layer: the selected `best_layer`.
+
+### Token-level scores in `.npz` and HTML heatmaps
+For `score_texts(...)` and `score_prompts(...)`:
+1. Run the model and collect hidden states for every token at every layer.
+2. Select layers using `evaluation.layer_selection`.
+3. For each selected layer `l` and token `t`, compute:
+   `score_{t,l} = h_{t,l} dot v_l`.
+   These per-layer scores are saved as `scores_per_layer` with shape
+   `(num_tokens, num_selected_layers)`.
+4. Aggregate across selected layers using `evaluation.score_aggregate`:
+   - `mean`: `scores_agg[t] = mean_l score_{t,l}`
+   - `sum`: `scores_agg[t] = sum_l score_{t,l}`
+
+`scores_agg` is what is shown in HTML heatmaps and saved in `.npz` files.
+If `layer_selection.mode` is `best` (default), `scores_agg` is just the single
+best-layer score. If `window`/`explicit`/`all`, `scores_agg` combines layers via
+`score_aggregate`.
+
+For multi-probe runs, the same computation happens per probe and `scores_agg` is
+stacked into shape `(num_probes, num_tokens)`, which drives the HTML dropdown.
+
+---
+
 ## Training Behavior
 
 Training uses:
@@ -398,6 +450,16 @@ If you explicitly want to write directly into `scores/` (not recommended for rep
 Steering is applied during generation:
 - `alphas` are raw or sigma-scaled.
 - `alpha_unit="sigma"` multiplies by projection std at best layer.
+
+### Alpha units
+
+`alpha_unit` controls how the numeric `alpha` values are interpreted:
+- `raw`: use `alpha` directly (no normalization).
+- `sigma`: use `alpha * proj_std_best_layer`, where `proj_std_best_layer` is the
+  standard deviation of eval projections at the best layer.
+
+Single-probe and multi-probe use the same rule; the only difference is that
+multi-probe uses the `steer_probe`'s `proj_std_best_layer` when `alpha_unit="sigma"`.
 
 Layer options:
 - `steer_layers="probe"`: best layer only.

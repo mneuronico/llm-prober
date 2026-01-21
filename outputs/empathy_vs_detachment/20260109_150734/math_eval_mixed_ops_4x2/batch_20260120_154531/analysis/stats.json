@@ -1,0 +1,35 @@
+{
+  "accuracy_by_alpha": [
+    {
+      "alpha": 0.0,
+      "accuracy": 0.6,
+      "n": 20
+    }
+  ],
+  "score_by_alpha": [
+    {
+      "alpha": 0.0,
+      "mean_score": -0.9736280798912048,
+      "sem": 0.013781018899448926,
+      "n": 20
+    }
+  ],
+  "correct_vs_incorrect": {
+    "mean_correct": -1.0020811557769775,
+    "mean_incorrect": -0.9309484958648682,
+    "sem_correct": 0.013238983845110908,
+    "sem_incorrect": 0.021020928429027304,
+    "cohen_d": -1.3791890144348145
+  },
+  "correct_vs_incorrect_by_alpha": [
+    {
+      "alpha": 0.0,
+      "mean_correct": -1.0020811309417088,
+      "mean_incorrect": -0.9309485033154488,
+      "sem_correct": 0.013238983845110908,
+      "sem_incorrect": 0.021020928429027304,
+      "n_correct": 12,
+      "n_incorrect": 8
+    }
+  ]
+}
