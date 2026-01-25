@@ -10,7 +10,7 @@ from concept_probe import ProbeWorkspace
 from examples.math_eval_utils.math_eval_analysis import analyze_math_eval_results
 from examples.math_eval_utils.multiplication_eval import build_multiplication_prompts, generate_multiplication_problems
 from examples.math_eval_utils.multiplication_eval_analysis import analyze_multiplication_batch
-from tools.coherence_rater import rate_batch_coherence
+from examples.main_utils.coherence_rater import rate_batch_coherence
 
 
 PROJECT_DIR = "outputs/empathy_vs_detachment/20260109_150734"

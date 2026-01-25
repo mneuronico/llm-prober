@@ -19,7 +19,7 @@ except Exception:
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from tools.coherence_rater import rate_batch_coherence
+from examples.main_utils.coherence_rater import rate_batch_coherence
 
 
 RATING_COLORS = {

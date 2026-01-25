@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT_DIR))
 sys.path.insert(0, str(EXAMPLES_DIR))
 
 from examples.mixed_ops_eval_utils.mixed_ops_eval_analysis import analyze_mixed_ops_batch
-from tools.coherence_rater import rate_batch_coherence
+from examples.main_utils.coherence_rater import rate_batch_coherence
 
 
 def main() -> None:

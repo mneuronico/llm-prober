@@ -10,7 +10,7 @@ from concept_probe import ProbeWorkspace
 from examples.math_eval_utils.math_eval_analysis import analyze_math_eval_results
 from examples.mixed_ops_eval_utils.mixed_ops_eval import build_mixed_ops_prompts, generate_mixed_ops_problems
 from examples.mixed_ops_eval_utils.mixed_ops_eval_analysis import analyze_mixed_ops_batch
-from tools.coherence_rater import rate_batch_coherence
+from examples.main_utils.coherence_rater import rate_batch_coherence
 
 
 PROJECT_DIR = "outputs/empathy_vs_detachment/20260109_150734"

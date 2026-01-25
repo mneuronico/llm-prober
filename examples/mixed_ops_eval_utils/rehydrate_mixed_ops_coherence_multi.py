@@ -12,7 +12,7 @@ sys.path.insert(0, str(EXAMPLES_DIR))
 
 from examples.mixed_ops_eval_utils.mixed_ops_multi_concept_eval import ENV_PATH, OUTPUT_SUBDIR, PROJECTS
 from examples.mixed_ops_eval_utils.mixed_ops_eval_analysis import analyze_mixed_ops_batch
-from tools.coherence_rater import rate_batch_coherence
+from examples.main_utils.coherence_rater import rate_batch_coherence
 
 
 def _find_batch_dirs(output_dir: Path, batch_name: Optional[str], all_batches: bool) -> List[Path]:
