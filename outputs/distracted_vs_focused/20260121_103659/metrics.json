@@ -1,0 +1,12 @@
+{
+  "best_d": 2.7425878047943115,
+  "best_layer": 27,
+  "best_p": 2.3610395860629296e-09,
+  "n_eval": 12,
+  "n_train": 24,
+  "n_train_neg": 24,
+  "n_train_pos": 24,
+  "num_layers": 28,
+  "proj_std_best_layer": 0.8327889442443848,
+  "train_prompt_mode": "shared"
+}

@@ -421,7 +421,14 @@ def render_batch_heatmap(entries: List[Tuple[str, List[str], List[float]]], out_
         f.write(html_doc)
 
 
-def plot_sweep(sweep_d: Iterable[float], sweep_p: Iterable[float], out_path: str) -> bool:
+def plot_sweep(
+    sweep_d: Iterable[float],
+    sweep_p: Iterable[float],
+    out_path: str,
+    *,
+    best_layer: Optional[int] = None,
+    search_intervals: Optional[Iterable[Tuple[int, int]]] = None,
+) -> bool:
     try:
         import matplotlib.pyplot as plt
     except Exception:
@@ -432,6 +439,10 @@ def plot_sweep(sweep_d: Iterable[float], sweep_p: Iterable[float], out_path: str
     layers = np.arange(len(d))
 
     fig, ax = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+    if search_intervals:
+        for lo, hi in search_intervals:
+            for axis in ax:
+                axis.axvspan(lo - 0.5, hi + 0.5, color="#f2e6b0", alpha=0.35, zorder=0)
     ax[0].plot(layers, d, color="#cc3d3d")
     ax[0].set_ylabel("Cohen's d")
     ax[0].set_title("Layer sweep")
@@ -441,6 +452,10 @@ def plot_sweep(sweep_d: Iterable[float], sweep_p: Iterable[float], out_path: str
     ax[1].set_yscale("log")
     ax[1].set_ylabel("p-value (log)")
     ax[1].set_xlabel("Layer")
+
+    if best_layer is not None:
+        for axis in ax:
+            axis.axvline(best_layer, color="#222222", linestyle=":", linewidth=1.5, alpha=0.9)
 
     fig.tight_layout()
     fig.savefig(out_path, dpi=160)

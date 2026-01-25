@@ -37,6 +37,70 @@ def pick_layer(num_layers: int, layer_idx: Optional[int], layer_frac: float) -> 
     return int(layer_frac * (num_layers - 1))
 
 
+def _layer_index_from_value(value: Any, num_layers: int) -> int:
+    if isinstance(value, bool):
+        raise TypeError("Layer values must be int or float, not bool.")
+    if isinstance(value, (int, np.integer)):
+        return int(value)
+    if isinstance(value, (float, np.floating)):
+        if 0.0 <= float(value) <= 1.0:
+            return int(float(value) * (num_layers - 1))
+        return int(value)
+    raise TypeError(f"Layer values must be int or float; got {type(value)}")
+
+
+def _normalize_best_layer_search(
+    search_spec: Optional[Any], num_layers: int
+) -> Dict[str, Any]:
+    if search_spec is None:
+        return {
+            "intervals": [(0, num_layers - 1)],
+            "layers": list(range(num_layers)),
+            "is_default": True,
+        }
+
+    if not isinstance(search_spec, (list, tuple)):
+        raise TypeError("training.best_layer_search must be a list like [lo, hi] or [[lo, hi], ...].")
+
+    if len(search_spec) == 0:
+        raise ValueError("training.best_layer_search is empty; provide [lo, hi] or [[lo, hi], ...].")
+
+    if len(search_spec) == 2 and not isinstance(search_spec[0], (list, tuple)):
+        raw_intervals: List[Any] = [search_spec]
+    else:
+        raw_intervals = list(search_spec)
+
+    intervals: List[Tuple[int, int]] = []
+    for i, raw in enumerate(raw_intervals):
+        if not isinstance(raw, (list, tuple)) or len(raw) != 2:
+            raise ValueError(f"training.best_layer_search[{i}] must be [lo, hi].")
+        lo = _layer_index_from_value(raw[0], num_layers)
+        hi = _layer_index_from_value(raw[1], num_layers)
+        if lo > hi:
+            lo, hi = hi, lo
+        lo = max(0, min(num_layers - 1, lo))
+        hi = max(0, min(num_layers - 1, hi))
+        intervals.append((lo, hi))
+
+    intervals.sort(key=lambda x: x[0])
+    merged: List[List[int]] = []
+    for lo, hi in intervals:
+        if not merged or lo > merged[-1][1] + 1:
+            merged.append([lo, hi])
+        else:
+            merged[-1][1] = max(merged[-1][1], hi)
+    merged_intervals = [(int(lo), int(hi)) for lo, hi in merged]
+
+    layers: List[int] = []
+    for lo, hi in merged_intervals:
+        layers.extend(range(lo, hi + 1))
+
+    if not layers:
+        raise ValueError("training.best_layer_search did not resolve to any valid layers.")
+
+    return {"intervals": merged_intervals, "layers": layers, "is_default": False}
+
+
 def select_layers(selection: Dict[str, Any], best_layer: int, num_layers: int) -> List[int]:
     mode = selection.get("mode", "best")
     if mode == "best":
@@ -663,11 +727,32 @@ class ConceptProbe:
             self._warn(reason)
             self.logger.log("eval_skipped", {"reason": reason})
 
+        search_intervals = None
+        search_layers = None
+        search_default = None
+        search_intervals_plot = None
         if train_cfg["do_layer_sweep"] and did_eval:
+            search_info = _normalize_best_layer_search(train_cfg.get("best_layer_search"), num_layers)
+            search_intervals = search_info["intervals"]
+            search_layers = search_info["layers"]
+            search_default = search_info["is_default"]
+            if not search_default:
+                search_intervals_plot = search_intervals
+            allowed_mask = np.zeros((num_layers,), dtype=bool)
+            allowed_mask[search_layers] = True
             if train_cfg["sweep_select"] == "effect_size":
-                best_layer = int(np.argmax(sweep_d))
+                masked = np.where(allowed_mask, sweep_d, -np.inf)
+                best_layer = int(np.argmax(masked))
+                if not np.isfinite(masked[best_layer]):
+                    raise ValueError("No valid layers available for best_layer_search selection.")
             else:
-                best_layer = int(np.nanargmin(sweep_p))
+                masked = np.where(allowed_mask, sweep_p, np.nan)
+                if np.all(np.isnan(masked)):
+                    raise ValueError(
+                        "All sweep p-values are NaN for the selected best_layer_search. "
+                        "Install scipy or use sweep_select='effect_size'."
+                    )
+                best_layer = int(np.nanargmin(masked))
         else:
             best_layer = pick_layer(num_layers, train_cfg.get("layer_idx"), train_cfg.get("layer_frac", 0.75))
 
@@ -692,6 +777,10 @@ class ConceptProbe:
                 "best_layer": best_layer,
                 "best_d": float(sweep_d[best_layer]),
                 "best_p": None if np.isnan(sweep_p[best_layer]) else float(sweep_p[best_layer]),
+                "best_layer_search": train_cfg.get("best_layer_search"),
+                "best_layer_search_intervals": search_intervals,
+                "best_layer_search_layers": search_layers,
+                "best_layer_search_default": search_default,
                 "sweep_d": sweep_d.tolist(),
                 "sweep_p": [None if np.isnan(x) else float(x) for x in sweep_p],
                 "eval_pos_mean": eval_pos_mean.tolist(),
@@ -706,7 +795,13 @@ class ConceptProbe:
         ensure_dir(plots_dir)
         if plot_cfg.get("enabled", True) and eval_pos_scores_mat.size > 0:
             if plot_cfg.get("sweep_plot", True):
-                ok = plot_sweep(sweep_d, sweep_p, os.path.join(plots_dir, "sweep.png"))
+                ok = plot_sweep(
+                    sweep_d,
+                    sweep_p,
+                    os.path.join(plots_dir, "sweep.png"),
+                    best_layer=best_layer,
+                    search_intervals=search_intervals_plot,
+                )
                 self.logger.log("plot_sweep", {"ok": ok})
             if plot_cfg.get("score_hist", True):
                 ok = plot_score_hist(
@@ -750,6 +845,10 @@ class ConceptProbe:
             "best_layer": best_layer,
             "best_d": float(sweep_d[best_layer]),
             "best_p": None if np.isnan(sweep_p[best_layer]) else float(sweep_p[best_layer]),
+            "best_layer_search": train_cfg.get("best_layer_search"),
+            "best_layer_search_intervals": search_intervals,
+            "best_layer_search_layers": search_layers,
+            "best_layer_search_default": search_default,
             "proj_std_best_layer": proj_std,
             "num_layers": num_layers,
             "n_train": n_train,

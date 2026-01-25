@@ -1,0 +1,195 @@
+{
+  "accuracy_by_alpha": [
+    {
+      "alpha": -30.0,
+      "accuracy": 0.45,
+      "n": 20
+    },
+    {
+      "alpha": -12.0,
+      "accuracy": 0.4,
+      "n": 20
+    },
+    {
+      "alpha": -8.0,
+      "accuracy": 0.45,
+      "n": 20
+    },
+    {
+      "alpha": -4.0,
+      "accuracy": 0.4,
+      "n": 20
+    },
+    {
+      "alpha": 0.0,
+      "accuracy": 0.4,
+      "n": 20
+    },
+    {
+      "alpha": 4.0,
+      "accuracy": 0.4,
+      "n": 20
+    },
+    {
+      "alpha": 8.0,
+      "accuracy": 0.4,
+      "n": 20
+    },
+    {
+      "alpha": 12.0,
+      "accuracy": 0.35,
+      "n": 20
+    },
+    {
+      "alpha": 30.0,
+      "accuracy": 0.4,
+      "n": 20
+    }
+  ],
+  "score_by_alpha": [
+    {
+      "alpha": -30.0,
+      "mean_score": 0.42415561676025393,
+      "sem": 0.012216222946610242,
+      "n": 20
+    },
+    {
+      "alpha": -12.0,
+      "mean_score": 0.48859388679265975,
+      "sem": 0.012840473057460684,
+      "n": 20
+    },
+    {
+      "alpha": -8.0,
+      "mean_score": 0.48750748485326767,
+      "sem": 0.012629606562246482,
+      "n": 20
+    },
+    {
+      "alpha": -4.0,
+      "mean_score": 0.5068302184343338,
+      "sem": 0.014232465963932494,
+      "n": 20
+    },
+    {
+      "alpha": 0.0,
+      "mean_score": 0.4918708309531212,
+      "sem": 0.016172185495012415,
+      "n": 20
+    },
+    {
+      "alpha": 4.0,
+      "mean_score": 0.5051664888858796,
+      "sem": 0.012756065580282284,
+      "n": 20
+    },
+    {
+      "alpha": 8.0,
+      "mean_score": 0.5088950052857399,
+      "sem": 0.010515054189932356,
+      "n": 20
+    },
+    {
+      "alpha": 12.0,
+      "mean_score": 0.5216455295681953,
+      "sem": 0.010655766416038506,
+      "n": 20
+    },
+    {
+      "alpha": 30.0,
+      "mean_score": 0.5316902667284011,
+      "sem": 0.009349751165892322,
+      "n": 20
+    }
+  ],
+  "correct_vs_incorrect": {
+    "mean_correct": 0.5333292484283447,
+    "mean_incorrect": 0.4709726572036743,
+    "sem_correct": 0.004992589108122118,
+    "sem_incorrect": 0.005855543060400976,
+    "cohen_d": 1.1538070440292358
+  },
+  "correct_vs_incorrect_by_alpha": [
+    {
+      "alpha": -30.0,
+      "mean_correct": 0.46208393904897904,
+      "mean_incorrect": 0.3931233530694788,
+      "sem_correct": 0.014622929984726517,
+      "sem_incorrect": 0.012711454870702297,
+      "n_correct": 9,
+      "n_incorrect": 11
+    },
+    {
+      "alpha": -12.0,
+      "mean_correct": 0.5271458551287651,
+      "mean_incorrect": 0.4628925745685895,
+      "sem_correct": 0.01302598072787591,
+      "sem_incorrect": 0.015891429729550547,
+      "n_correct": 8,
+      "n_incorrect": 12
+    },
+    {
+      "alpha": -8.0,
+      "mean_correct": 0.5221830109755198,
+      "mean_incorrect": 0.4591365998441523,
+      "sem_correct": 0.011318639259498317,
+      "sem_incorrect": 0.01697942697024679,
+      "n_correct": 9,
+      "n_incorrect": 11
+    },
+    {
+      "alpha": -4.0,
+      "mean_correct": 0.5530581623315811,
+      "mean_incorrect": 0.47601158916950226,
+      "sem_correct": 0.007121492453491872,
+      "sem_incorrect": 0.01859461050497073,
+      "n_correct": 8,
+      "n_incorrect": 12
+    },
+    {
+      "alpha": 0.0,
+      "mean_correct": 0.5359427221119404,
+      "mean_incorrect": 0.46248957018057507,
+      "sem_correct": 0.011390545851409759,
+      "sem_incorrect": 0.022398186025440536,
+      "n_correct": 8,
+      "n_incorrect": 12
+    },
+    {
+      "alpha": 4.0,
+      "mean_correct": 0.5483910515904427,
+      "mean_incorrect": 0.4763501137495041,
+      "sem_correct": 0.010498560220892232,
+      "sem_incorrect": 0.01526253291207108,
+      "n_correct": 8,
+      "n_incorrect": 12
+    },
+    {
+      "alpha": 8.0,
+      "mean_correct": 0.5425737760961056,
+      "mean_incorrect": 0.4864424914121628,
+      "sem_correct": 0.011451841424916443,
+      "sem_incorrect": 0.012169153609684834,
+      "n_correct": 8,
+      "n_incorrect": 12
+    },
+    {
+      "alpha": 12.0,
+      "mean_correct": 0.5578632610184806,
+      "mean_incorrect": 0.5021436741718879,
+      "sem_correct": 0.010789061422572039,
+      "sem_incorrect": 0.012437540163194951,
+      "n_correct": 7,
+      "n_incorrect": 13
+    },
+    {
+      "alpha": 30.0,
+      "mean_correct": 0.5640870705246925,
+      "mean_incorrect": 0.5100923975308737,
+      "sem_correct": 0.00826144922555474,
+      "sem_incorrect": 0.010802166157274041,
+      "n_correct": 8,
+      "n_incorrect": 12
+    }
+  ]
+}

@@ -276,7 +276,9 @@ This yields one concept vector per layer (same dimensionality as the hidden stat
    `score_l = rep_l dot v_l`.
 3. Choose `best_layer`:
    - If `training.do_layer_sweep` is true and eval data exists, pick the layer with the best sweep metric
-     (`effect_size` uses max Cohen's d; `p_value` uses min p).
+     (`effect_size` uses max Cohen's d; `p_value` uses min p). If `training.best_layer_search`
+     is set, the sweep is still computed for all layers but selection is restricted to the specified
+     interval(s).
    - Otherwise use `training.layer_idx` or `training.layer_frac`.
 4. Plot histograms of `eval_pos_scores_mat[:, best_layer]` and
    `eval_neg_scores_mat[:, best_layer]` (20 bins).
@@ -319,6 +321,7 @@ It computes:
 - Per-layer concept vectors (`concept_vectors`)
 - Sweep metrics (`sweep_d`, `sweep_p`)
 - Best layer (effect size or p-value)
+- Best-layer search intervals (if configured)
 - Projection std at best layer (for sigma-scaled steering)
 
 ### Training prompt modes
@@ -328,6 +331,53 @@ It computes:
 - `opposed`: use `prompts.train_questions_pos` and `prompts.train_questions_neg`; systems can be the same or different.
 
 This enables training where the system prompt is fixed and only the user prompts differ.
+
+### Best-layer search intervals (`training.best_layer_search`)
+
+When `training.do_layer_sweep` is enabled and eval data exists, the library selects a single
+`best_layer` from the sweep. By default it searches all layers. You can restrict this search
+to one or more intervals without changing the sweep computation itself.
+
+Key behavior:
+- The sweep metrics (`sweep_d`, `sweep_p`) are still computed for every layer.
+- Only the *selection* of `best_layer` is restricted to the specified interval(s).
+- `plots/sweep.png` still shows all layers, but the search interval(s) are shaded and the chosen
+  layer is marked with a dotted vertical line.
+
+Accepted formats:
+- `null` (default): search all layers.
+- A single interval: `[lo, hi]`
+- Multiple intervals: `[[lo, hi], [lo2, hi2], ...]`
+
+Layer values:
+- Integers are interpreted as layer indices (0-based, inclusive).
+- Floats in `[0, 1]` are treated as proportions of depth, converted with
+  `int(frac * (num_layers - 1))`. This matches `training.layer_frac` behavior.
+
+Examples (28-layer model: layers `0..27`):
+- `[4, 23]` searches layers 4 through 23 inclusive.
+- `[[4, 10], [15, 20]]` searches two disjoint bands.
+- `[0.15, 0.85]` maps to `[4, 22]` because `int(0.15 * 27) = 4` and `int(0.85 * 27) = 22`.
+
+Config example:
+
+```python
+workspace = ProbeWorkspace(
+    config_overrides={
+        "training": {
+            "best_layer_search": [[4, 10], [15, 20]],
+            "sweep_select": "effect_size",
+        }
+    }
+)
+```
+
+Additional details:
+- Intervals are inclusive; reversed endpoints are swapped.
+- Values are clamped to the valid layer range.
+- Overlapping or adjacent intervals are merged internally.
+- If `sweep_select="p_value"` and all p-values are NaN in the search interval, selection fails;
+  use `sweep_select="effect_size"` or install `scipy`.
 
 ### Math utilities
 
@@ -486,6 +536,11 @@ Plots (if `matplotlib` installed):
 - `plots/sweep.png`
 - `plots/score_hist.png`
 
+`sweep.png` details:
+- Always plots every layer's sweep metrics.
+- Shaded bands show `training.best_layer_search` intervals (when used).
+- A dotted vertical line marks the chosen `best_layer`.
+
 ---
 
 ## Output Structure
@@ -540,7 +595,7 @@ Multi-probe `.npz` contents:
 Key files:
 - `config.json`: full resolved config.
 - `concept.json`: concept definition.
-- `metrics.json`: best layer, effect size, projection std.
+- `metrics.json`: best layer, effect size, projection std, and best-layer search metadata.
 - `tensors.npz`: concept vectors + sweep arrays.
 - `log.jsonl`: event log.
 - `log.pretty.json`: pretty log for reading.

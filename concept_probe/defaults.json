@@ -61,6 +61,7 @@
     "train_top_p": 0.9,
     "do_layer_sweep": true,
     "sweep_select": "effect_size",
+    "best_layer_search": null,
     "layer_idx": null,
     "layer_frac": 0.75
   },
