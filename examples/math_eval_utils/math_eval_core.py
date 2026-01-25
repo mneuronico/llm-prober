@@ -109,3 +109,6 @@ def evaluate_answer(
 
     correct = abs(float(value) - float(expected)) <= float(atol)
     return {"correct": bool(correct), "parsed": value, "used_marker": used_marker}
+
+
+__all__ = ["generate_addition_problems", "extract_answer", "evaluate_answer"]

@@ -379,14 +379,6 @@ Additional details:
 - If `sweep_select="p_value"` and all p-values are NaN in the search interval, selection fails;
   use `sweep_select="effect_size"` or install `scipy`.
 
-### Math utilities
-
-`concept_probe.math_eval` includes helpers for arithmetic evals:
-- `generate_addition_problems(...)`
-- `evaluate_answer(...)` / `extract_answer(...)`
-
----
-
 ## Scoring API
 
 ### `score_texts(texts, ...)`
@@ -424,6 +416,199 @@ Outputs:
 - `batch_prompts.html` with shared scale.
 
 Names include prompt snippets and alpha labels for clarity.
+
+---
+
+## Generic Auto-Graded Eval Pipeline
+
+For evals that have:
+- a prompt per item (or a shared prompt prefix + per-item variable text), and
+- an expected answer for each item,
+
+you can run a fully automated eval that:
+- generates completions (optionally steered),
+- computes correctness via a user-supplied evaluator,
+- optionally rates coherence via Groq (warning-only on failure),
+- writes `analysis/` with stats + plots for the batch.
+
+Coherence ratings require `GROQ_API_KEY` (from `.env` or environment). If the API call fails or rate limits,
+the eval still completes and only coherence-specific outputs are missing.
+
+This is implemented in `concept_probe.eval_system`.
+
+### `run_scored_eval(...)`
+
+```python
+from concept_probe import ProbeWorkspace, run_scored_eval
+
+def generate_item() -> dict:
+    # Return a single item each time; the library handles how many to generate.
+    i = 2
+    return {"question": f"{i}+{i}=?", "expected": 2 * i}
+
+def eval_answer(completion: str, item: dict) -> dict:
+    # Customize parsing to your task. Return at least {"correct": bool}.
+    expected = item["expected"]
+    parsed = int("".join(ch for ch in completion if ch.isdigit()) or -1)
+    return {"correct": parsed == expected, "parsed": parsed, "expected": expected}
+
+workspace = ProbeWorkspace(project_directory="outputs/empathy_vs_detachment/20260109_150734")
+probe = workspace.get_probe(name="empathy_vs_detachment")
+
+run_scored_eval(
+    probe,
+    generator=generate_item,
+    num_items=20,
+    evaluator=eval_answer,
+    prompt_prefix="Solve: ",      # or prompt_template="Solve: {question}"
+    variable_key="question",      # field used with prompt_prefix
+    output_subdir="scored_eval_custom",
+    alphas=[-8, 0, 8],
+    alpha_unit="sigma",
+    steer_layers="window",
+    steer_window_radius=2,
+    max_new_tokens=128,
+    rate_coherence=True,          # optional (warning-only on failure)
+)
+```
+
+What it writes (inside the batch folder):
+- `analysis/per_sample.json`: items + completions + correctness + score means
+- `analysis/stats.json`: accuracy by alpha, score by alpha, correct vs incorrect
+- `analysis/plots/*`: accuracy/score plots (and coherence plots if ratings exist)
+
+#### Generator contract
+
+`run_scored_eval` can build items in two ways:
+- **Provide `items=[...]`**: you control the full list yourself.
+- **Provide `generator=...`**: the generator is called `num_items` times (if set).
+
+The generator can return:
+- a single item (recommended), or
+- a list of items (only when `num_items` is omitted).
+
+If `num_items` is set and your generator returns a list, the call fails so you don't accidentally
+over-generate.
+
+If you need parameters (e.g., seeds, difficulty), pass them with `generator_kwargs` and they will
+be forwarded on each generator call.
+
+#### Prompt construction options
+`run_scored_eval` can build prompts in several ways:
+- Use `prompt_builder(item)` for full control (can return conversation format).
+- Use `prompt_template="Instruction: {question}"` (formatted with item fields).
+- Use `prompt_prefix="Instruction: "` + `variable_key="question"`.
+- Use a prebuilt `item["prompt"]`.
+
+At least one of these must succeed for each item. The prompt can be a string or a list of
+`{"role": ..., "content": ...}` messages.
+
+#### Required item fields
+
+What each item must contain depends on how you build prompts and evaluate correctness:
+- **Prompt content** is required in *some form*:
+  - either `item["prompt"]`,
+  - or fields used by `prompt_template` / `prompt_prefix`,
+  - or handled by `prompt_builder`.
+- **Expected answer** is required **if you do not pass a custom evaluator**:
+  - By default, the library expects `item["expected"]`.
+  - You can change this field name with `expected_key=...`.
+
+Any extra fields you include in the item are preserved in `per_sample.json`
+when `include_item=True`.
+
+#### Evaluator contract
+The evaluator is called as:
+
+```python
+def evaluator(completion: str, item: dict) -> dict:
+    return {"correct": bool, ...}
+```
+
+Additional keys you return (e.g., `parsed`, `expected`) are included in `per_sample.json`.
+
+If you don't supply an evaluator, the library uses a basic equality check:
+- By default, `completion.strip()` is compared to `str(item[expected_key]).strip()`.
+- If you pass `marker="ANSWER:"`, the evaluator extracts the substring
+  **after the first occurrence** of the marker (or **before** it if you set
+  `marker_position="before"`), then compares that to the expected answer.
+- If the marker is provided but not found, the item is marked incorrect.
+
+For most tasks you will want a custom evaluator, but marker extraction is often
+enough for simple auto-graded formats.
+
+---
+
+## Batch Maintenance Utilities
+
+These utilities operate on existing batches and are eval-agnostic.
+
+### `rehydrate_batch_analysis(batch_dir, ...)`
+Rebuilds `analysis/` for an existing batch (recomputes stats + plots).
+Optionally re-runs coherence rating first.
+
+```python
+from concept_probe import rehydrate_batch_analysis
+
+rehydrate_batch_analysis(
+    "outputs/empathy_vs_detachment/20260109_150734/mixed_ops_eval_5x2/batch_20260125_122612",
+    rate_coherence=True,
+)
+```
+
+### `aggregate_eval_batches(eval_dir, ...)`
+Combines all batches under a single eval folder into a unified analysis folder.
+
+```python
+from concept_probe import aggregate_eval_batches
+
+aggregate_eval_batches(
+    "outputs/empathy_vs_detachment/20260109_150734/mixed_ops_eval_5x2",
+    output_name="analysis_all",
+)
+```
+
+---
+
+## JSON-Driven Training (`train_concept_from_json`)
+
+If you prefer a JSON spec, you can train a concept and run an eval sweep directly from a file.
+
+```python
+from concept_probe import train_concept_from_json
+
+train_concept_from_json(
+    "examples/configs/lying_vs_truthfulness.json",
+    alphas=[-6, 0, 6],
+    model_id="meta-llama/Llama-3.2-3B-Instruct",
+    root_dir="outputs",
+)
+```
+
+Expected JSON shape (top-level keys):
+
+```json
+{
+  "concept": {
+    "name": "lying_vs_truthfulness",
+    "pos_label": "lying",
+    "neg_label": "truthful",
+    "pos_system": "...",
+    "neg_system": "..."
+  },
+  "prompts": {
+    "train_questions": ["..."],
+    "eval_questions": ["..."],
+    "neutral_system": "You are a helpful assistant."
+  }
+}
+```
+
+Notes:
+- Any extra fields in the JSON can be overridden via `config_overrides`.
+- If `alphas` is omitted, it runs a single `alpha=0.0` sweep.
+
+---
 
 ### `multi_probe_score_prompts(...)`
 Generate each prompt once (or once per alpha if steering) and score the same generation with multiple probes.
@@ -561,13 +746,47 @@ outputs/
         sweep.png
         score_hist.png
       scores/
-                batch_YYYYMMDD_HHMMSS/
-                    prompt_000_<slug>_<alpha>.npz
-                    prompt_000_<slug>_<alpha>.html
-                    batch_prompts.html
-                    text_000_<slug>.npz
-                    text_000_<slug>.html
-                    batch_texts.html
+        batch_YYYYMMDD_HHMMSS/
+          prompt_000_<slug>_<alpha>.npz
+          prompt_000_<slug>_<alpha>.html
+          batch_prompts.html
+          text_000_<slug>.npz
+          text_000_<slug>.html
+          batch_texts.html
+      <eval_name>/
+        batch_YYYYMMDD_HHMMSS/
+          prompt_000_<slug>_<alpha>.npz
+          prompt_000_<slug>_<alpha>.html
+          batch_prompts.html
+          analysis/
+            per_sample.json
+            stats.json
+            plots/
+              accuracy_vs_alpha.png
+              score_vs_alpha.png
+              score_by_correctness.png
+              score_by_correctness_by_alpha.png
+              accuracy_vs_alpha_by_coherence.png
+              coherence_counts_by_alpha.png
+```
+
+Example with multiple batches inside the same eval folder:
+
+```
+outputs/
+  empathy_vs_detachment/
+    20260109_150734/
+      mixed_ops_eval_5x2/
+        batch_20260125_122612/
+          ...
+        batch_20260125_153045/
+          ...
+        analysis_all/
+          per_sample.json
+          stats.json
+          plots/
+            accuracy_vs_alpha.png
+            ...
 ```
 
 Multi-probe runs write to a separate root:
@@ -650,9 +869,3 @@ Each concept gets its own folder under `outputs/`.
 - If `sweep_p` is NaN: install `scipy`.
 - If plots are missing: install `matplotlib` or disable plots.
 - If 4-bit loading fails: disable `model.use_4bit` or install `bitsandbytes`.
-
----
-
-## License
-
-Add your license here.

@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
-from concept_probe.math_eval import evaluate_answer
+from examples.math_eval_utils.math_eval_core import evaluate_answer
 from concept_probe.utils import ensure_dir, json_dump
 
 try:

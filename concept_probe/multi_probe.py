@@ -163,6 +163,14 @@ def multi_probe_score_prompts(
     model = model_bundle.model
     results: List[Dict[str, Any]] = []
     batch_entries: List[Tuple[str, List[str], Dict[str, List[float]]]] = []
+    console = probes[0].console
+    total_prompts = len(prompts)
+    total_alphas = len(alphas)
+    total_runs = total_prompts * total_alphas
+    if console is not None:
+        console.info(
+            f"Multi-probe scoring {total_prompts} prompts x {total_alphas} alphas ({total_runs} generations) -> {out_dir}"
+        )
 
     if steer_probe_obj is not None:
         steer_layer_list = _steer_layer_list(steer_probe_obj, steer_layers, steer_window_radius)
@@ -275,6 +283,10 @@ def multi_probe_score_prompts(
             }
             results.append(rec)
             logger.log("multi_score_prompt", rec)
+        if console is not None and (
+            (i + 1) % max(1, total_prompts // 5) == 0 or (i + 1) == total_prompts
+        ):
+            console.info(f"Completed prompt {i + 1}/{total_prompts}")
 
     if save_html and batch_entries:
         batch_path = os.path.join(out_dir, "batch_prompts.html")

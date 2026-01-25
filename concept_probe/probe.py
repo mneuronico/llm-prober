@@ -386,6 +386,8 @@ class ConceptProbe:
         train_pos_plens, train_neg_plens = [], []
 
         if train_prompt_mode == "shared":
+            total_train = len(train_prompts)
+            progress_every = max(1, total_train // 5) if total_train else 1
             if not train_prompts:
                 raise ValueError("prompts.train_questions is empty; provide training prompts.")
             if train_prompts_pos or train_prompts_neg:
@@ -439,6 +441,8 @@ class ConceptProbe:
                         "neg_completion": neg_completion,
                     },
                 )
+                if total_train and ((i + 1) % progress_every == 0 or (i + 1) == total_train):
+                    self._status(f"Generated training completions {i + 1}/{total_train}")
         elif train_prompt_mode == "opposed":
             if train_prompts:
                 self._warn("train_prompt_mode=opposed; ignoring prompts.train_questions.")
@@ -446,6 +450,8 @@ class ConceptProbe:
                 raise ValueError(
                     "train_prompt_mode=opposed requires prompts.train_questions_pos and prompts.train_questions_neg."
                 )
+            total_pos = len(train_prompts_pos)
+            progress_every_pos = max(1, total_pos // 5) if total_pos else 1
             for i, q in enumerate(train_prompts_pos):
                 ids_pos, plen_pos = generate_once(
                     model,
@@ -473,7 +479,11 @@ class ConceptProbe:
                         "completion": pos_completion,
                     },
                 )
+                if total_pos and ((i + 1) % progress_every_pos == 0 or (i + 1) == total_pos):
+                    self._status(f"Generated pos training completions {i + 1}/{total_pos}")
 
+            total_neg = len(train_prompts_neg)
+            progress_every_neg = max(1, total_neg // 5) if total_neg else 1
             for i, q in enumerate(train_prompts_neg):
                 ids_neg, plen_neg = generate_once(
                     model,
@@ -501,6 +511,8 @@ class ConceptProbe:
                         "completion": neg_completion,
                     },
                 )
+                if total_neg and ((i + 1) % progress_every_neg == 0 or (i + 1) == total_neg):
+                    self._status(f"Generated neg training completions {i + 1}/{total_neg}")
         else:
             raise ValueError(f"Unknown train_prompt_mode: {train_prompt_mode}")
 
@@ -567,6 +579,8 @@ class ConceptProbe:
                 if len(eval_pos_texts) > 0 and len(eval_neg_texts) > 0:
                     self._status("[Phase 3/4] Reading eval texts")
                     eval_pos_reps_list: List[np.ndarray] = []
+                    total_eval_pos = len(eval_pos_texts)
+                    progress_every_pos = max(1, total_eval_pos // 5) if total_eval_pos else 1
                     for i, s in enumerate(eval_pos_texts):
                         messages, _ = _normalize_messages(
                             s,
@@ -583,9 +597,13 @@ class ConceptProbe:
                                 last_k=readout["read_last_k"],
                             )
                         )
+                        if total_eval_pos and ((i + 1) % progress_every_pos == 0 or (i + 1) == total_eval_pos):
+                            self._status(f"Read eval pos text {i + 1}/{total_eval_pos}")
                     eval_pos_reps = np.stack(eval_pos_reps_list, axis=0).astype(np.float32)
 
                     eval_neg_reps_list: List[np.ndarray] = []
+                    total_eval_neg = len(eval_neg_texts)
+                    progress_every_neg = max(1, total_eval_neg // 5) if total_eval_neg else 1
                     for i, s in enumerate(eval_neg_texts):
                         messages, _ = _normalize_messages(
                             s,
@@ -602,6 +620,8 @@ class ConceptProbe:
                                 last_k=readout["read_last_k"],
                             )
                         )
+                        if total_eval_neg and ((i + 1) % progress_every_neg == 0 or (i + 1) == total_eval_neg):
+                            self._status(f"Read eval neg text {i + 1}/{total_eval_neg}")
                     eval_neg_reps = np.stack(eval_neg_reps_list, axis=0).astype(np.float32)
 
                     eval_pos_scores_mat = np.zeros((eval_pos_reps.shape[0], num_layers), dtype=np.float32)
@@ -629,6 +649,8 @@ class ConceptProbe:
                     self._status("[Phase 3/4] Generating eval completions")
                     eval_pos_ids, eval_neg_ids = [], []
                     eval_pos_plens, eval_neg_plens = [], []
+                    total_eval = len(eval_prompts)
+                    progress_every = max(1, total_eval // 5) if total_eval else 1
 
                     for i, q in enumerate(eval_prompts):
                         ids_pos, plen_pos = generate_once(
@@ -671,6 +693,8 @@ class ConceptProbe:
                                 "neg_completion": tokenizer.decode(ids_neg[plen_neg:], skip_special_tokens=True),
                             },
                         )
+                        if total_eval and ((i + 1) % progress_every == 0 or (i + 1) == total_eval):
+                            self._status(f"Generated eval completions {i + 1}/{total_eval}")
 
                     eval_pos_reps = np.stack(
                         [
@@ -910,6 +934,9 @@ class ConceptProbe:
         ensure_dir(out_dir)
         results = []
         batch_entries = []
+        total_texts = len(texts)
+        progress_every = max(1, total_texts // 5) if total_texts else 1
+        self._status(f"Scoring {total_texts} texts -> {out_dir}")
 
         for i, text in enumerate(texts):
             messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": text}]
@@ -948,6 +975,8 @@ class ConceptProbe:
             }
             results.append(rec)
             self.logger.log("score_text", rec)
+            if total_texts and ((i + 1) % progress_every == 0 or (i + 1) == total_texts):
+                self._status(f"Scored text {i + 1}/{total_texts}")
 
         if save_html and batch_entries:
             batch_path = os.path.join(out_dir, "batch_texts.html")
@@ -998,6 +1027,12 @@ class ConceptProbe:
         ensure_dir(out_dir)
         results = []
         batch_entries = []
+        total_prompts = len(prompts)
+        total_alphas = len(alphas)
+        total_runs = total_prompts * total_alphas
+        self._status(
+            f"Scoring {total_prompts} prompts x {total_alphas} alphas ({total_runs} generations) -> {out_dir}"
+        )
 
         if steer_layers is None:
             steer_layers = self.config["steering"]["steer_layers"]
@@ -1095,6 +1130,8 @@ class ConceptProbe:
                 }
                 results.append(rec)
                 self.logger.log("score_prompt", rec)
+            if total_prompts and ((i + 1) % max(1, total_prompts // 5) == 0 or (i + 1) == total_prompts):
+                self._status(f"Completed prompt {i + 1}/{total_prompts}")
 
         if save_html and batch_entries:
             batch_path = os.path.join(out_dir, "batch_prompts.html")

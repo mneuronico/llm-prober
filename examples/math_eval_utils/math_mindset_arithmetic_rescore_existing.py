@@ -11,7 +11,7 @@ sys.path.append(ROOT_DIR)
 sys.path.append(EXAMPLES_DIR)
 
 from concept_probe import ProbeWorkspace
-from concept_probe.math_eval import generate_addition_problems
+from examples.math_eval_utils.math_eval_core import generate_addition_problems
 from examples.math_eval_utils.math_eval_analysis import analyze_math_eval_results
 
 
