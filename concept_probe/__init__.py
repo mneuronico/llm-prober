@@ -3,6 +3,7 @@ from .probe import ConceptProbe, ProbeWorkspace
 from .multi_probe import multi_probe_score_prompts
 from .console import ConsoleLogger
 from .concept_runner import train_concept_from_json
+from .coherence import rate_batch_coherence
 from .eval_system import (
     EvalRunResult,
     aggregate_eval_batches,
@@ -27,4 +28,5 @@ __all__ = [
     "rehydrate_batch_analysis",
     "aggregate_eval_batches",
     "rate_batch_coherence_safe",
+    "rate_batch_coherence",
 ]

@@ -434,6 +434,16 @@ you can run a fully automated eval that:
 Coherence ratings require `GROQ_API_KEY` (from `.env` or environment). If the API call fails or rate limits,
 the eval still completes and only coherence-specific outputs are missing.
 
+You can also call the coherence rater directly:
+
+```python
+from concept_probe import rate_batch_coherence
+
+rate_batch_coherence(
+    "outputs/bored_vs_interested/20260122_112208/new_math_eval_mixed_ops_5x2/batch_20260125_181957",
+)
+```
+
 This is implemented in `concept_probe.eval_system`.
 
 ### `run_scored_eval(...)`

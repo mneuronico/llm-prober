@@ -655,7 +655,7 @@ def rate_batch_coherence_safe(
     env_path: Optional[str] = None,
 ) -> bool:
     try:
-        from tools.coherence_rater import rate_batch_coherence
+        from .coherence import rate_batch_coherence
     except Exception as exc:
         print(f"Warning: coherence rater unavailable: {exc}")
         return False
