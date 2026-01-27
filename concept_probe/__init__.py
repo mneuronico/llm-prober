@@ -9,6 +9,7 @@ from .eval_system import (
     aggregate_eval_batches,
     rate_batch_coherence_safe,
     rehydrate_batch_analysis,
+    run_multi_scored_eval,
     run_scored_eval,
     simple_equality_evaluator,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "train_concept_from_json",
     "EvalRunResult",
     "run_scored_eval",
+    "run_multi_scored_eval",
     "simple_equality_evaluator",
     "rehydrate_batch_analysis",
     "aggregate_eval_batches",

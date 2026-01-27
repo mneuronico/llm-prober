@@ -487,6 +487,63 @@ What it writes (inside the batch folder):
 - `analysis/stats.json`: accuracy by alpha, score by alpha, correct vs incorrect
 - `analysis/plots/*`: accuracy/score plots (and coherence plots if ratings exist)
 
+### `run_multi_scored_eval(...)`
+
+Same auto-graded eval pipeline, but **one generation per prompt** scored across multiple probes.
+This is the eval counterpart to `multi_probe_score_prompts(...)` and is ideal for comparing
+score distributions across multiple concepts on the same completions.
+
+Example (no steering, shared items):
+
+```python
+import json
+from concept_probe import ConceptProbe, run_multi_scored_eval
+from concept_probe.modeling import ModelBundle
+
+probe_runs = [
+    "outputs/empathy_vs_detachment/20260109_150734",
+    "outputs/bored_vs_interested/20260122_112208",
+]
+
+# Load a single model bundle for all probes.
+with open(f"{probe_runs[0]}/config.json", "r", encoding="utf-8") as f:
+    cfg = json.load(f)
+bundle = ModelBundle.load(cfg["model"])
+probes = [ConceptProbe.load(run_dir=p, model_bundle=bundle) for p in probe_runs]
+
+def generate_item() -> dict:
+    return {"question": "2+2=?", "expected": 4}
+
+def eval_answer(completion: str, item: dict) -> dict:
+    return {"correct": "4" in completion}
+
+run_multi_scored_eval(
+    probes,
+    generator=generate_item,
+    num_items=20,
+    evaluator=eval_answer,
+    prompt_prefix="Solve: ",
+    variable_key="question",
+    output_root="outputs_multi",
+    project_name="math_eval_multi_probe",
+    output_subdir="eval",
+    alphas=[0.0],              # no steering
+    alpha_unit="sigma",
+    max_new_tokens=128,
+    rate_coherence=True,
+)
+```
+
+Outputs are written under:
+
+```
+outputs_multi/<project_name>/<timestamp>/<output_subdir>/batch_.../analysis/
+```
+
+Multi-probe eval analysis differs slightly:
+- **Accuracy is global** (shared across probes).
+- **Score plots and stats are per-probe** (since scores differ by probe).
+
 #### Generator contract
 
 `run_scored_eval` can build items in two ways:

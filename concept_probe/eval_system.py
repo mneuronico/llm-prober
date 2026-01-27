@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tupl
 import numpy as np
 
 from .probe import ConceptProbe
-from .utils import ensure_dir, json_dump
+from .utils import ensure_dir, json_dump, safe_slug
 
 try:
     import matplotlib.pyplot as plt
@@ -47,6 +47,45 @@ def _mean_completion_score(npz_path: str) -> float:
     if span.size == 0:
         return float("nan")
     return float(np.mean(span))
+
+
+def _decode_probe_names(raw: Any) -> List[str]:
+    names: List[str] = []
+    if raw is None:
+        return names
+    for item in raw:
+        if isinstance(item, bytes):
+            names.append(item.decode("utf-8", errors="ignore"))
+        else:
+            names.append(str(item))
+    return names
+
+
+def _mean_completion_score_multi(npz_path: str) -> Dict[str, float]:
+    data = np.load(npz_path)
+    scores = data["scores_agg"]
+    prompt_len = int(data["prompt_len"][0]) if "prompt_len" in data else 0
+
+    if scores.ndim == 1:
+        span = scores[prompt_len:] if prompt_len < scores.shape[0] else scores
+        mean_val = float(np.mean(span)) if span.size else float("nan")
+        return {"_probe_0": mean_val}
+
+    if scores.ndim != 2:
+        raise ValueError(f"Unexpected scores_agg shape: {scores.shape}")
+
+    raw_names = data.get("probe_names")
+    probe_names = _decode_probe_names(raw_names)
+    if not probe_names or len(probe_names) != scores.shape[0]:
+        probe_names = [f"probe_{i}" for i in range(scores.shape[0])]
+
+    score_map: Dict[str, float] = {}
+    for idx, name in enumerate(probe_names):
+        row = scores[idx]
+        span = row[prompt_len:] if prompt_len < row.shape[0] else row
+        mean_val = float(np.mean(span)) if span.size else float("nan")
+        score_map[name] = mean_val
+    return score_map
 
 
 def _sem(values: List[float]) -> float:
@@ -183,6 +222,30 @@ def _plot_coherence_counts(alpha_vals: List[float], counts_by_rating: Dict[str, 
     fig.tight_layout()
     fig.savefig(out_path, dpi=160)
     plt.close(fig)
+
+
+def _render_progress(current: int, total: int, *, width: int = 28) -> str:
+    if total <= 0:
+        return "[----------------------------] 0/0"
+    frac = min(1.0, max(0.0, current / total))
+    filled = int(round(width * frac))
+    bar = "#" * filled + "-" * (width - filled)
+    return f"[{bar}] {current}/{total}"
+
+
+def _progress_print(
+    current: int,
+    total: int,
+    *,
+    label: str,
+    enabled: bool,
+    last: bool = False,
+) -> None:
+    if not enabled:
+        return
+    bar = _render_progress(current, total)
+    end = "\n" if last else "\r"
+    print(f"{label} {bar}", end=end, flush=True)
 
 
 def _normalize_items(items: Sequence[Any]) -> List[ExampleItem]:
@@ -368,7 +431,9 @@ def run_scored_eval(
             )
         evaluator = _default_eval
 
-    _status("Scoring prompts...")
+    expected_alphas = len(alphas) if alphas is not None else 1
+    total_runs = len(prompts) * expected_alphas
+    _status(f"Scoring prompts ({len(prompts)} prompts x {expected_alphas} alphas = {total_runs} runs)...")
     results = probe.score_prompts(
         prompts=prompts,
         output_subdir=output_subdir,
@@ -378,8 +443,16 @@ def run_scored_eval(
         **score_kwargs,
     )
 
-    alpha_count = len(alphas) if alphas is not None else 1
+    if results and normalized_items:
+        alpha_count = max(1, len(results) // len(normalized_items))
+    else:
+        alpha_count = len(alphas) if alphas is not None else 1
     per_sample: List[Dict[str, Any]] = []
+    total_eval = len(results)
+    progress_every = max(1, total_eval // 25) if total_eval else 1
+    show_progress = probe.console is not None and probe.console.enabled
+    if show_progress and total_eval:
+        _progress_print(0, total_eval, label="Evaluating", enabled=True)
     for idx, rec in enumerate(results):
         item_idx = idx // alpha_count
         if item_idx >= len(normalized_items):
@@ -407,6 +480,14 @@ def run_scored_eval(
         if isinstance(eval_result, dict):
             record.update(eval_result)
         per_sample.append(record)
+        if total_eval and ((idx + 1) % progress_every == 0 or (idx + 1) == total_eval):
+            _progress_print(
+                idx + 1,
+                total_eval,
+                label="Evaluating",
+                enabled=show_progress,
+                last=(idx + 1) == total_eval,
+            )
 
     batch_dir = Path(results[0]["npz_path"]).resolve().parent if results else Path(".")
     analysis_dir = None
@@ -425,6 +506,183 @@ def run_scored_eval(
             _status("Rebuilding analysis with coherence data...")
         _write_analysis(batch_dir, per_sample, analysis_name=analysis_name)
         _status(f"Analysis complete: {analysis_dir}")
+
+    return EvalRunResult(results=results, per_sample=per_sample, batch_dir=str(batch_dir), analysis_dir=analysis_dir)
+
+
+def run_multi_scored_eval(
+    probes: Sequence["ConceptProbe"],
+    items: Optional[Sequence[Any]] = None,
+    *,
+    num_items: Optional[int] = None,
+    generator: Optional[ExampleGenerator] = None,
+    generator_kwargs: Optional[Dict[str, Any]] = None,
+    evaluator: Optional[Evaluator] = None,
+    evaluator_kwargs: Optional[Dict[str, Any]] = None,
+    prompt_builder: Optional[Callable[[ExampleItem], PromptLike]] = None,
+    prompt_template: Optional[str] = None,
+    prompt_prefix: Optional[str] = None,
+    prompt_key: str = "prompt",
+    variable_key: str = "input",
+    expected_key: str = "expected",
+    include_item: bool = True,
+    output_root: str = "outputs_multi",
+    project_name: str = "multi_probe",
+    run_name: Optional[str] = None,
+    output_subdir: str = "eval",
+    batch_subdir: Optional[str] = None,
+    alphas: Optional[List[float]] = None,
+    alpha_unit: str = "raw",
+    analysis_name: str = "analysis",
+    analyze: bool = True,
+    rate_coherence: bool = True,
+    coherence_model: str = "openai/gpt-oss-20b",
+    coherence_max_per_request: int = 8,
+    coherence_env_path: Optional[str] = None,
+    **score_kwargs: Any,
+) -> EvalRunResult:
+    from .multi_probe import multi_probe_score_prompts
+
+    if items is not None and num_items is not None:
+        if probes and probes[0].console is not None:
+            probes[0].console.info("Note: num_items ignored because explicit items were provided.")
+
+    if items is None:
+        if generator is None:
+            raise ValueError("Provide items or a generator.")
+        if probes and probes[0].console is not None:
+            probes[0].console.info("Generating eval items...")
+        items = _generate_items(
+            generator,
+            num_items=num_items,
+            generator_kwargs=generator_kwargs,
+        )
+
+    normalized_items = _normalize_items(items)
+    if probes and probes[0].console is not None:
+        probes[0].console.info(f"Prepared {len(normalized_items)} eval items.")
+
+    prompts = [
+        _build_prompt_from_item(
+            item,
+            prompt_builder=prompt_builder,
+            prompt_template=prompt_template,
+            prompt_prefix=prompt_prefix,
+            prompt_key=prompt_key,
+            variable_key=variable_key,
+        )
+        for item in normalized_items
+    ]
+
+    if evaluator is None:
+        missing_expected = [
+            i for i, item in enumerate(normalized_items) if expected_key not in item
+        ]
+        if missing_expected:
+            raise ValueError(
+                f"Missing '{expected_key}' for {len(missing_expected)} item(s); provide an evaluator or "
+                f"include '{expected_key}' in every item."
+            )
+
+        def _default_eval(completion: str, item: ExampleItem) -> Dict[str, Any]:
+            return simple_equality_evaluator(
+                completion,
+                item,
+                expected_key=expected_key,
+            )
+
+        evaluator = _default_eval
+
+    if probes and probes[0].console is not None:
+        expected_alphas = len(alphas) if alphas is not None else 1
+        total_runs = len(prompts) * expected_alphas
+        probes[0].console.info(
+            f"Scoring prompts (multi-probe) ({len(prompts)} prompts x {expected_alphas} alphas = {total_runs} runs)..."
+        )
+
+    result_payload = multi_probe_score_prompts(
+        list(probes),
+        prompts,
+        output_root=output_root,
+        project_name=project_name,
+        run_name=run_name,
+        output_subdir=output_subdir,
+        batch_subdir=batch_subdir,
+        alphas=alphas,
+        alpha_unit=alpha_unit,
+        **score_kwargs,
+    )
+    results = result_payload.get("results", [])
+
+    if results and normalized_items:
+        alpha_count = max(1, len(results) // len(normalized_items))
+    else:
+        alpha_count = len(alphas) if alphas is not None else 1
+    per_sample: List[Dict[str, Any]] = []
+    total_eval = len(results)
+    progress_every = max(1, total_eval // 25) if total_eval else 1
+    show_progress = probes and probes[0].console is not None and probes[0].console.enabled
+    if show_progress and total_eval:
+        _progress_print(0, total_eval, label="Evaluating", enabled=True)
+    for idx, rec in enumerate(results):
+        item_idx = idx // alpha_count
+        if item_idx >= len(normalized_items):
+            break
+        item = normalized_items[item_idx]
+        completion = rec.get("completion", "")
+        if evaluator_kwargs:
+            eval_result = evaluator(completion, item, **evaluator_kwargs)
+        else:
+            eval_result = evaluator(completion, item)
+
+        score_map = _mean_completion_score_multi(rec["npz_path"])
+        record = {
+            "item_index": int(item_idx),
+            "alpha": float(rec.get("alpha", 0.0)),
+            "prompt": rec.get("prompt"),
+            "completion": completion,
+            "score_mean_by_probe": score_map,
+            "npz_path": rec.get("npz_path"),
+            "html_path": rec.get("html_path"),
+            "probe_names": rec.get("probe_names"),
+        }
+        if expected_key in item:
+            record["expected"] = item.get(expected_key)
+        if include_item:
+            record["item"] = item
+        if isinstance(eval_result, dict):
+            record.update(eval_result)
+        per_sample.append(record)
+        if total_eval and ((idx + 1) % progress_every == 0 or (idx + 1) == total_eval):
+            _progress_print(
+                idx + 1,
+                total_eval,
+                label="Evaluating",
+                enabled=show_progress,
+                last=(idx + 1) == total_eval,
+            )
+
+    batch_dir = Path(results[0]["npz_path"]).resolve().parent if results else Path(".")
+    analysis_dir = None
+    if analyze and results:
+        if probes and probes[0].console is not None:
+            probes[0].console.info("Writing analysis...")
+        analysis_dir = str(batch_dir / analysis_name)
+        _write_analysis_multi(batch_dir, per_sample, analysis_name=analysis_name)
+        if rate_coherence:
+            if probes and probes[0].console is not None:
+                probes[0].console.info("Rating coherence (best-effort)...")
+            rate_batch_coherence_safe(
+                str(batch_dir),
+                max_elements_per_request=coherence_max_per_request,
+                model=coherence_model,
+                env_path=coherence_env_path,
+            )
+            if probes and probes[0].console is not None:
+                probes[0].console.info("Rebuilding analysis with coherence data...")
+        _write_analysis_multi(batch_dir, per_sample, analysis_name=analysis_name)
+        if probes and probes[0].console is not None:
+            probes[0].console.info(f"Analysis complete: {analysis_dir}")
 
     return EvalRunResult(results=results, per_sample=per_sample, batch_dir=str(batch_dir), analysis_dir=analysis_dir)
 
@@ -560,6 +818,32 @@ def _compute_stats(per_sample: List[Dict[str, Any]]) -> Tuple[Dict[str, Any], Li
     return stats, alpha_vals
 
 
+def _compute_accuracy_stats(per_sample: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[float]]:
+    alpha_vals = sorted({float(item["alpha"]) for item in per_sample if "alpha" in item})
+    by_alpha: Dict[float, List[Dict[str, Any]]] = {}
+    for row in per_sample:
+        if "alpha" not in row:
+            continue
+        by_alpha.setdefault(float(row["alpha"]), []).append(row)
+
+    accuracy_vals: List[float] = []
+    counts: List[int] = []
+    for alpha in alpha_vals:
+        rows = [r for r in by_alpha.get(alpha, []) if _is_bool(r.get("correct"))]
+        counts.append(len(rows))
+        if rows:
+            acc = sum(1 for r in rows if r.get("correct") is True) / len(rows)
+        else:
+            acc = float("nan")
+        accuracy_vals.append(float(acc))
+
+    stats = [
+        {"alpha": float(a), "accuracy": float(acc), "n": int(n)}
+        for a, acc, n in zip(alpha_vals, accuracy_vals, counts)
+    ]
+    return stats, alpha_vals
+
+
 def _compute_coherence(
     per_sample: List[Dict[str, Any]], alpha_vals: List[float], ratings: Dict[str, str]
 ) -> Tuple[Dict[str, List[int]], Dict[str, List[float]]]:
@@ -642,6 +926,125 @@ def _write_analysis(
         )
         _plot_coherence_counts(
             alpha_vals, counts_by_rating, str(plots_dir / "coherence_counts_by_alpha.png")
+        )
+
+    return {"analysis_dir": str(analysis_dir), "plots_dir": str(plots_dir)}
+
+
+def _collect_probe_names(per_sample: List[Dict[str, Any]]) -> List[str]:
+    for item in per_sample:
+        probe_names = item.get("probe_names")
+        if isinstance(probe_names, list) and probe_names:
+            return [str(p) for p in probe_names]
+    names: List[str] = []
+    for item in per_sample:
+        score_map = item.get("score_mean_by_probe")
+        if isinstance(score_map, dict):
+            for key in score_map.keys():
+                if key not in names:
+                    names.append(str(key))
+    return names
+
+
+def _write_analysis_multi(
+    batch_dir: Path,
+    per_sample: List[Dict[str, Any]],
+    *,
+    analysis_name: str = "analysis",
+    coherence_ratings: Optional[Dict[str, str]] = None,
+) -> Dict[str, Any]:
+    analysis_dir = batch_dir / analysis_name
+    plots_dir = analysis_dir / "plots"
+    ensure_dir(str(plots_dir))
+
+    json_dump(str(analysis_dir / "per_sample.json"), {"items": per_sample})
+
+    probe_names = _collect_probe_names(per_sample)
+    per_probe_stats: Dict[str, Any] = {}
+    accuracy_by_alpha, alpha_vals_master = _compute_accuracy_stats(per_sample)
+
+    if accuracy_by_alpha:
+        _plot_accuracy_by_alpha(
+            alpha_vals_master,
+            [r["accuracy"] for r in accuracy_by_alpha],
+            [r["n"] for r in accuracy_by_alpha],
+            str(plots_dir / "accuracy_vs_alpha.png"),
+        )
+
+    for probe in probe_names:
+        probe_rows: List[Dict[str, Any]] = []
+        for row in per_sample:
+            score_map = row.get("score_mean_by_probe", {})
+            if not isinstance(score_map, dict):
+                continue
+            if probe not in score_map:
+                continue
+            probe_rows.append(
+                {
+                    "alpha": row.get("alpha"),
+                    "correct": row.get("correct"),
+                    "score_mean": score_map.get(probe),
+                }
+            )
+        if not probe_rows:
+            continue
+        stats, alpha_vals = _compute_stats(probe_rows)
+        per_probe_stats[probe] = {
+            "score_by_alpha": stats["score_by_alpha"],
+            "correct_vs_incorrect": stats["correct_vs_incorrect"],
+            "correct_vs_incorrect_by_alpha": stats["correct_vs_incorrect_by_alpha"],
+        }
+        if not alpha_vals_master:
+            alpha_vals_master = alpha_vals
+
+        probe_slug = safe_slug(probe) or f"probe_{len(per_probe_stats)}"
+        probe_plot_dir = plots_dir / probe_slug
+        ensure_dir(str(probe_plot_dir))
+
+        _plot_score_by_alpha(
+            alpha_vals,
+            [r["mean_score"] for r in stats["score_by_alpha"]],
+            [r["sem"] for r in stats["score_by_alpha"]],
+            str(probe_plot_dir / "score_vs_alpha.png"),
+        )
+        correct_stats = stats["correct_vs_incorrect"]
+        _plot_score_by_correctness(
+            correct_stats["mean_correct"],
+            correct_stats["mean_incorrect"],
+            correct_stats["sem_correct"],
+            correct_stats["sem_incorrect"],
+            str(probe_plot_dir / "score_by_correctness.png"),
+        )
+        per_alpha_correctness = stats["correct_vs_incorrect_by_alpha"]
+        _plot_score_by_correctness_by_alpha(
+            alpha_vals,
+            [r["mean_correct"] for r in per_alpha_correctness],
+            [r["mean_incorrect"] for r in per_alpha_correctness],
+            [r["sem_correct"] for r in per_alpha_correctness],
+            [r["sem_incorrect"] for r in per_alpha_correctness],
+            str(probe_plot_dir / "score_by_correctness_by_alpha.png"),
+        )
+
+    stats_out = {
+        "probe_names": probe_names,
+        "accuracy_by_alpha": accuracy_by_alpha,
+        "per_probe": per_probe_stats,
+    }
+    json_dump(str(analysis_dir / "stats.json"), stats_out)
+
+    if coherence_ratings is None:
+        coherence_ratings = _load_coherence_ratings(batch_dir)
+    if coherence_ratings:
+        if not alpha_vals_master:
+            alpha_vals_master = sorted({float(item["alpha"]) for item in per_sample if "alpha" in item})
+        counts_by_rating, accuracy_by_rating = _compute_coherence(
+            per_sample, alpha_vals_master, coherence_ratings
+        )
+        _plot_accuracy_by_coherence(
+            alpha_vals_master, accuracy_by_rating, str(plots_dir / "accuracy_vs_alpha_by_coherence.png")
+        )
+        _plot_coherence_counts(
+            alpha_vals_master, counts_by_rating, str(plots_dir / "coherence_counts_by_alpha.png")
         )
 
     return {"analysis_dir": str(analysis_dir), "plots_dir": str(plots_dir)}
@@ -798,6 +1201,7 @@ def aggregate_eval_batches(
 __all__ = [
     "EvalRunResult",
     "run_scored_eval",
+    "run_multi_scored_eval",
     "simple_equality_evaluator",
     "rehydrate_batch_analysis",
     "aggregate_eval_batches",
