@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
@@ -22,6 +23,30 @@ except Exception:
 
 def normed_np(v: np.ndarray) -> np.ndarray:
     return v / (np.linalg.norm(v) + 1e-12)
+
+
+def _render_progress(current: int, total: int, *, width: int = 28) -> str:
+    if total <= 0:
+        return "[----------------------------] 0/0"
+    frac = min(1.0, max(0.0, current / total))
+    filled = int(round(width * frac))
+    bar = "#" * filled + "-" * (width - filled)
+    return f"[{bar}] {current}/{total}"
+
+
+def _progress_print(current: int, total: int, *, label: str, enabled: bool, last: bool = False) -> None:
+    if not enabled:
+        return
+    inline_env = os.environ.get("CP_PROGRESS_INLINE", "").strip().lower()
+    if inline_env in {"1", "true", "yes"}:
+        inline = True
+    elif inline_env in {"0", "false", "no"}:
+        inline = False
+    else:
+        inline = sys.stdout.isatty()
+    bar = _render_progress(current, total)
+    end = "\n" if (last or not inline) else "\r"
+    print(f"{label} {bar}", end=end, flush=True)
 
 
 def cohen_d_np(x: np.ndarray, y: np.ndarray) -> float:
@@ -1033,6 +1058,9 @@ class ConceptProbe:
         self._status(
             f"Scoring {total_prompts} prompts x {total_alphas} alphas ({total_runs} generations) -> {out_dir}"
         )
+        show_progress = self.console is not None and self.console.enabled
+        if show_progress and total_runs:
+            _progress_print(0, total_runs, label="Generating", enabled=True)
 
         if steer_layers is None:
             steer_layers = self.config["steering"]["steer_layers"]
@@ -1052,6 +1080,8 @@ class ConceptProbe:
         else:
             steer_layer_list = list(map(int, steer_layers))
 
+        run_idx = 0
+        progress_every = 1
         for i, prompt in enumerate(prompts):
             prompt_slug = _prompt_slug_any(prompt)
             for j, alpha in enumerate(alphas):
@@ -1130,8 +1160,18 @@ class ConceptProbe:
                 }
                 results.append(rec)
                 self.logger.log("score_prompt", rec)
-            if total_prompts and ((i + 1) % max(1, total_prompts // 5) == 0 or (i + 1) == total_prompts):
-                self._status(f"Completed prompt {i + 1}/{total_prompts}")
+                run_idx += 1
+                if total_runs and (
+                    run_idx % progress_every == 0 or run_idx == total_runs
+                ):
+                    _progress_print(
+                        run_idx,
+                        total_runs,
+                        label="Generating",
+                        enabled=show_progress,
+                        last=run_idx == total_runs,
+                    )
+            # Progress bar handles per-run updates; avoid extra log spam here.
 
         if save_html and batch_entries:
             batch_path = os.path.join(out_dir, "batch_prompts.html")

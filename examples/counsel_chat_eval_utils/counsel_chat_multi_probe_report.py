@@ -1,19 +1,25 @@
 import argparse
+import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+EXAMPLES_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT_DIR))
+sys.path.insert(0, str(EXAMPLES_DIR))
 
 from concept_probe import generate_multi_probe_report
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate SocialIQA multi-probe HTML report.")
+    parser = argparse.ArgumentParser(description="Generate CounselChat multi-probe HTML report.")
     parser.add_argument("path", help="Batch dir or analysis/per_sample.json path.")
-    parser.add_argument("--title", default="Multi-Probe Report", help="Title for the HTML report.")
     parser.add_argument("--output", default="report.html", help="Output HTML filename.")
     parser.add_argument("--seed", type=int, default=123, help="Random seed for train/test split.")
     args = parser.parse_args()
 
     out_path = generate_multi_probe_report(
         args.path,
-        title=args.title,
+        title="CounselChat Multi-Probe Report",
         output_name=args.output,
         seed=args.seed,
     )

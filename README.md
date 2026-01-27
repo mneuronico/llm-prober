@@ -544,6 +544,23 @@ Multi-probe eval analysis differs slightly:
 - **Accuracy is global** (shared across probes).
 - **Score plots and stats are per-probe** (since scores differ by probe).
 
+### `generate_multi_probe_report(...)`
+
+Generate an interactive HTML report (bar charts + 2D/3D scatter + a simple classifier) from
+a multi-probe eval batch.
+
+```python
+from concept_probe import generate_multi_probe_report
+
+generate_multi_probe_report(
+    "outputs_multi/social_iqa_multi_probe/20260127_154629/social_iqa_eval/batch_20260127_154629",
+    title="SocialIQA Multi-Probe Report",
+)
+```
+
+This writes `report.html` into the batch's `analysis/` directory. The classifier uses a 75/25
+train/test split on the mean probe scores; p-values are included if `statsmodels` is installed.
+
 #### Generator contract
 
 `run_scored_eval` can build items in two ways:

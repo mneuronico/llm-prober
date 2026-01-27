@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -36,6 +37,30 @@ def _resolve_steer_probe(
         if safe_slug(str(probe.concept.name)) == target:
             return probe
     raise ValueError(f"steer_probe '{steer_probe}' not found in probes.")
+
+
+def _render_progress(current: int, total: int, *, width: int = 28) -> str:
+    if total <= 0:
+        return "[----------------------------] 0/0"
+    frac = min(1.0, max(0.0, current / total))
+    filled = int(round(width * frac))
+    bar = "#" * filled + "-" * (width - filled)
+    return f"[{bar}] {current}/{total}"
+
+
+def _progress_print(current: int, total: int, *, label: str, enabled: bool, last: bool = False) -> None:
+    if not enabled:
+        return
+    inline_env = os.environ.get("CP_PROGRESS_INLINE", "").strip().lower()
+    if inline_env in {"1", "true", "yes"}:
+        inline = True
+    elif inline_env in {"0", "false", "no"}:
+        inline = False
+    else:
+        inline = sys.stdout.isatty()
+    bar = _render_progress(current, total)
+    end = "\n" if (last or not inline) else "\r"
+    print(f"{label} {bar}", end=end, flush=True)
 
 
 def _steer_layer_list(
@@ -171,6 +196,9 @@ def multi_probe_score_prompts(
         console.info(
             f"Multi-probe scoring {total_prompts} prompts x {total_alphas} alphas ({total_runs} generations) -> {out_dir}"
         )
+    show_progress = console is not None and console.enabled
+    if show_progress and total_runs:
+        _progress_print(0, total_runs, label="Generating", enabled=True)
 
     if steer_probe_obj is not None:
         steer_layer_list = _steer_layer_list(steer_probe_obj, steer_layers, steer_window_radius)
@@ -179,6 +207,8 @@ def multi_probe_score_prompts(
 
     warn_fn = probes[0]._warn if probes[0].console is not None else None
 
+    run_idx = 0
+    progress_every = 1
     for i, prompt in enumerate(prompts):
         prompt_slug = _prompt_slug_any(prompt)
         for alpha in alphas:
@@ -283,10 +313,18 @@ def multi_probe_score_prompts(
             }
             results.append(rec)
             logger.log("multi_score_prompt", rec)
-        if console is not None and (
-            (i + 1) % max(1, total_prompts // 5) == 0 or (i + 1) == total_prompts
-        ):
-            console.info(f"Completed prompt {i + 1}/{total_prompts}")
+            run_idx += 1
+            if total_runs and (
+                run_idx % progress_every == 0 or run_idx == total_runs
+            ):
+                _progress_print(
+                    run_idx,
+                    total_runs,
+                    label="Generating",
+                    enabled=show_progress,
+                    last=run_idx == total_runs,
+                )
+        # Progress bar handles per-run updates; avoid extra log spam here.
 
     if save_html and batch_entries:
         batch_path = os.path.join(out_dir, "batch_prompts.html")

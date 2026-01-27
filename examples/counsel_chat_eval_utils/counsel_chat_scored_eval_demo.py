@@ -18,7 +18,7 @@ from examples.counsel_chat_eval_utils.counsel_chat_eval import (
 PROJECT_DIR = "outputs/empathy_vs_detachment/20260109_150734"
 PROBE_NAME = "empathy_vs_detachment"
 OUTPUT_SUBDIR = "counsel_chat_eval"
-ALPHAS = [-30, 0.0, 30]
+ALPHAS = [-50, -25, -12, -6, 0.0, 6, 12, 25, 50]
 ALPHA_UNIT = "sigma"
 
 SPLIT = "train"
@@ -67,6 +67,7 @@ def main() -> None:
         steer_distribute=True,
         max_new_tokens=256,
         rate_coherence=True,
+        system_prompt="You are a counselor or therapist, and you must help the user.",
     )
 
 

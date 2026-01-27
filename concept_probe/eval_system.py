@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -243,8 +244,15 @@ def _progress_print(
 ) -> None:
     if not enabled:
         return
+    inline_env = os.environ.get("CP_PROGRESS_INLINE", "").strip().lower()
+    if inline_env in {"1", "true", "yes"}:
+        inline = True
+    elif inline_env in {"0", "false", "no"}:
+        inline = False
+    else:
+        inline = sys.stdout.isatty()
     bar = _render_progress(current, total)
-    end = "\n" if last else "\r"
+    end = "\n" if (last or not inline) else "\r"
     print(f"{label} {bar}", end=end, flush=True)
 
 
