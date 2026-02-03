@@ -113,6 +113,93 @@ def _split_chat_blocks_with_indices(tokens: List[str]) -> List[Tuple[str, List[s
     return blocks
 
 
+def split_chat_blocks_with_indices(tokens: List[str]) -> List[Tuple[str, List[str], List[int]]]:
+    return _split_chat_blocks_with_indices(tokens)
+
+
+def segment_token_scores(
+    tokens: List[str],
+    scores: List[float],
+    *,
+    prompt_len: Optional[int] = None,
+) -> List[Dict[str, object]]:
+    blocks = _split_chat_blocks_with_indices(tokens)
+    segments: List[Dict[str, object]] = []
+    seg_idx = 0
+    for block_idx, (role, block_tokens, block_indices) in enumerate(blocks):
+        block_scores = [float(scores[i]) for i in block_indices]
+        if prompt_len is None:
+            if not block_indices:
+                continue
+            mean_score = float(np.mean(block_scores)) if block_scores else 0.0
+            segments.append(
+                {
+                    "segment_index": seg_idx,
+                    "message_index": block_idx,
+                    "role": role,
+                    "phase": "all",
+                    "token_indices": list(block_indices),
+                    "tokens": list(block_tokens),
+                    "scores": list(block_scores),
+                    "mean_score": mean_score,
+                    "token_count": len(block_indices),
+                }
+            )
+            seg_idx += 1
+            continue
+
+        prompt_tokens: List[str] = []
+        prompt_indices: List[int] = []
+        prompt_scores: List[float] = []
+        completion_tokens: List[str] = []
+        completion_indices: List[int] = []
+        completion_scores: List[float] = []
+
+        for tok, idx, sc in zip(block_tokens, block_indices, block_scores):
+            if idx < int(prompt_len):
+                prompt_tokens.append(tok)
+                prompt_indices.append(idx)
+                prompt_scores.append(sc)
+            else:
+                completion_tokens.append(tok)
+                completion_indices.append(idx)
+                completion_scores.append(sc)
+
+        if prompt_indices:
+            mean_score = float(np.mean(prompt_scores)) if prompt_scores else 0.0
+            segments.append(
+                {
+                    "segment_index": seg_idx,
+                    "message_index": block_idx,
+                    "role": role,
+                    "phase": "prompt",
+                    "token_indices": list(prompt_indices),
+                    "tokens": list(prompt_tokens),
+                    "scores": list(prompt_scores),
+                    "mean_score": mean_score,
+                    "token_count": len(prompt_indices),
+                }
+            )
+            seg_idx += 1
+        if completion_indices:
+            mean_score = float(np.mean(completion_scores)) if completion_scores else 0.0
+            segments.append(
+                {
+                    "segment_index": seg_idx,
+                    "message_index": block_idx,
+                    "role": role,
+                    "phase": "completion",
+                    "token_indices": list(completion_indices),
+                    "tokens": list(completion_tokens),
+                    "scores": list(completion_scores),
+                    "mean_score": mean_score,
+                    "token_count": len(completion_indices),
+                }
+            )
+            seg_idx += 1
+    return segments
+
+
 def _render_blocks_html_with_indices(blocks: List[Tuple[str, List[str], List[int]]]) -> str:
     parts = []
     token_idx = 0

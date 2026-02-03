@@ -18,7 +18,7 @@ from .probe import (
 )
 from .steering import MultiLayerSteererLayerwise
 from .utils import ensure_dir, json_dump, now_tag, safe_slug
-from .visuals import render_batch_heatmap_multi, render_token_heatmap_multi
+from .visuals import render_batch_heatmap_multi, render_token_heatmap_multi, segment_token_scores
 
 
 def _resolve_steer_probe(
@@ -105,6 +105,7 @@ def multi_probe_score_prompts(
     steer_window_radius: Optional[int] = None,
     steer_distribute: Optional[bool] = None,
     save_html: Optional[bool] = None,
+    save_segments: Optional[bool] = None,
     batch_subdir: Optional[str] = None,
 ) -> Dict[str, Any]:
     if not probes:
@@ -134,6 +135,7 @@ def multi_probe_score_prompts(
     temperature = temperature if temperature is not None else steer_cfg.get("steer_temperature", 0.7)
     top_p = top_p if top_p is not None else steer_cfg.get("steer_top_p", 0.9)
     save_html = probes[0].config["plots"].get("heatmap_html", True) if save_html is None else save_html
+    save_segments = False if save_segments is None else save_segments
     if steer_distribute is None:
         steer_distribute = steer_cfg.get("steer_distribute", True)
 
@@ -296,6 +298,21 @@ def multi_probe_score_prompts(
             else:
                 html_path = None
 
+            segments_path = None
+            if save_segments:
+                segments_path = os.path.join(out_dir, f"{base}_segments.json")
+                segments_by_probe: Dict[str, List[Dict[str, object]]] = {}
+                for idx, name in enumerate(probe_names):
+                    segments_by_probe[name] = segment_token_scores(
+                        tokens,
+                        scores_agg_stack[idx].tolist(),
+                        prompt_len=prompt_len,
+                    )
+                json_dump(
+                    segments_path,
+                    {"prompt_len": prompt_len, "segments_by_probe": segments_by_probe},
+                )
+
             rec = {
                 "prompt": prompt,
                 "system_prompt": sys_prompt,
@@ -310,6 +327,7 @@ def multi_probe_score_prompts(
                 "probe_names": probe_names,
                 "npz_path": npz_path,
                 "html_path": html_path,
+                "segments_path": segments_path,
             }
             results.append(rec)
             logger.log("multi_score_prompt", rec)

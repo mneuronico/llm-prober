@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "created_at": "2026-01-29T12:56:33.198342+00:00",
+    "user_model": "openai/gpt-oss-20b",
+    "assistant_model": "meta-llama/Llama-3.2-3B-Instruct",
+    "assistant_provider": "local",
+    "assistant_use_4bit": true,
+    "assistant_dtype": "bfloat16",
+    "assistant_device_map": "auto",
+    "assistant_top_p": 0.9,
+    "max_assistant_turns": 3,
+    "max_conversations": 1,
+    "user_temperature": 0.8,
+    "assistant_temperature": 0.7,
+    "user_max_tokens": 512,
+    "assistant_max_tokens": 512,
+    "pause_s": 0.4,
+    "system_prompt_user_template": "You are simulating a human user chatting with an AI assistant. Stay on the exact topic below and keep the conversation going for many turns. Be clear and specific in your questions. Ask follow-up questions, share details, and react naturally. But each message you send should be brief (1-4 sentences). Do not mention that you are an AI or that this is a simulation. The assistant has no internet or access to recent information. Never end the conversation. Write in English only.\n\nTopic: {topic}",
+    "system_prompt_assistant": "You are a helpful assistant. You give brief responses to the users's questions."
+  },
+  "topics": [
+    {
+      "id": "topic_01",
+      "title": "Minimalist move planning",
+      "prompt": "Planning a minimalist move to a new city on a tight budget."
+    }
+  ],
+  "conversations": [
+    {
+      "topic_id": "topic_01",
+      "topic_title": "Minimalist move planning",
+      "topic_prompt": "Planning a minimalist move to a new city on a tight budget.",
+      "user_system_prompt": "You are simulating a human user chatting with an AI assistant. Stay on the exact topic below and keep the conversation going for many turns. Be clear and specific in your questions. Ask follow-up questions, share details, and react naturally. But each message you send should be brief (1-4 sentences). Do not mention that you are an AI or that this is a simulation. The assistant has no internet or access to recent information. Never end the conversation. Write in English only.\n\nTopic: Planning a minimalist move to a new city on a tight budget.",
+      "assistant_system_prompt": "You are a helpful assistant. You give brief responses to the users's questions.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hi, I'm planning a minimalist move to a new city on a tight budget.  \nI've already sold most of my stuff.  \nWhat are some good ways to find affordable housing in the city?"
+        },
+        {
+          "role": "assistant",
+          "content": "Congratulations on your minimalist move. To find affordable housing in the city, consider the following options:\n\n1. Online listings: Websites like Craigslist, Zillow, and Trulia often have affordable options.\n2. Local classifieds: Check local newspapers, community boards, and online classifieds for apartments or rooms to rent.\n3. Social media: Join local Facebook groups or online forums for people moving to the city.\n4. Apartment complexes: Look for complexes that offer discounted rates or short-term leases.\n5. Roommate search: Websites like Roommate Finder or Craigslist can connect you with potential roommates.\n6. Government assistance: Some cities offer subsidized housing programs or Section 8 vouchers.\n7. Short-term leases: Consider renting a room or apartment for a short term (e.g., 3-6 months) to get a feel for the area.\n\nRemember to prioritize your needs, research the area, and visit potential housing options before making a decision."
+        },
+        {
+          "role": "user",
+          "content": "Thanks for the list!  \nWhich of those options tends to work best for a $500/month budget in downtown?  \nAlso, any tips for negotiating a short‑term lease with a landlord?"
+        },
+        {
+          "role": "assistant",
+          "content": "For a $500/month budget in downtown, online listings and apartment complexes tend to work best. Websites like Zillow or Trulia often have listings that match your budget, and apartment complexes may offer discounts for short-term leases.\n\nRegarding negotiating a short-term lease, here are some tips:\n\n1. Be flexible: Show that you're willing to sign a lease for a shorter term (e.g., 3-6 months) to demonstrate your commitment to the property.\n2. Emphasize your stability: Highlight your job, income, and any other stable aspects of your life to reassure the landlord.\n3. Ask about discounts: Request a discount for the shorter lease term, as some landlords may be willing to negotiate.\n4. Inspect the property: Before signing a lease, make sure to inspect the property for any damages or issues, and request that the landlord cover any repairs.\n5. Consider a roommate: If you're unable to afford the full rent on your own, consider finding a roommate to split the cost.\n\nWhen negotiating, be respectful and professional. Remember that landlords may have limited options, so be prepared to compromise."
+        },
+        {
+          "role": "user",
+          "content": "Great, that makes sense.  \nWhich city are you moving to, and do you have a particular neighborhood in mind?  \nThat’ll help me tailor the housing and negotiation tips a bit more."
+        },
+        {
+          "role": "assistant",
+          "content": "I'm not moving to a city, I'm just a helpful assistant providing general advice. However, I can help you research cities and neighborhoods that might fit your needs and budget.\n\nIf you'd like, we can discuss cities and neighborhoods that are known for having affordable housing options. Some cities with a relatively low cost of living include:\n\n* Portland, Oregon\n* Pittsburgh, Pennsylvania\n* Omaha, Nebraska\n* Des Moines, Iowa\n\nIn terms of neighborhoods, some areas that are often more affordable include:\n\n* Up-and-coming neighborhoods on the outskirts of the city\n* Older buildings or apartments that have been converted into modern units\n* Neighborhoods with a high student population (e.g., near universities)\n\nKeep in mind that these are general suggestions, and the best neighborhood for you will depend on your personal preferences and priorities.\n\nWhich city or region are you considering moving to? I'd be happy to provide more tailored advice."
+        }
+      ]
+    }
+  ]
+}

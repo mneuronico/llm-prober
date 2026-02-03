@@ -305,6 +305,56 @@ best-layer score. If `window`/`explicit`/`all`, `scores_agg` combines layers via
 For multi-probe runs, the same computation happens per probe and `scores_agg` is
 stacked into shape `(num_probes, num_tokens)`, which drives the HTML dropdown.
 
+### Turn-level segmentation (save_segments)
+You can optionally save **token scores segmented by role/turn** for chat-style prompts.
+This is useful for multi-turn conversations where you want per-message averages,
+or to cleanly separate prompt vs completion tokens.
+
+Enable this by passing `save_segments=True` to `score_prompts(...)` (single-probe)
+or `multi_probe_score_prompts(...)` (multi-probe). This writes an extra JSON file
+next to each `.npz`:
+
+- `prompt_..._segments.json` (single-probe)
+- `prompt_..._segments.json` with `segments_by_probe` (multi-probe)
+
+Segmentation behavior:
+- Uses the same chat markers as the HTML heatmaps (e.g. Llama-3 `<|start_header_id|>`, `<|end_header_id|>`, `<|eot_id|>`).
+- **Special tokens and role markers are excluded**; only text tokens are kept.
+- If `prompt_len` is known, each segment is split into `phase: "prompt"` and
+  `phase: "completion"` when applicable.
+
+Single-probe schema:
+
+```json
+{
+  "prompt_len": 1234,
+  "segments": [
+    {
+      "segment_index": 0,
+      "message_index": 0,
+      "role": "system|user|assistant",
+      "phase": "prompt|completion",
+      "token_indices": [ ... ],
+      "tokens": [ ... ],
+      "scores": [ ... ],
+      "mean_score": 0.1234,
+      "token_count": 57
+    }
+  ]
+}
+```
+
+Multi-probe schema:
+
+```json
+{
+  "prompt_len": 1234,
+  "segments_by_probe": {
+    "probe_name": [ ... same segment schema ... ]
+  }
+}
+```
+
 ---
 
 ## Training Behavior
@@ -413,6 +463,7 @@ Outputs:
 - Each call writes to a fresh subfolder under `scores/` (see Output Structure).
 - `.npz` per prompt/alpha.
 - `.html` per prompt/alpha.
+- `*_segments.json` per prompt/alpha (if `save_segments=True`).
 - `batch_prompts.html` with shared scale.
 
 Names include prompt snippets and alpha labels for clarity.
@@ -894,6 +945,7 @@ Multi-probe `.npz` contents:
 - `prompt_len`: length of the prompt portion.
 - `scores_agg`: array of shape `(num_probes, num_tokens)`.
 - `probe_names`: list of probe names aligned with `scores_agg`.
+- `prompt_..._segments.json` per prompt/alpha (if `save_segments=True`), with per-probe segments.
 
 Key files:
 - `config.json`: full resolved config.

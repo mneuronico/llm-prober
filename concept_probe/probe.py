@@ -12,7 +12,7 @@ from .logger import JsonlLogger
 from .modeling import ModelBundle, apply_chat, attention_mask_from_ids
 from .steering import MultiLayerSteererLayerwise
 from .utils import deep_merge, ensure_dir, json_dump, jsonl_to_pretty, now_tag, safe_slug, set_seed
-from .visuals import plot_score_hist, plot_sweep, render_batch_heatmap, render_token_heatmap
+from .visuals import plot_score_hist, plot_sweep, render_batch_heatmap, render_token_heatmap, segment_token_scores
 from .console import ConsoleLogger
 
 try:
@@ -1026,6 +1026,7 @@ class ConceptProbe:
         steer_window_radius: Optional[int] = None,
         steer_distribute: Optional[bool] = None,
         save_html: Optional[bool] = None,
+        save_segments: Optional[bool] = None,
         batch_subdir: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         self._require_trained()
@@ -1035,6 +1036,7 @@ class ConceptProbe:
         layers = self._layer_selection(layer_selection)
         sys_prompt = system_prompt or self.config["steering"]["steer_system"]
         save_html = self.config["plots"].get("heatmap_html", True) if save_html is None else save_html
+        save_segments = False if save_segments is None else save_segments
 
         max_new_tokens = max_new_tokens if max_new_tokens is not None else self.config["steering"]["steer_max_new_tokens"]
         greedy = greedy if greedy is not None else (not self.config["steering"]["steer_sampling"])
@@ -1144,6 +1146,22 @@ class ConceptProbe:
                 else:
                     html_path = None
 
+                segments_path = None
+                if save_segments:
+                    segments_path = os.path.join(out_dir, f"{base}_segments.json")
+                    segments = segment_token_scores(
+                        tokens,
+                        scores_agg.tolist(),
+                        prompt_len=prompt_len,
+                    )
+                    with open(segments_path, "w", encoding="utf-8") as handle:
+                        json.dump(
+                            {"prompt_len": prompt_len, "segments": segments},
+                            handle,
+                            ensure_ascii=False,
+                            indent=2,
+                        )
+
                 rec = {
                     "prompt": prompt,
                     "system_prompt": sys_prompt,
@@ -1157,6 +1175,7 @@ class ConceptProbe:
                     "layers": layers,
                     "npz_path": npz_path,
                     "html_path": html_path,
+                    "segments_path": segments_path,
                 }
                 results.append(rec)
                 self.logger.log("score_prompt", rec)

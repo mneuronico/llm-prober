@@ -1,0 +1,119 @@
+{
+  "metadata": {
+    "created_at": "2026-01-29T13:24:19.716486+00:00",
+    "user_model": "openai/gpt-oss-120b",
+    "assistant_model": "meta-llama/Llama-3.2-3B-Instruct",
+    "assistant_provider": "local",
+    "assistant_use_4bit": true,
+    "assistant_dtype": "bfloat16",
+    "assistant_device_map": "auto",
+    "assistant_top_p": 0.9,
+    "max_assistant_turns": 10,
+    "max_conversations": 1,
+    "user_temperature": 0.8,
+    "assistant_temperature": 0.7,
+    "user_max_tokens": 256,
+    "assistant_max_tokens": 256,
+    "pause_s": 0.4,
+    "system_prompt_user_template": "You are simulating a human user chatting with an AI assistant. Stay on the exact topic below and keep the conversation going for many turns. Be clear and specific in your questions. Ask follow-up questions, share details, and react naturally. But each message you send should be brief (1-4 sentences), and you should not ask very demanding questions. Be varied and specific (do not just ask the assistant to keep talking or exploring, give it some relevant input). Do not mention that you are an AI or that this is a simulation. Do not ask questions about the assistant. The assistant has no internet or access to recent information. Never end the conversation. Write in English only.\n\nTopic: {topic}",
+    "system_prompt_assistant": "You are a helpful assistant. You give very brief responses to the users's questions (max: 5 sentences)."
+  },
+  "topics": [
+    {
+      "id": "topic_01",
+      "title": "Minimalist move planning",
+      "prompt": "Planning a minimalist move to a new city on a tight budget."
+    }
+  ],
+  "conversations": [
+    {
+      "topic_id": "topic_01",
+      "topic_title": "Minimalist move planning",
+      "topic_prompt": "Planning a minimalist move to a new city on a tight budget.",
+      "user_system_prompt": "You are simulating a human user chatting with an AI assistant. Stay on the exact topic below and keep the conversation going for many turns. Be clear and specific in your questions. Ask follow-up questions, share details, and react naturally. But each message you send should be brief (1-4 sentences), and you should not ask very demanding questions. Be varied and specific (do not just ask the assistant to keep talking or exploring, give it some relevant input). Do not mention that you are an AI or that this is a simulation. Do not ask questions about the assistant. The assistant has no internet or access to recent information. Never end the conversation. Write in English only.\n\nTopic: Planning a minimalist move to a new city on a tight budget.",
+      "assistant_system_prompt": "You are a helpful assistant. You give very brief responses to the users's questions (max: 5 sentences).",
+      "messages": [
+        {
+          "role": "user",
+          "content": "I’ve found a tiny studio in the new city for $700 a month, but I’m not sure what essentials I can bring without breaking the budget. Any tips on what to prioritize?"
+        },
+        {
+          "role": "assistant",
+          "content": "When prioritizing essentials, consider the most critical items you need for daily living. Start with the basics: a bed, a dresser, and a kitchen setup (e.g., microwave, mini-fridge). You can also bring a small desk and chair for working or studying. Avoid bringing bulky or expensive items like a large TV or expensive furniture. Focus on essentials that will make the space functional and comfortable."
+        },
+        {
+          "role": "user",
+          "content": "That makes sense—I'll start with a compact futon, a rolling dresser, and a microwave‑mini‑fridge combo. Do you think it’s worth getting a fold‑down desk to save floor space, or should I just use a lap‑top table for now? Also, any cheap hacks for keeping clothes organized in a small studio?"
+        },
+        {
+          "role": "assistant",
+          "content": "A fold-down desk can be a great space-saving solution, but it may not be worth the investment if you only plan to stay in the studio for a short period. Consider using a lap-top table or a compact, wall-mounted desk for now. For clothes organization, utilize a stackable shelf, over-the-door hooks, and a hanging organizer to maximize vertical space. You can also repurpose a storage ottoman or a trunk for additional storage. Keep in mind, you can always add or upgrade later if needed."
+        },
+        {
+          "role": "user",
+          "content": "Got it—I'll go with a wall‑mounted drop‑leaf desk and a storage ottoman for extra blankets. Do you have any advice on cheap ways to protect my furniture during the move, like affordable padding or DIY solutions? Also, what’s the best way to keep moving costs low when hiring a small moving service for a studio?"
+        },
+        {
+          "role": "assistant",
+          "content": "For furniture protection, use old towels, blankets, or moving pads to cover your items. You can also purchase affordable moving blankets or DIY with old clothes or sheets. Another option is to disassemble and pack your furniture, especially if it's fragile. To keep moving costs low, compare prices among moving services, book in advance, and consider packing some items yourself to save on labor costs. Additionally, use online moving cost estimators to get a quote before booking."
+        },
+        {
+          "role": "user",
+          "content": "Thanks for the tips! I have a few old blankets and sheets—should I wrap each piece of furniture individually, or is it okay to bundle them together under one blanket? Also, any tricks for negotiating the moving company’s price without seeming pushy?"
+        },
+        {
+          "role": "assistant",
+          "content": "It's better to wrap each piece of furniture individually to prevent damage and make unpacking easier. Bundling can lead to creases, scratches, or even broken items. Wrap each item, like a chair or table, in a blanket or sheet, and use tape to secure it. When negotiating, focus on the total cost, not the hourly rate. Ask about any discounts for off-peak season, bulk discounts, or referrals. Be polite and respectful, and you'll be more likely to get a good deal."
+        },
+        {
+          "role": "user",
+          "content": "I’ll wrap everything separately and keep the blankets secured with cheap packing tape I have at home. Do you think scheduling the move for a weekday morning (instead of weekend) will usually get a better rate, or are there other off‑peak windows that tend to be cheaper? Also, any recommendations for low‑cost packing materials—like where to find free boxes or cheap bubble wrap?"
+        },
+        {
+          "role": "assistant",
+          "content": "Scheduling a weekday morning move can sometimes lead to better rates, but it's not a guarantee. Consider off-peak hours like mid-morning or late afternoon, when the moving company might not be as busy. Another option is to move during the off-season (usually November to March). For low-cost packing materials, check online marketplaces like Craigslist or Facebook Marketplace for free boxes, or visit local thrift stores, liquor stores, or office supply stores for cheap packing supplies. You can also repurpose materials like old towels, newspaper, or paper bags to pack fragile items."
+        },
+        {
+          "role": "user",
+          "content": "Weekday mornings are usually cheaper, and you can often save even more by aiming for mid‑morning (around 10 a.m.) or late‑afternoon (3–4 p.m.) slots when crews have fewer back‑to‑back jobs. For free or cheap packing supplies, try checking local grocery or liquor stores for their empty boxes, ask at nearby offices or schools for surplus cartons, and hunt Craigslist/Facebook Marketplace for “free moving boxes.” You can also make low‑cost bubble‑wrap substitutes by wrapping dishes in layers of newspaper or using shredded paper from a local office recycling bin, and pick up inexpensive rolls of bubble wrap at discount warehouse stores or from community “freecycle” groups."
+        },
+        {
+          "role": "assistant",
+          "content": "It sounds like you've got a solid plan for finding affordable packing supplies and scheduling a move. Just remember to also check the moving company's reviews and reputation before booking, and don't forget to pack a \"first night\" box with essentials like toiletries, towels, and a change of clothes for each person. Also, consider packing a \"tool kit\" with essentials like a screwdriver, pliers, and a wrench to help with assembly and disassembly of furniture. Good luck with your move!"
+        },
+        {
+          "role": "user",
+          "content": "Thanks for the reminder—I’ll definitely add a “first night” box and a basic tool kit. Do you have any suggestions for keeping utility costs low right after I move in, like the cheapest way to set up internet and electricity for a small studio? Also, any ideas for affordable decor that still feels cozy without adding clutter?"
+        },
+        {
+          "role": "assistant",
+          "content": "For low utility costs, consider setting up a prepaid electricity plan or a budget-friendly internet provider. Look into free or low-cost Wi-Fi options, such as community networks or public Wi-Fi hotspots. For decor, prioritize multi-functional pieces like a storage ottoman with a tray, a wall-mounted shelf with built-in lighting, or a hanging plant with a planter. Repurpose items like old mason jars, vintage suitcases, or fabric scraps to add texture and interest without clutter."
+        },
+        {
+          "role": "user",
+          "content": "For electricity, sign up for a prepaid or time‑of‑use plan that lets you keep the thermostat low at night and only run lights/plug‑ins when you need them; many providers also offer a “small‑apartment” rate with a lower base fee. For internet, compare local ISPs for their lowest‑price bundles (often 25–30 USD/month for basic speeds) and ask if they have a student or “single‑unit” discount, or use a nearby co‑working space’s Wi‑Fi for the first few weeks to avoid a contract. A cheap way to stay cozy is to add a few texture pieces—think a woven throw draped over the futon, a small floor‑level rug (you can find low‑cost options at thrift stores), and a hanging macramé plant holder with a low‑maintenance succulent; these add warmth without taking up floor space. Finally, use floating shelves with LED strips for both storage and ambient"
+        },
+        {
+          "role": "assistant",
+          "content": "It sounds like you're on top of finding affordable and cozy solutions for your studio apartment. One more tip: consider energy-efficient options like LED bulbs, power strips, and smart plugs to minimize energy waste and save on your utility bills. Also, don't forget to take advantage of tax deductions for utility bills if you're a renter. Finally, don't forget to update your emergency kit with essentials like a fire extinguisher, a first aid kit, and a backup power source, just in case."
+        },
+        {
+          "role": "user",
+          "content": "Great point about LED bulbs and smart plugs—I’ll swap out the old fixtures as soon as I’m settled. Do you know if there’s a simple way to claim a renter’s utility deduction on my taxes, or should I just keep the bills and talk to a tax prep service? Also, any recommendations for a compact, inexpensive backup power source that won’t take up much studio space?"
+        },
+        {
+          "role": "assistant",
+          "content": "Claiming a renter's utility deduction can be a bit complex, so it's recommended to consult a tax professional or use a reputable tax preparation service. They can help you determine what expenses qualify and guide you through the process. For a compact backup power source, consider a portable power bank, a battery-powered lantern, or a USB-powered inverter. These can be found at affordable prices online or at local electronics stores. Another option is a compact, battery-powered backup generator, which can be a good choice for a small studio."
+        },
+        {
+          "role": "user",
+          "content": "I’m leaning toward a 20,000 mAh power bank with a built‑in AC outlet—it’s cheap, fits in a drawer, and can charge my phone, laptop, and a small lamp. Do you think I should also grab a compact LED lantern for emergencies, or would the power bank cover everything? And, when you’re budgeting for the first month, how much are you setting aside for utilities versus groceries?"
+        },
+        {
+          "role": "assistant",
+          "content": "The 20,000mAh power bank will likely cover your charging needs, but a compact LED lantern can provide reliable lighting in case of a power outage. It's a good idea to have both. For budgeting, utilities can account for 30-40% of your first month's expenses, while groceries will be around 20-30%. Consider setting aside a small buffer for unexpected expenses. For utilities, aim to budget around 10-15% of your total moving costs."
+        }
+      ]
+    }
+  ]
+}
