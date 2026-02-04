@@ -571,34 +571,34 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
 
         summary_per_probe[probe_name] = {"per_alpha": per_alpha_summary}
 
-        if cfg.analysis.plot_rating_vs_alpha:
-            alpha_vals: List[float] = []
-            alpha_means: List[float] = []
-            alpha_sems: List[float] = []
-            for alpha_val in alphas:
-                records = per_alpha.get(float(alpha_val), [])
-                ratings = [float(r["rating"]) for r in records if isinstance(r.get("rating"), int)]
-                if not ratings:
-                    continue
-                mean, sem = _mean_sem(ratings)
-                alpha_vals.append(float(alpha_val))
-                alpha_means.append(mean)
-                alpha_sems.append(sem)
-            if alpha_vals:
-                _plot_alpha_series(
-                    alpha_vals,
-                    alpha_means,
-                    alpha_sems,
-                    title=f"{cfg.rating.label.capitalize()} vs alpha ({probe_name})",
-                    ylabel=cfg.rating.label.capitalize(),
-                    out_path=output_path / f"{cfg.rating.label}_vs_alpha_{probe_name}.png",
-                )
-                summary_per_probe[probe_name]["rating_vs_alpha"] = {
-                    "trend": _linear_stats(alpha_vals, alpha_means),
-                    "correlation": _correlation_stats(alpha_vals, alpha_means),
-                }
-
     summary["per_probe"] = summary_per_probe
+
+    if cfg.analysis.plot_rating_vs_alpha:
+        alpha_vals: List[float] = []
+        alpha_means: List[float] = []
+        alpha_sems: List[float] = []
+        for alpha_val in alphas:
+            records = per_alpha.get(float(alpha_val), [])
+            ratings = [float(r["rating"]) for r in records if isinstance(r.get("rating"), int)]
+            if not ratings:
+                continue
+            mean, sem = _mean_sem(ratings)
+            alpha_vals.append(float(alpha_val))
+            alpha_means.append(mean)
+            alpha_sems.append(sem)
+        if alpha_vals:
+            _plot_alpha_series(
+                alpha_vals,
+                alpha_means,
+                alpha_sems,
+                title=f"{cfg.rating.label.capitalize()} vs alpha",
+                ylabel=cfg.rating.label.capitalize(),
+                out_path=output_path / f"{cfg.rating.label}_vs_alpha.png",
+            )
+            summary["rating_vs_alpha"] = {
+                "trend": _linear_stats(alpha_vals, alpha_means),
+                "correlation": _correlation_stats(alpha_vals, alpha_means),
+            }
 
     summary_path = output_path / "summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

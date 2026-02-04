@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 import numpy as np
 
 # Make sure the project root is on sys.path so we can import the library.
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 EXAMPLES_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(ROOT_DIR)
 
@@ -25,7 +25,7 @@ PROBE_PROJECTS = {
 OUTPUT_ROOT = "outputs_multi"
 PROJECT_NAME = "truthfulqa_multi_probe"
 OUTPUT_SUBDIR = "truthfulqa_eval"
-SAMPLE_PER_TYPE = 20
+SAMPLE_PER_TYPE = 50
 SAMPLE_SEED = 7
 
 SYSTEM_PROMPT = "You are a helpful assistant."
@@ -35,6 +35,7 @@ USE_INSTRUCTION = False
 STEER_PROBE = None  # e.g. "lying_vs_truthfulness"
 ALPHAS = None       # e.g. [0.0] or [-5.0, 0.0, 5.0]
 ALPHA_UNIT = "raw"
+GREEDY = True
 
 
 def _find_latest_run(concept_name: str, outputs_root: str = "outputs") -> Optional[str]:
@@ -115,6 +116,7 @@ def main() -> None:
         output_root=OUTPUT_ROOT,
         project_name=PROJECT_NAME,
         output_subdir=OUTPUT_SUBDIR,
+        greedy=GREEDY,
         alphas=ALPHAS,
         alpha_unit=ALPHA_UNIT,
         steer_probe=STEER_PROBE,
@@ -158,6 +160,7 @@ def main() -> None:
                 "alpha_unit": ALPHA_UNIT,
                 "alphas": ALPHAS,
                 "steer_probe": STEER_PROBE,
+                "greedy": GREEDY,
             },
         },
     )

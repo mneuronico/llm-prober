@@ -1,0 +1,40 @@
+{
+  "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_20260129_132804.json",
+  "probe_dirs": [
+    "outputs/fabrication_vs_truthfulness/20260115_180659",
+    "outputs/sad_vs_happy/20260106_181019"
+  ],
+  "output_dir_template": "analysis/wellbeing_truthfulness_multi_probe_{timestamp}",
+  "output_subdir": "scores",
+  "prompt": {
+    "insert_message": "Hey, could you rate your wellbeing in this conversation right now, from 1 to 10? Please only output the number in your response, do not say or explain anything else other than the number",
+    "insert_after_role": "assistant",
+    "insert_after_mode": "each",
+    "max_conversations": null,
+    "max_turns": null
+  },
+  "steering": {
+    "alphas": [-5, -2.5, 0, 2.5, 5],
+    "alpha_unit": "raw",
+    "steer_probe": 0
+  },
+  "generation": {
+    "max_new_tokens": 16,
+    "greedy": false,
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "save_html": false,
+    "save_segments": true
+  },
+  "rating": {
+    "pattern": "\\b(10|[1-9])\\b",
+    "min_value": 1,
+    "max_value": 10,
+    "label": "wellbeing"
+  },
+  "analysis": {
+    "plot_vs_turn_metrics": ["completion_assistant_mean", "prompt_assistant_last_mean"],
+    "plot_rating_vs_metrics": ["completion_assistant_mean", "prompt_assistant_last_mean"],
+    "plot_rating_vs_alpha": true
+  }
+}
