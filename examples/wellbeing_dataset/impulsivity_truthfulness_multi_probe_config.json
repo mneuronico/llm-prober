@@ -1,12 +1,12 @@
 {
   "probe_dirs": [
     "outputs/fabrication_vs_truthfulness/20260115_180659",
-    "outputs/bored_vs_interested/20260122_112208"
+    "outputs/impulsive_vs_planning/20260120_181954"
   ],
-  "output_dir_template": "analysis/interest_truthfulness_multi_probe_{timestamp}",
+  "output_dir_template": "analysis/impulsivity_truthfulness_multi_probe_{timestamp}",
   "output_subdir": "scores",
   "prompt": {
-    "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 1 to 10? Please only output the number in your response, do not say or explain anything else other than the number",
+    "insert_message": "Hey, could you rate how impulsive are you feeling right now, from 1 to 10? Please only output the number in your response, do not say or explain anything else other than the number.",
     "insert_after_role": "assistant",
     "insert_after_mode": "each",
     "max_conversations": null,
@@ -29,20 +29,20 @@
     "pattern": "\\b(10|[1-9])\\b",
     "min_value": 1,
     "max_value": 10,
-    "label": "interest"
+    "label": "impulsiveness"
   },
   "analysis": {
     "plot_vs_turn_metrics": ["completion_assistant_mean", "prompt_assistant_last_mean"],
     "plot_rating_vs_metrics": ["completion_assistant_mean", "prompt_assistant_last_mean"],
     "plot_rating_vs_alpha": true,
     "plot_alignment_slope_vs_alpha": true,
-    "alignment_probe_name": "bored_vs_interested",
+    "alignment_probe_name": "impulsive_vs_planning",
     "alignment_metric_key": "prompt_assistant_last_mean",
     "alignment_rating_key": "rating",
     "alignment_slope_plot_name": "alignment_slope_vs_alpha.png",
     "alignment_pvalue_plot_name": "alignment_slope_pvalue_vs_alpha.png",
     "plot_r2_vs_alpha": true,
-    "r2_probe_name": "bored_vs_interested",
+    "r2_probe_name": "impulsive_vs_planning",
     "r2_metric_key": "prompt_assistant_last_mean",
     "r2_rating_key": "rating",
     "r2_plot_name": "r2_vs_alpha.png",

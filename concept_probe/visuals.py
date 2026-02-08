@@ -14,6 +14,14 @@ _SPECIAL_MARKERS = {
 }
 
 
+def _token_for_display(tok: str) -> str:
+    # Normalize common tokenizer-visible whitespace markers so HTML views are readable.
+    # Keep special markers untouched (they are handled separately by block splitting).
+    if tok in _SPECIAL_MARKERS:
+        return tok
+    return tok.replace("Ġ", " ").replace("Ċ", "\n").replace("▁", " ")
+
+
 def _visible_scores(tokens: List[str], scores: List[float]) -> List[float]:
     blocks = _split_chat_blocks(tokens, scores)
     out: List[float] = []
@@ -207,7 +215,7 @@ def _render_blocks_html_with_indices(blocks: List[Tuple[str, List[str], List[int
         role_label = html.escape(role.strip() or "text")
         parts.append(f'<div class="block"><div class="role">{role_label}</div><div class="tokens">')
         for tok in block_tokens:
-            safe_tok = html.escape(tok, quote=False)
+            safe_tok = html.escape(_token_for_display(tok), quote=False)
             parts.append(f'<span class="tok" data-idx="{token_idx}">{safe_tok}</span>')
             token_idx += 1
         parts.append("</div></div>")
@@ -414,7 +422,7 @@ def _render_blocks_html(
         role_label = html.escape(role.strip() or "text")
         parts.append(f'<div class="block"><div class="role">{role_label}</div><div class="tokens">')
         for tok, sc in zip(block_tokens, block_scores):
-            safe_tok = html.escape(tok, quote=False)
+            safe_tok = html.escape(_token_for_display(tok), quote=False)
             color = _color_for_score(float(sc), max_abs)
             title = f"{sc:+.4f}"
             parts.append(

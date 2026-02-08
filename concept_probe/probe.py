@@ -1209,7 +1209,15 @@ class ConceptProbe:
             c = ConceptSpec.from_config({"concept": json.loads(f.read())})
 
         logger = JsonlLogger(os.path.join(run_dir, "log.jsonl"))
-        obj = cls(model_bundle=model_bundle, config=cfg, concept=c, run_dir=run_dir, logger=logger)
+        console = ConsoleLogger(bool(cfg.get("output", {}).get("console", True)))
+        obj = cls(
+            model_bundle=model_bundle,
+            config=cfg,
+            concept=c,
+            run_dir=run_dir,
+            logger=logger,
+            console=console,
+        )
 
         tensors = np.load(os.path.join(run_dir, "tensors.npz"))
         obj.concept_vectors = tensors["concept_vectors"]

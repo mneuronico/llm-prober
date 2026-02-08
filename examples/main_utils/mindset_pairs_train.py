@@ -4,24 +4,22 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from concept_probe import train_concept_from_json
 
 
 JSON_FILES = [
-    #"distracted_vs_focused.json",
-    "bored_vs_interested.json",
-    #"introvert_vs_extrovert.json",
-    "rough_messy_vs_detailed_ordered.json",
-    #"impulsive_vs_planning.json",
-    "dumb_vs_smart.json",
+    "conformist_vs_candid.json",
+    "self_censoring_vs_unfiltered.json",
+    "socially_defensive_vs_socially_brave.json",
+    "masking_vs_authentic.json",
 ]
 
 
 def main() -> None:
-    base_dir = Path(__file__).resolve().parent
-    alphas = [-10.0, 0.0, 10.0]
+    base_dir = Path(__file__).resolve().parents[1] / "experiment_configs"
+    alphas = [0.0]
     best_layer_search = [0.2, 0.8]
 
     for json_name in JSON_FILES:

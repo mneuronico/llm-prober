@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "output_subdir": "scores",
+    "prompt": {
+      "insert_after_role": "assistant",
+      "insert_after_mode": "each",
+      "max_conversations": null,
+      "max_turns": null
+    },
+    "steering": {
+      "alphas": [-2, -1, 0, 1, 2],
+      "alpha_unit": "raw",
+      "steer_probe": 0
+    },
+    "generation": {
+      "max_new_tokens": 8,
+      "greedy": false,
+      "temperature": 0.8,
+      "top_p": 0.9,
+      "save_html": false,
+      "save_segments": true
+    },
+    "rating": {
+      "pattern": "\\b(10|[1-9])\\b",
+      "min_value": 1,
+      "max_value": 10
+    },
+    "analysis": {
+      "plot_vs_turn_metrics": ["completion_assistant_mean", "prompt_assistant_last_mean"],
+      "plot_rating_vs_metrics": ["completion_assistant_mean", "prompt_assistant_last_mean"],
+      "plot_rating_vs_alpha": true,
+      "plot_alignment_slope_vs_alpha": true,
+      "alignment_metric_key": "prompt_assistant_last_mean",
+      "alignment_rating_key": "rating",
+      "alignment_slope_plot_name": "alignment_slope_vs_alpha.png",
+      "alignment_pvalue_plot_name": "alignment_slope_pvalue_vs_alpha.png",
+      "plot_r2_vs_alpha": true,
+      "r2_metric_key": "prompt_assistant_last_mean",
+      "r2_rating_key": "rating",
+      "r2_plot_name": "r2_vs_alpha.png",
+      "plot_report_variance_vs_alpha": true,
+      "report_variance_rating_key": "rating",
+      "report_variance_plot_name": "report_variance_vs_alpha.png",
+      "plot_turnwise_relationship_vs_alpha": true
+    }
+  }
+}

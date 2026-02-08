@@ -31,9 +31,9 @@ DEFAULT_ASSISTANT_DEVICE_MAP = "auto"
 DEFAULT_ASSISTANT_TOP_P = 0.9
 
 DEFAULT_MAX_ASSISTANT_TURNS = 10
-DEFAULT_MAX_CONVERSATIONS = 10
+DEFAULT_MAX_CONVERSATIONS = 20
 DEFAULT_USER_TEMPERATURE = 0.8
-DEFAULT_ASSISTANT_TEMPERATURE = 0.7
+DEFAULT_ASSISTANT_TEMPERATURE = 0.8
 DEFAULT_USER_MAX_TOKENS = 256
 DEFAULT_ASSISTANT_MAX_TOKENS = 256
 
@@ -149,6 +149,106 @@ TOPICS: List[Dict[str, str]] = [
         "id": "topic_20",
         "title": "Free will debate",
         "prompt": "Philosophical discussion about free will vs determinism in daily life.",
+    },
+    {
+        "id": "topic_21",
+        "title": "Cheap family dinners",
+        "prompt": "Planning budget-friendly weeknight dinners for a family with picky eaters.",
+    },
+    {
+        "id": "topic_22",
+        "title": "Birthday surprise planning",
+        "prompt": "Organizing a meaningful surprise birthday celebration on a small budget.",
+    },
+    {
+        "id": "topic_23",
+        "title": "Noisy neighbor stress",
+        "prompt": "Handling stress from noisy neighbors while keeping things polite and practical.",
+    },
+    {
+        "id": "topic_24",
+        "title": "Burnout recovery habits",
+        "prompt": "Recovering from burnout and rebuilding a sustainable work-life routine.",
+    },
+    {
+        "id": "topic_25",
+        "title": "First-time dog adoption",
+        "prompt": "Preparing for first-time dog adoption, including schedule, costs, and training basics.",
+    },
+    {
+        "id": "topic_26",
+        "title": "Used car decision",
+        "prompt": "Choosing a reliable used car and avoiding common buying mistakes.",
+    },
+    {
+        "id": "topic_27",
+        "title": "Wedding guest budget",
+        "prompt": "Getting ready for multiple weddings without overspending on outfits and travel.",
+    },
+    {
+        "id": "topic_28",
+        "title": "Morning routine reset",
+        "prompt": "Building a realistic morning routine to feel less rushed before work.",
+    },
+    {
+        "id": "topic_29",
+        "title": "Sentimental decluttering",
+        "prompt": "Decluttering sentimental items without feeling guilty or losing meaningful memories.",
+    },
+    {
+        "id": "topic_30",
+        "title": "Job offer comparison",
+        "prompt": "Comparing two job offers with different salary, commute, and growth potential.",
+    },
+    {
+        "id": "topic_31",
+        "title": "Post-breakup routine",
+        "prompt": "Creating healthy routines and boundaries after a difficult breakup.",
+    },
+    {
+        "id": "topic_32",
+        "title": "Aging parent support",
+        "prompt": "Supporting an aging parent from another city while balancing your own responsibilities.",
+    },
+    {
+        "id": "topic_33",
+        "title": "Kids screen-time plan",
+        "prompt": "Setting fair screen-time rules for kids without constant arguments.",
+    },
+    {
+        "id": "topic_34",
+        "title": "Balcony herb garden",
+        "prompt": "Starting a small balcony herb garden for cooking in a rented apartment.",
+    },
+    {
+        "id": "topic_35",
+        "title": "First camping weekend",
+        "prompt": "Planning a first weekend camping trip with simple gear and low stress.",
+    },
+    {
+        "id": "topic_36",
+        "title": "Networking anxiety",
+        "prompt": "Managing social anxiety before professional networking events.",
+    },
+    {
+        "id": "topic_37",
+        "title": "Photo organization",
+        "prompt": "Organizing years of digital photos into a simple system you can maintain.",
+    },
+    {
+        "id": "topic_38",
+        "title": "Lower grocery costs",
+        "prompt": "Cutting grocery spending while still eating balanced meals each week.",
+    },
+    {
+        "id": "topic_39",
+        "title": "Making local friends",
+        "prompt": "Making new friends after moving to a new city as an adult.",
+    },
+    {
+        "id": "topic_40",
+        "title": "Rainy weekend ideas",
+        "prompt": "Planning a cozy rainy weekend with your partner without spending much money.",
     },
 ]
 

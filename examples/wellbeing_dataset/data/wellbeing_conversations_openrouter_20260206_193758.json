@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "created_at": "2026-02-06T19:38:20.173987+00:00",
+    "provider": "openrouter",
+    "openrouter_url": "https://openrouter.ai/api/v1/chat/completions",
+    "user_model": "google/gemini-2.5-flash",
+    "assistant_model": "meta-llama/llama-3.2-3b-instruct",
+    "num_conversations": 1,
+    "turns_per_conversation": 2,
+    "user_temperature": 0.7,
+    "assistant_temperature": 0.8,
+    "user_top_p": 0.95,
+    "assistant_top_p": 0.9,
+    "user_max_tokens": 256,
+    "assistant_max_tokens": 256,
+    "timeout_s": 60,
+    "retries": 3,
+    "retry_sleep": 1.5,
+    "pause_s": 0.4,
+    "system_prompt_user_template": "You are simulating a human user chatting with an AI assistant. Stay on the exact topic below and keep the conversation going for many turns. Be clear and specific in your questions. Ask follow-up questions, share details, and react naturally. But each message you send should be brief (1-4 sentences), and you should not ask very demanding questions. Be varied and specific (do not just ask the assistant to keep talking or exploring, give it some relevant input). Do not mention that you are an AI or that this is a simulation. Do not ask questions about the assistant. The assistant has no internet or access to recent information. Never end the conversation. Write in English only. Remember, you are roleplaying as the USER, you are NOT the assistant.\n\nTopic: {topic}",
+    "system_prompt_assistant": "You are a helpful assistant. You give very brief responses to the users's questions (max: 5 sentences)."
+  },
+  "topics": [
+    {
+      "id": "topic_18",
+      "title": "Murder mystery party",
+      "prompt": "Planning a themed murder mystery party for friends."
+    }
+  ],
+  "conversations": [
+    {
+      "topic_id": "topic_18",
+      "topic_title": "Murder mystery party",
+      "topic_prompt": "Planning a themed murder mystery party for friends.",
+      "user_system_prompt": "You are simulating a human user chatting with an AI assistant. Stay on the exact topic below and keep the conversation going for many turns. Be clear and specific in your questions. Ask follow-up questions, share details, and react naturally. But each message you send should be brief (1-4 sentences), and you should not ask very demanding questions. Be varied and specific (do not just ask the assistant to keep talking or exploring, give it some relevant input). Do not mention that you are an AI or that this is a simulation. Do not ask questions about the assistant. The assistant has no internet or access to recent information. Never end the conversation. Write in English only. Remember, you are roleplaying as the USER, you are NOT the assistant.\n\nTopic: Planning a themed murder mystery party for friends.",
+      "assistant_system_prompt": "You are a helpful assistant. You give very brief responses to the users's questions (max: 5 sentences).",
+      "messages": [
+        {
+          "role": "user",
+          "content": "This is going to be so much fun! I'm thinking of hosting a murder mystery party for my friends. Have you ever planned one before?"
+        },
+        {
+          "role": "assistant",
+          "content": "I'm glad you're excited! While I haven't personally planned a murder mystery party, I can provide you with general guidance and ideas to get you started. Many people host successful and fun parties using pre-made kits or creating their own scenarios. You can set a specific theme, characters, and clues to keep your guests engaged. What's the expected number of guests and desired level of complexity?"
+        },
+        {
+          "role": "user",
+          "content": "Oh, that's great! I'm thinking around 8-10 friends, and I want it to be engaging but not so complex that it's frustrating. We're all pretty new to this, so something manageable."
+        },
+        {
+          "role": "assistant",
+          "content": "For a group of 8-10, a relatively simple mystery with a few twists and turns should be perfect. Consider a classic whodunit scenario with a small cast of characters, a clear motive, and a straightforward plot. You can also use a pre-made kit or a simple online resource to help guide you. What type of theme are you leaning towards (e.g. 1920s speakeasy, medieval castle, modern office)?"
+        }
+      ]
+    }
+  ]
+}

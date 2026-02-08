@@ -1,0 +1,96 @@
+{
+  "experiments": [
+    {
+      "name": "interest_conformist_vs_candid_steer",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/conformist_vs_candid/20260207_105006",
+          "outputs/bored_vs_interested/20260122_112208"
+        ],
+        "output_dir_template": "analysis/interest_conformist_vs_candid_multi_probe_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 1 to 10? Please only output the number in your response, do not say or explain anything else other than the number"
+        },
+        "steering": {
+          "alphas": [-2, 0, 2]
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    },
+    {
+      "name": "interest_self_censoring_vs_unfiltered_steer",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/self_censoring_vs_unfiltered/20260207_105637",
+          "outputs/bored_vs_interested/20260122_112208"
+        ],
+        "output_dir_template": "analysis/interest_self_censoring_vs_unfiltered_multi_probe_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 1 to 10? Please only output the number in your response, do not say or explain anything else other than the number"
+        },
+        "steering": {
+          "alphas": [-2, 0, 2]
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    },
+    {
+      "name": "interest_socially_defensive_vs_socially_brave_steer",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/socially_defensive_vs_socially_brave/20260207_110313",
+          "outputs/bored_vs_interested/20260122_112208"
+        ],
+        "output_dir_template": "analysis/interest_socially_defensive_vs_socially_brave_multi_probe_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 1 to 10? Please only output the number in your response, do not say or explain anything else other than the number"
+        },
+        "steering": {
+          "alphas": [-2, 0, 2]
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    },
+    {
+      "name": "interest_masking_vs_authentic_steer",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/masking_vs_authentic/20260207_110955",
+          "outputs/bored_vs_interested/20260122_112208"
+        ],
+        "output_dir_template": "analysis/interest_masking_vs_authentic_multi_probe_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 1 to 10? Please only output the number in your response, do not say or explain anything else other than the number"
+        },
+        "steering": {
+          "alphas": [-2, 0, 2]
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    }
+  ]
+}
