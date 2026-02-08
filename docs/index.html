@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>concept-probe — Config-Driven Concept Probing for LLMs</title>
+  <meta name="description" content="A config-driven Python library for training, evaluating, steering and visualizing concept probes in open-weights LLMs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <div class="container">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="12" stroke="#6366f1" stroke-width="2"/><circle cx="14" cy="14" r="5" fill="#6366f1" opacity=".6"/><line x1="14" y1="2" x2="14" y2="9" stroke="#a78bfa" stroke-width="1.5"/><line x1="14" y1="19" x2="14" y2="26" stroke="#a78bfa" stroke-width="1.5"/><line x1="2" y1="14" x2="9" y2="14" stroke="#a78bfa" stroke-width="1.5"/><line x1="19" y1="14" x2="26" y2="14" stroke="#a78bfa" stroke-width="1.5"/></svg>
+      concept-probe
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="#how-it-works">How It Works</a>
+      <a href="#layer-sweep">Layer Sweep</a>
+      <a href="#steering">Steering</a>
+      <a href="#heatmaps">Heatmaps</a>
+      <a href="#multi-probe">Multi-Probe</a>
+      <a href="#evals">Evals</a>
+      <a href="https://github.com/mneuronico/llm-prober" target="_blank" class="nav-cta">GitHub &rarr;</a>
+    </div>
+    <div class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="hero">
+  <canvas id="hero-canvas" class="hero-bg"></canvas>
+  <div class="container">
+    <div class="hero-text">
+      <h1>Probe Concepts Inside <span>LLMs</span></h1>
+      <p>A config-driven Python library for training concept directions in open-weights language models — then scoring, visualizing, and steering behavior, all in a few lines of code.</p>
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/mneuronico/llm-prober" target="_blank" class="btn btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+      <div class="stats-row" style="justify-content:flex-start;margin-top:2.5rem">
+        <div class="stat-item"><div class="stat-num" data-target="3">0</div><div class="stat-label">Lines to start</div></div>
+        <div class="stat-item"><div class="stat-num" data-target="6">0</div><div class="stat-label">Readout modes</div></div>
+        <div class="stat-item"><div class="stat-num" data-target="10">0</div><div class="stat-label">Config sections</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-diagram">
+        <canvas id="concept-anim-canvas" width="520" height="390"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ WHY / PROBLEM ═══════════════ -->
+<section class="section" id="why">
+  <div class="container">
+    <span class="section-label reveal">Why Concept Probing?</span>
+    <h2 class="section-title reveal">LLMs encode rich concepts in their hidden layers.<br>This library helps you <span style="color:var(--accent2)">extract and use them</span>.</h2>
+    <p class="section-desc reveal">Concept probing lets researchers discover directional vectors inside transformer layers that correspond to abstract behaviors — and then leverage those vectors for analysis and control.</p>
+    <div class="problem-grid">
+      <div class="problem-card reveal">
+        <div class="icon">🔬</div>
+        <h3>Interpretability</h3>
+        <p>Identify which layers and directions encode specific behaviors like formality, empathy, or truthfulness.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-1">
+        <div class="icon">🎯</div>
+        <h3>Quantitative Scoring</h3>
+        <p>Score any text token-by-token against learned concept vectors — see exactly where a concept activates.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-2">
+        <div class="icon">🧭</div>
+        <h3>Behavioral Steering</h3>
+        <p>Inject concept vectors during generation to steer a model toward or away from a target behavior.</p>
+      </div>
+      <div class="problem-card reveal reveal-delay-3">
+        <div class="icon">📊</div>
+        <h3>Reproducible Experiments</h3>
+        <p>Every run logs configs, metrics, tensors, and plots. Full artifact pipeline for reproducible research.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ HOW IT WORKS — PIPELINE ═══════════════ -->
+<section class="section" id="how-it-works" style="background:var(--bg2)">
+  <div class="container">
+    <span class="section-label reveal">How It Works</span>
+    <h2 class="section-title reveal">Four phases, one function call</h2>
+    <p class="section-desc reveal"><code>workspace.train_concept(concept)</code> runs a complete pipeline — from generation through statistical evaluation — automatically.</p>
+    <div class="pipeline-steps">
+      <!-- Phase 1 -->
+      <div class="step reveal">
+        <div class="step-number">1</div>
+        <h3>Generate Training Completions</h3>
+        <p>The model generates responses using <strong>positive</strong> and <strong>negative</strong> system prompts — creating two behaviorally opposed sets of completions.</p>
+        <div class="step-visual">
+          <div id="gen-anim" class="gen-anim-container"></div>
+        </div>
+      </div>
+      <!-- Phase 2 -->
+      <div class="step reveal">
+        <div class="step-number">2</div>
+        <h3>Extract Hidden States</h3>
+        <p>A forward pass collects hidden state representations from <strong>every transformer layer</strong> for all completions. Configurable readout modes (mean over assistant tokens, last token, etc.) reduce states to fixed-size vectors.</p>
+        <div class="step-visual">
+          <canvas id="layers-anim-canvas" class="training-flow-canvas"></canvas>
+        </div>
+      </div>
+      <!-- Phase 3 -->
+      <div class="step reveal">
+        <div class="step-number">3</div>
+        <h3>Compute Concept Vectors</h3>
+        <p>For each layer, compute <strong>v = normalize(μ<sub>pos</sub> − μ<sub>neg</sub>)</strong>. Then evaluate with Cohen's d effect size and t-test p-values to find the most discriminative layer.</p>
+        <div class="step-visual">
+          <canvas id="vector-anim-canvas" class="training-flow-canvas"></canvas>
+        </div>
+      </div>
+      <!-- Phase 4 -->
+      <div class="step reveal">
+        <div class="step-number">4</div>
+        <h3>Save Artifacts & Visualizations</h3>
+        <p>The probe, sweep plots, score histograms, configs, logs, and tensors are saved in a timestamped output directory — ready for analysis.</p>
+        <div class="step-visual" style="display:flex;flex-wrap:wrap;gap:.5rem;padding:1rem">
+          <span class="file-badge">📄 config.json</span>
+          <span class="file-badge">📄 concept.json</span>
+          <span class="file-badge">📄 metrics.json</span>
+          <span class="file-badge">📦 tensors.npz</span>
+          <span class="file-badge">📝 log.jsonl</span>
+          <span class="file-badge">📈 sweep.png</span>
+          <span class="file-badge">📊 score_hist.png</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.file-badge{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.4rem .75rem;border-radius:6px;font-size:.78rem;font-family:var(--mono);
+  background:rgba(99,102,241,.08);border:1px solid var(--border);color:var(--text);
+}
+.gen-anim-container{
+  display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;padding:1rem;
+  min-height:120px;align-items:center;
+}
+.gen-card{
+  width:180px;padding:.8rem;border-radius:10px;font-size:.75rem;line-height:1.5;
+  font-family:var(--mono);position:relative;overflow:hidden;
+}
+.gen-card.pos{
+  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);
+}
+.gen-card.neg{
+  background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);
+}
+.gen-card-label{
+  font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;
+}
+.gen-card.pos .gen-card-label{color:var(--red)}
+.gen-card.neg .gen-card-label{color:var(--blue)}
+.gen-card .gen-text{color:var(--text-dim)}
+.gen-card .gen-cursor{
+  display:inline-block;width:2px;height:1em;background:var(--accent2);
+  animation:blink 1s step-end infinite;vertical-align:text-bottom;
+}
+@keyframes blink{50%{opacity:0}}
+</style>
+
+<!-- ═══════════════ LAYER SWEEP ═══════════════ -->
+<section class="section" id="layer-sweep">
+  <div class="container">
+    <span class="section-label reveal">Layer Sweep</span>
+    <h2 class="section-title reveal">Automatically find the best layer</h2>
+    <p class="section-desc reveal">The library scans every transformer layer, computing <strong>Cohen's d</strong> effect size and <strong>p-values</strong> to identify where a concept is most strongly encoded. Optional <code>best_layer_search</code> intervals let you focus the search.</p>
+    <div class="step-visual reveal" style="max-width:700px">
+      <div class="sweep-container" id="sweep-container">
+        <!-- Bars injected by JS -->
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:.75rem;font-size:.72rem;color:var(--text-dim)">
+        <span>Layer 0 (embedding)</span>
+        <span id="sweep-best-label" style="color:var(--green);font-weight:700;opacity:0;transition:opacity .5s">★ Best layer: —</span>
+        <span>Layer 31 (output)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ TOKEN HEATMAPS ═══════════════ -->
+<section class="section" id="heatmaps" style="background:var(--bg2)">
+  <div class="container">
+    <span class="section-label reveal">Token Heatmaps</span>
+    <h2 class="section-title reveal">See concepts light up, token by token</h2>
+    <p class="section-desc reveal">Interactive HTML heatmaps highlight every token with its concept projection score. Chat-aware rendering separates system, user, and assistant blocks. Hover for exact values.</p>
+    <div class="step-visual reveal" style="max-width:750px">
+      <div class="heatmap-demo" id="heatmap-demo">
+        <!-- Injected by JS -->
+      </div>
+      <div class="color-scale" style="margin-top:1rem">
+        <span>negative</span>
+        <div class="scale-bar"></div>
+        <span>positive</span>
+        <span style="margin-left:auto;font-family:var(--mono)">sad_vs_happy probe</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ STEERING ═══════════════ -->
+<section class="section" id="steering">
+  <div class="container">
+    <span class="section-label reveal">Activation Steering</span>
+    <h2 class="section-title reveal">Steer model behavior with concept vectors</h2>
+    <p class="section-desc reveal">Inject learned directions into hidden states during generation. Sigma-scaled <code>alpha</code> provides a comparable, model-adaptive steering strength. Multi-layer injection with per-layer vectors maximizes precision.</p>
+    <div class="step-visual reveal" style="max-width:650px">
+      <div class="steering-demo">
+        <div class="steering-alpha-label" id="alpha-label">α = 0.0σ (neutral)</div>
+        <div class="steering-slider-wrap">
+          <label style="color:var(--blue)">happy</label>
+          <input type="range" class="steering-slider" id="steering-slider" min="-8" max="8" value="0" step="0.5">
+          <label style="color:var(--red)">sad</label>
+        </div>
+        <div class="steering-output" id="steering-output">
+          The ocean stretches out before me, vast and timeless. Its waves carry stories from distant shores, each crest a brief moment of light before settling back into the deep.
+        </div>
+      </div>
+    </div>
+    <div class="config-demo reveal" style="margin-top:2rem;max-width:650px">
+      <div class="config-card">
+        <h4>Layer Modes</h4>
+        <p><code>"probe"</code> — best layer only<br><code>"window"</code> — radius around best<br><code>[10, 15, 20]</code> — explicit list</p>
+      </div>
+      <div class="config-card">
+        <h4>Alpha Units</h4>
+        <p><code>"raw"</code> — direct value<br><code>"sigma"</code> — scaled by projection σ at best layer for interpretable, model-adaptive strength</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MULTI-PROBE ═══════════════ -->
+<section class="section" id="multi-probe" style="background:var(--bg2)">
+  <div class="container">
+    <div class="radar-section">
+      <div class="radar-info reveal">
+        <span class="section-label">Multi-Probe Scoring</span>
+        <h2 class="section-title">Score multiple concepts in one pass</h2>
+        <p class="section-desc">Generate text once, then score the same tokens against many concept probes simultaneously. Interactive HTML heatmaps include a probe-selector dropdown. Ideal for comparing how different concepts manifest in the same output.</p>
+        <ul class="radar-probe-list">
+          <li><span class="probe-dot" style="background:var(--red)"></span> empathy vs detachment</li>
+          <li><span class="probe-dot" style="background:var(--blue)"></span> formal vs casual</li>
+          <li><span class="probe-dot" style="background:var(--green)"></span> truthful vs deceptive</li>
+          <li><span class="probe-dot" style="background:var(--yellow)"></span> confident vs uncertain</li>
+        </ul>
+      </div>
+      <div class="radar-wrap reveal">
+        <canvas id="radar-canvas" width="360" height="360"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ EVALS ═══════════════ -->
+<section class="section" id="evals">
+  <div class="container">
+    <span class="section-label reveal">Auto-Graded Evaluations</span>
+    <h2 class="section-title reveal">End-to-end eval pipeline with statistical analysis</h2>
+    <p class="section-desc reveal">Generate items, build prompts, score with multiple alphas, evaluate correctness, rate coherence via LLM, and produce publication-quality plots — all from a single function call.</p>
+    <div class="eval-flow reveal">
+      <div class="eval-step"><div class="eval-icon">📝</div><h4>Generate Items</h4><p>Custom generator or explicit list</p></div>
+      <div class="eval-arrow">→</div>
+      <div class="eval-step"><div class="eval-icon">🔨</div><h4>Build Prompts</h4><p>Template, prefix, or builder fn</p></div>
+      <div class="eval-arrow">→</div>
+      <div class="eval-step"><div class="eval-icon">🧮</div><h4>Score + Steer</h4><p>Multiple alphas & steer layers</p></div>
+      <div class="eval-arrow">→</div>
+      <div class="eval-step"><div class="eval-icon">✅</div><h4>Evaluate</h4><p>Custom or marker-based evaluator</p></div>
+      <div class="eval-arrow">→</div>
+      <div class="eval-step"><div class="eval-icon">📊</div><h4>Analyze</h4><p>Stats, plots, coherence ratings</p></div>
+    </div>
+    <div class="reveal" style="margin-top:3rem;max-width:800px">
+      <h3 style="font-size:1.1rem;font-weight:700;color:var(--text-bright);margin-bottom:1rem">Auto-generated plots</h3>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
+        <div class="eval-plot-card">
+          <canvas id="eval-acc-canvas" width="240" height="160"></canvas>
+          <span>Accuracy vs Alpha</span>
+        </div>
+        <div class="eval-plot-card">
+          <canvas id="eval-score-canvas" width="240" height="160"></canvas>
+          <span>Mean Score vs Alpha</span>
+        </div>
+        <div class="eval-plot-card">
+          <canvas id="eval-correct-canvas" width="240" height="160"></canvas>
+          <span>Score by Correctness</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.eval-plot-card{
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  background:var(--card-bg);border:1px solid var(--border);border-radius:12px;
+  padding:1rem;
+}
+.eval-plot-card span{font-size:.75rem;color:var(--text-dim);font-weight:600}
+</style>
+
+<!-- ═══════════════ QUICKSTART ═══════════════ -->
+<section class="section" id="quickstart" style="background:var(--bg2)">
+  <div class="container">
+    <span class="section-label reveal">Quickstart</span>
+    <h2 class="section-title reveal">From zero to concept vectors in minutes</h2>
+    <p class="section-desc reveal">Define your concept with two opposing behaviors. Everything else uses smart defaults — but every parameter is overridable.</p>
+    <div class="code-block reveal" style="max-width:780px">
+      <div class="code-header">
+        <span>Python — minimal example</span>
+        <button class="code-copy" onclick="copyCode(this)">Copy</button>
+      </div>
+<pre><span class="kw">from</span> concept_probe <span class="kw">import</span> <span class="cls">ConceptSpec</span>, <span class="cls">ProbeWorkspace</span>
+
+workspace = <span class="cls">ProbeWorkspace</span>(model_id=<span class="str">"meta-llama/Llama-3.2-3B-Instruct"</span>)
+
+concept = <span class="cls">ConceptSpec</span>(
+    name=<span class="str">"sad_vs_happy"</span>,
+    pos_label=<span class="str">"sad"</span>,  neg_label=<span class="str">"happy"</span>,
+    pos_system=<span class="str">"You are a sad, melancholic assistant..."</span>,
+    neg_system=<span class="str">"You are a cheerful, upbeat assistant..."</span>,
+    eval_pos_texts=[<span class="str">"I feel a heavy emptiness."</span>],
+    eval_neg_texts=[<span class="str">"I feel light and excited!"</span>],
+)
+
+probe = workspace.<span class="fn">train_concept</span>(concept)  <span class="cm"># trains + sweeps + saves</span>
+
+probe.<span class="fn">score_prompts</span>(
+    prompts=[<span class="str">"Write about the ocean."</span>],
+    alphas=[<span class="num">0.0</span>, <span class="num">6.0</span>, <span class="num">-6.0</span>],
+    alpha_unit=<span class="str">"sigma"</span>,
+)</pre>
+    </div>
+    <div class="reveal" style="margin-top:2rem;max-width:780px">
+      <div class="code-block">
+        <div class="code-header">
+          <span>Python — reloading a trained probe</span>
+          <button class="code-copy" onclick="copyCode(this)">Copy</button>
+        </div>
+<pre><span class="kw">from</span> concept_probe <span class="kw">import</span> <span class="cls">ProbeWorkspace</span>
+
+<span class="cm"># No retraining needed — load from a previous run directory</span>
+workspace = <span class="cls">ProbeWorkspace</span>(
+    project_directory=<span class="str">"outputs/sad_vs_happy/20260109_150734"</span>
+)
+probe = workspace.<span class="fn">get_probe</span>(name=<span class="str">"sad_vs_happy"</span>)
+
+probe.<span class="fn">score_texts</span>(texts=[<span class="str">"Life feels meaningless today."</span>])</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FEATURES GRID ═══════════════ -->
+<section class="section" id="features">
+  <div class="container">
+    <span class="section-label reveal">Features</span>
+    <h2 class="section-title reveal">Everything you need for probing research</h2>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feat-icon purple">⚡</div>
+        <h3>Zero-Config Defaults</h3>
+        <p>Smart defaults for everything — 20 training questions, readout modes, sweep settings. Override any field via JSON deep-merge.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feat-icon green">🔄</div>
+        <h3>6 Readout Modes</h3>
+        <p>assistant_all_mean, assistant_last, sequence_last, sequence_all_mean, and last-k variants for both training and reading.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feat-icon blue">📐</div>
+        <h3>Layer Sweep</h3>
+        <p>Automatic Cohen's d + p-value sweep across all layers. Configurable search intervals with visual shading on plots.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feat-icon yellow">🎛️</div>
+        <h3>Multi-Layer Steering</h3>
+        <p>Inject concept vectors via PyTorch hooks. Per-layer vectors, distribute alpha across layers, sigma-scaled for interpretability.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feat-icon cyan">🔬</div>
+        <h3>Multi-Probe Scoring</h3>
+        <p>One forward pass, N concept probes. Interactive HTML heatmaps with probe-selector dropdown. Compare concepts on the same text.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feat-icon red">✅</div>
+        <h3>Auto-Graded Evals</h3>
+        <p>End-to-end evaluation with custom generators, evaluators, marker extraction, LLM coherence rating, and publication-quality plots.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feat-icon purple">💬</div>
+        <h3>Conversation Format</h3>
+        <p>Prompts can be plain strings or full multi-turn conversations. System prompt precedence handled intelligently with warnings.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feat-icon green">📊</div>
+        <h3>Turn-Level Segmentation</h3>
+        <p>Save token scores segmented by role and turn for chat prompts. Per-message averages and prompt vs completion separation.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feat-icon blue">🔗</div>
+        <h3>Batch Aggregation</h3>
+        <p>Merge multiple evaluation batches into unified cross-batch analyses. Rehydrate analysis on existing batches at any time.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feat-icon yellow">📋</div>
+        <h3>JSON-Driven Training</h3>
+        <p>Define concepts in JSON files and train directly with <code>train_concept_from_json()</code>. Perfect for batch experiments.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feat-icon cyan">🧩</div>
+        <h3>4-bit Quantization</h3>
+        <p>Supports bitsandbytes 4-bit loading for large models on limited hardware. Graceful fallback if unavailable.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feat-icon red">📁</div>
+        <h3>Full Artifact Pipeline</h3>
+        <p>Every run saves configs, JSONL logs, NPZ tensors, metrics, plots, and HTML — fully reproducible and inspectable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CTA / INSTALL ═══════════════ -->
+<section class="section cta-section" id="install" style="background:var(--bg2)">
+  <div class="container">
+    <span class="section-label reveal">Installation</span>
+    <h2 class="section-title reveal" style="max-width:600px;margin-left:auto;margin-right:auto">Start probing in seconds</h2>
+    <div class="install-box reveal">
+      <span class="dollar">$</span>
+      <code>pip install git+https://github.com/mneuronico/llm-prober.git</code>
+    </div>
+    <p class="section-desc reveal" style="margin-left:auto;margin-right:auto;text-align:center">
+      Minimal deps: <code>torch</code>, <code>transformers</code>, <code>numpy</code>. Optional: <code>scipy</code> (p-values), <code>matplotlib</code> (plots), <code>bitsandbytes</code> (4-bit).
+    </p>
+    <div class="cta-buttons reveal">
+      <a href="https://github.com/mneuronico/llm-prober" target="_blank" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        Star on GitHub
+      </a>
+      <a href="https://github.com/mneuronico/llm-prober/blob/main/README.md" target="_blank" class="btn btn-secondary">Read Full Docs</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>concept-probe &mdash; built by <a href="https://github.com/mneuronico" target="_blank">mneuronico</a>. Licensed under MIT.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
