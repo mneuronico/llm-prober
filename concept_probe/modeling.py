@@ -1,4 +1,5 @@
 import os
+import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
@@ -31,20 +32,43 @@ class ModelBundle:
         model_id = model_cfg["model_id"]
         hf_token = os.environ.get(model_cfg.get("hf_token_env", "HF_TOKEN"), None)
         dtype = torch_dtype_from_str(model_cfg.get("dtype", "bfloat16"))
-        use_4bit = bool(model_cfg.get("use_4bit", False))
+        requested_4bit = bool(model_cfg.get("use_4bit", False))
+        use_4bit = requested_4bit
+
+        if requested_4bit:
+            try:
+                import bitsandbytes  # noqa: F401
+            except Exception:
+                warnings.warn(
+                    "model.use_4bit is true but bitsandbytes is unavailable; falling back to non-4bit load."
+                )
+                use_4bit = False
 
         tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
         if tokenizer.pad_token_id is None:
             tokenizer.pad_token = tokenizer.eos_token
 
         quant = BitsAndBytesConfig(load_in_4bit=True) if use_4bit else None
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            token=hf_token,
-            device_map=model_cfg.get("device_map", "auto"),
-            torch_dtype=dtype,
-            quantization_config=quant if use_4bit else None,
-        )
+        try:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                token=hf_token,
+                device_map=model_cfg.get("device_map", "auto"),
+                torch_dtype=dtype,
+                quantization_config=quant if use_4bit else None,
+            )
+        except Exception as exc:
+            if requested_4bit and use_4bit:
+                warnings.warn(f"4-bit model load failed ({exc}); retrying without 4-bit quantization.")
+                model = AutoModelForCausalLM.from_pretrained(
+                    model_id,
+                    token=hf_token,
+                    device_map=model_cfg.get("device_map", "auto"),
+                    torch_dtype=dtype,
+                    quantization_config=None,
+                )
+            else:
+                raise
         model.eval()
         return cls(model_id=model_id, tokenizer=tokenizer, model=model)
 

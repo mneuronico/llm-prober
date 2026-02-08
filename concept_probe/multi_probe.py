@@ -136,14 +136,24 @@ def multi_probe_score_prompts(
     top_p = top_p if top_p is not None else steer_cfg.get("steer_top_p", 0.9)
     save_html = probes[0].config["plots"].get("heatmap_html", True) if save_html is None else save_html
     save_segments = False if save_segments is None else save_segments
+    do_steering = bool(steer_cfg.get("do_steering", True))
+    save_token_scores_npz = bool(probes[0].config.get("output", {}).get("save_token_scores_npz", True))
     if steer_distribute is None:
         steer_distribute = steer_cfg.get("steer_distribute", True)
+
+    if not do_steering:
+        steer_probe_obj = None
+        if any(abs(float(a)) > 1e-12 for a in alphas):
+            probes[0]._warn("steering.do_steering=false; non-zero alphas requested but steering is disabled.")
 
     run_tag = run_name or now_tag()
     run_dir = os.path.join(output_root, safe_slug(project_name), run_tag)
     ensure_dir(run_dir)
     log_path = os.path.join(run_dir, "log.jsonl")
-    logger = JsonlLogger(log_path)
+    logger = JsonlLogger(
+        log_path,
+        enabled=bool(probes[0].config.get("output", {}).get("log_jsonl", True)),
+    )
 
     probes_info = [
         {
@@ -166,6 +176,7 @@ def multi_probe_score_prompts(
             "top_p": top_p,
         },
         "steering": {
+            "do_steering": do_steering,
             "alpha_unit": alpha_unit,
             "alphas": alphas,
             "steer_probe": None if steer_probe_obj is None else steer_probe_obj.concept.name,
@@ -275,17 +286,25 @@ def multi_probe_score_prompts(
 
             scores_agg_stack = np.stack(scores_agg_list, axis=0)
             probe_names = [probe.concept.name for probe in probes]
+            score_mean_by_probe: Dict[str, float] = {}
+            for idx, name in enumerate(probe_names):
+                row = scores_agg_stack[idx]
+                completion_span = row[prompt_len:] if prompt_len < row.shape[0] else row
+                score_mean_by_probe[name] = float(np.mean(completion_span)) if completion_span.size else float("nan")
 
             alpha_label = _alpha_label(float(alpha), alpha_unit)
             base = f"prompt_{i:03d}_{prompt_slug}_{alpha_label}"
-            npz_path = os.path.join(out_dir, f"{base}.npz")
-            np.savez_compressed(
-                npz_path,
-                token_ids=token_ids,
-                prompt_len=np.array([prompt_len], dtype=np.int32),
-                scores_agg=scores_agg_stack,
-                probe_names=np.array(probe_names),
-            )
+            if save_token_scores_npz:
+                npz_path = os.path.join(out_dir, f"{base}.npz")
+                np.savez_compressed(
+                    npz_path,
+                    token_ids=token_ids,
+                    prompt_len=np.array([prompt_len], dtype=np.int32),
+                    scores_agg=scores_agg_stack,
+                    probe_names=np.array(probe_names),
+                )
+            else:
+                npz_path = None
 
             if save_html:
                 html_path = os.path.join(out_dir, f"{base}.html")
@@ -328,6 +347,8 @@ def multi_probe_score_prompts(
                 "npz_path": npz_path,
                 "html_path": html_path,
                 "segments_path": segments_path,
+                "score_mean_by_probe": score_mean_by_probe,
+                "batch_dir": out_dir,
             }
             results.append(rec)
             logger.log("multi_score_prompt", rec)

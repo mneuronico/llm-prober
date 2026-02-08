@@ -4,7 +4,13 @@ import time
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-from groq import Groq
+try:
+    from groq import Groq
+except Exception as exc:
+    Groq = None
+    _GROQ_IMPORT_ERROR = exc
+else:
+    _GROQ_IMPORT_ERROR = None
 
 DEFAULT_MODEL = "openai/gpt-oss-20b"
 DEFAULT_MAX_PER_REQUEST = 8
@@ -99,6 +105,11 @@ def _chunked(items: List[Dict[str, object]], size: int) -> Iterable[List[Dict[st
 
 
 def _call_groq(api_key: str, model: str, messages: List[Dict[str, str]]) -> str:
+    if Groq is None:
+        raise RuntimeError(
+            "groq package is not installed. Install it to use coherence rating "
+            "(e.g. `pip install groq`)."
+        ) from _GROQ_IMPORT_ERROR
     client = Groq(api_key=api_key)
     try:
         resp = client.chat.completions.create(

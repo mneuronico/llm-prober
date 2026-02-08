@@ -83,7 +83,17 @@ def _fit_model(rows: List[Dict[str, object]], probe_names: List[str], seed: int 
     rng = np.random.default_rng(seed)
     idx = np.arange(len(rows))
     rng.shuffle(idx)
+    if len(rows) < 2:
+        return {
+            "train_n": int(len(rows)),
+            "test_n": 0,
+            "coefficients": [],
+            "metrics": {},
+            "note": "Need at least 2 labeled rows for train/test modeling.",
+        }
+
     split = int(0.75 * len(rows))
+    split = max(1, min(len(rows) - 1, split))
     train_idx, test_idx = idx[:split], idx[split:]
 
     X_train = X[train_idx]
@@ -105,16 +115,27 @@ def _fit_model(rows: List[Dict[str, object]], probe_names: List[str], seed: int 
         "note": "",
     }
 
+    if len(train_idx) == 0 or len(test_idx) == 0:
+        result["note"] = "Train/test split is empty; skipping classifier fit."
+        return result
+    if np.unique(y_train).size < 2:
+        result["note"] = "Training split has a single class; skipping classifier fit."
+        return result
+
     try:
         import statsmodels.api as sm
     except Exception:
         sm = None
 
     if sm is not None:
-        X_train_sm = sm.add_constant(X_train_z)
-        X_test_sm = sm.add_constant(X_test_z)
-        model = sm.Logit(y_train, X_train_sm).fit(disp=False)
-        probs = model.predict(X_test_sm)
+        try:
+            X_train_sm = sm.add_constant(X_train_z)
+            X_test_sm = sm.add_constant(X_test_z)
+            model = sm.Logit(y_train, X_train_sm).fit(disp=False)
+            probs = model.predict(X_test_sm)
+        except Exception as exc:
+            result["note"] = f"Logistic model fit failed: {exc}"
+            return result
 
         try:
             from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, log_loss
@@ -126,12 +147,20 @@ def _fit_model(rows: List[Dict[str, object]], probe_names: List[str], seed: int 
 
         if accuracy_score is not None:
             preds = (probs >= 0.5).astype(int)
-            metrics = {
-                "accuracy": float(accuracy_score(y_test, preds)),
-                "f1": float(f1_score(y_test, preds)),
-                "roc_auc": float(roc_auc_score(y_test, probs)),
-                "log_loss": float(log_loss(y_test, probs)),
-            }
+            metrics = {"accuracy": float(accuracy_score(y_test, preds))}
+            try:
+                metrics["f1"] = float(f1_score(y_test, preds))
+            except Exception:
+                pass
+            try:
+                if np.unique(y_test).size >= 2:
+                    metrics["roc_auc"] = float(roc_auc_score(y_test, probs))
+            except Exception:
+                pass
+            try:
+                metrics["log_loss"] = float(log_loss(y_test, probs))
+            except Exception:
+                pass
         else:
             metrics = {}
 

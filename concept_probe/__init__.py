@@ -3,7 +3,6 @@ from .probe import ConceptProbe, ProbeWorkspace
 from .multi_probe import multi_probe_score_prompts
 from .console import ConsoleLogger
 from .concept_runner import train_concept_from_json
-from .coherence import rate_batch_coherence
 from .reporting import generate_multi_probe_report
 from .eval_system import (
     EvalRunResult,
@@ -14,6 +13,13 @@ from .eval_system import (
     run_scored_eval,
     simple_equality_evaluator,
 )
+
+
+def rate_batch_coherence(*args, **kwargs):
+    from .coherence import rate_batch_coherence as _rate_batch_coherence
+
+    return _rate_batch_coherence(*args, **kwargs)
+
 
 __all__ = [
     "ConceptSpec",

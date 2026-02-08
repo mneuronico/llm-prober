@@ -34,7 +34,7 @@ pip install scipy matplotlib bitsandbytes
 Notes:
 - `scipy` is required for p-values in the sweep (otherwise p-values are NaN).
 - `matplotlib` is required for sweep/hist plots.
-- `bitsandbytes` is required for 4-bit loading.
+- `bitsandbytes` is required for 4-bit loading. If unavailable, the library falls back to non-4bit loading with a warning.
 
 ---
 
@@ -436,7 +436,14 @@ Scores a list of texts or conversations as read-only.
 
 ```python
 probe.score_texts(
-    texts=["I feel okay.", "I feel awful."],
+    texts=[
+        "I feel okay.",
+        [
+            {"role": "user", "content": "I feel stuck."},
+            {"role": "assistant", "content": "What feels hardest right now?"},
+            {"role": "user", "content": "Starting."},
+        ],
+    ],
     system_prompt="You are a helpful assistant.",
 )
 ```
@@ -495,7 +502,7 @@ rate_batch_coherence(
 )
 ```
 
-This is implemented in `concept_probe.eval_system`.
+This is implemented in `concept_probe.coherence`.
 
 ### `run_scored_eval(...)`
 
@@ -676,7 +683,7 @@ enough for simple auto-graded formats.
 
 ## Batch Maintenance Utilities
 
-These utilities operate on existing batches and are eval-agnostic.
+These utilities operate on existing batches and auto-detect single-probe vs multi-probe analyses.
 
 ### `rehydrate_batch_analysis(batch_dir, ...)`
 Rebuilds `analysis/` for an existing batch (recomputes stats + plots).
@@ -959,8 +966,8 @@ Key files:
 
 ## Logging and Console Output
 
-The library always logs to `log.jsonl`. It also:
-- writes `log.pretty.json` if `output.pretty_json_log` is true.
+The library logs to `log.jsonl` when `output.log_jsonl` is true. It also:
+- writes `log.pretty.json` if both `output.log_jsonl` and `output.pretty_json_log` are true.
 - prints progress to terminal if `output.console` is true.
 
 Disable console output:

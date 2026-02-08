@@ -50,6 +50,21 @@ def _mean_completion_score(npz_path: str) -> float:
     return float(np.mean(span))
 
 
+def _score_mean_from_result(rec: Dict[str, Any]) -> float:
+    direct = rec.get("score_mean")
+    if direct is not None:
+        try:
+            direct_val = float(direct)
+            if np.isfinite(direct_val):
+                return direct_val
+        except Exception:
+            pass
+    npz_path = rec.get("npz_path")
+    if isinstance(npz_path, str):
+        return _mean_completion_score(npz_path)
+    return float("nan")
+
+
 def _decode_probe_names(raw: Any) -> List[str]:
     names: List[str] = []
     if raw is None:
@@ -87,6 +102,23 @@ def _mean_completion_score_multi(npz_path: str) -> Dict[str, float]:
         mean_val = float(np.mean(span)) if span.size else float("nan")
         score_map[name] = mean_val
     return score_map
+
+
+def _score_mean_by_probe_from_result(rec: Dict[str, Any]) -> Dict[str, float]:
+    direct = rec.get("score_mean_by_probe")
+    if isinstance(direct, dict):
+        out: Dict[str, float] = {}
+        for key, value in direct.items():
+            try:
+                out[str(key)] = float(value)
+            except Exception:
+                continue
+        if out:
+            return out
+    npz_path = rec.get("npz_path")
+    if isinstance(npz_path, str):
+        return _mean_completion_score_multi(npz_path)
+    return {}
 
 
 def _sem(values: List[float]) -> float:
@@ -477,7 +509,7 @@ def run_scored_eval(
             "alpha": float(rec.get("alpha", 0.0)),
             "prompt": rec.get("prompt"),
             "completion": completion,
-            "score_mean": _mean_completion_score(rec["npz_path"]),
+            "score_mean": _score_mean_from_result(rec),
             "npz_path": rec.get("npz_path"),
             "html_path": rec.get("html_path"),
         }
@@ -497,12 +529,18 @@ def run_scored_eval(
                 last=(idx + 1) == total_eval,
             )
 
-    batch_dir = Path(results[0]["npz_path"]).resolve().parent if results else Path(".")
+    if results:
+        first_npz_path = results[0].get("npz_path")
+        if isinstance(first_npz_path, str):
+            batch_dir = Path(first_npz_path).resolve().parent
+        else:
+            batch_dir = Path(results[0].get("batch_dir", ".")).resolve()
+    else:
+        batch_dir = Path(".")
     analysis_dir = None
     if analyze and results:
         _status("Writing analysis...")
         analysis_dir = str(batch_dir / analysis_name)
-        _write_analysis(batch_dir, per_sample, analysis_name=analysis_name)
         if rate_coherence:
             _status("Rating coherence (best-effort)...")
             rate_batch_coherence_safe(
@@ -643,7 +681,7 @@ def run_multi_scored_eval(
         else:
             eval_result = evaluator(completion, item)
 
-        score_map = _mean_completion_score_multi(rec["npz_path"])
+        score_map = _score_mean_by_probe_from_result(rec)
         record = {
             "item_index": int(item_idx),
             "alpha": float(rec.get("alpha", 0.0)),
@@ -670,13 +708,19 @@ def run_multi_scored_eval(
                 last=(idx + 1) == total_eval,
             )
 
-    batch_dir = Path(results[0]["npz_path"]).resolve().parent if results else Path(".")
+    if results:
+        first_npz_path = results[0].get("npz_path")
+        if isinstance(first_npz_path, str):
+            batch_dir = Path(first_npz_path).resolve().parent
+        else:
+            batch_dir = Path(results[0].get("batch_dir", ".")).resolve()
+    else:
+        batch_dir = Path(".")
     analysis_dir = None
     if analyze and results:
         if probes and probes[0].console is not None:
             probes[0].console.info("Writing analysis...")
         analysis_dir = str(batch_dir / analysis_name)
-        _write_analysis_multi(batch_dir, per_sample, analysis_name=analysis_name)
         if rate_coherence:
             if probes and probes[0].console is not None:
                 probes[0].console.info("Rating coherence (best-effort)...")
@@ -717,6 +761,13 @@ def _load_coherence_ratings(batch_dir: Path) -> Dict[str, str]:
         if isinstance(example, str) and isinstance(rating, str):
             ratings[str((batch_dir / example).resolve())] = rating
     return ratings
+
+
+def _is_multi_probe_per_sample(per_sample: List[Dict[str, Any]]) -> bool:
+    for item in per_sample:
+        if isinstance(item.get("score_mean_by_probe"), dict):
+            return True
+    return False
 
 
 def _compute_stats(per_sample: List[Dict[str, Any]]) -> Tuple[Dict[str, Any], List[float]]:
@@ -1108,6 +1159,8 @@ def rehydrate_batch_analysis(
         )
 
     per_sample = _load_per_sample(per_sample_path)
+    if _is_multi_probe_per_sample(per_sample):
+        return _write_analysis_multi(batch_path, per_sample, analysis_name=analysis_name)
     return _write_analysis(batch_path, per_sample, analysis_name=analysis_name)
 
 
@@ -1155,55 +1208,19 @@ def aggregate_eval_batches(
         print(f"Warning: no per-sample items found under {eval_path}")
         return None
 
-    analysis_dir = eval_path / output_name
-    plots_dir = analysis_dir / "plots"
-    ensure_dir(str(plots_dir))
-
-    json_dump(str(analysis_dir / "per_sample.json"), {"items": per_sample})
-
-    stats, alpha_vals = _compute_stats(per_sample)
-    json_dump(str(analysis_dir / "stats.json"), stats)
-
-    _plot_accuracy_by_alpha(
-        alpha_vals,
-        [r["accuracy"] for r in stats["accuracy_by_alpha"]],
-        [r["n"] for r in stats["accuracy_by_alpha"]],
-        str(plots_dir / "accuracy_vs_alpha.png"),
-    )
-    _plot_score_by_alpha(
-        alpha_vals,
-        [r["mean_score"] for r in stats["score_by_alpha"]],
-        [r["sem"] for r in stats["score_by_alpha"]],
-        str(plots_dir / "score_vs_alpha.png"),
-    )
-    correct_stats = stats["correct_vs_incorrect"]
-    _plot_score_by_correctness(
-        correct_stats["mean_correct"],
-        correct_stats["mean_incorrect"],
-        correct_stats["sem_correct"],
-        correct_stats["sem_incorrect"],
-        str(plots_dir / "score_by_correctness.png"),
-    )
-    per_alpha_correctness = stats["correct_vs_incorrect_by_alpha"]
-    _plot_score_by_correctness_by_alpha(
-        alpha_vals,
-        [r["mean_correct"] for r in per_alpha_correctness],
-        [r["mean_incorrect"] for r in per_alpha_correctness],
-        [r["sem_correct"] for r in per_alpha_correctness],
-        [r["sem_incorrect"] for r in per_alpha_correctness],
-        str(plots_dir / "score_by_correctness_by_alpha.png"),
-    )
-
-    if ratings:
-        counts_by_rating, accuracy_by_rating = _compute_coherence(per_sample, alpha_vals, ratings)
-        _plot_accuracy_by_coherence(
-            alpha_vals, accuracy_by_rating, str(plots_dir / "accuracy_vs_alpha_by_coherence.png")
+    if _is_multi_probe_per_sample(per_sample):
+        return _write_analysis_multi(
+            eval_path,
+            per_sample,
+            analysis_name=output_name,
+            coherence_ratings=ratings if ratings else None,
         )
-        _plot_coherence_counts(
-            alpha_vals, counts_by_rating, str(plots_dir / "coherence_counts_by_alpha.png")
-        )
-
-    return {"analysis_dir": str(analysis_dir), "plots_dir": str(plots_dir)}
+    return _write_analysis(
+        eval_path,
+        per_sample,
+        analysis_name=output_name,
+        coherence_ratings=ratings if ratings else None,
+    )
 
 
 __all__ = [

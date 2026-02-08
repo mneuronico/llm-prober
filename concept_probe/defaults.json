@@ -81,7 +81,7 @@
     "score_aggregate": "mean"
   },
   "steering": {
-    "do_steering": false,
+    "do_steering": true,
     "steer_system": "You are a helpful assistant. Answer clearly and concisely.",
     "steer_sampling": true,
     "steer_temperature": 0.7,

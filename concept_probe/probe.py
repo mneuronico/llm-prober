@@ -908,7 +908,7 @@ class ConceptProbe:
         }
         json_dump(os.path.join(self.run_dir, "metrics.json"), metrics)
         self.logger.log("artifacts_saved", {"npz_path": npz_path})
-        if self.config["output"].get("pretty_json_log", False):
+        if self.config["output"].get("pretty_json_log", False) and self.config["output"].get("log_jsonl", True):
             pretty_path = os.path.join(self.run_dir, "log.pretty.json")
             jsonl_to_pretty(os.path.join(self.run_dir, "log.jsonl"), pretty_path)
         self._status(f"Saved artifacts to {self.run_dir}")
@@ -936,7 +936,7 @@ class ConceptProbe:
 
     def score_texts(
         self,
-        texts: List[str],
+        texts: List[PromptLike],
         system_prompt: Optional[str] = None,
         layer_selection: Optional[Dict[str, Any]] = None,
         output_subdir: str = "scores",
@@ -950,6 +950,7 @@ class ConceptProbe:
         layers = self._layer_selection(layer_selection)
         sys_prompt = system_prompt or self.config["prompts"]["neutral_system"]
         save_html = self.config["plots"].get("heatmap_html", True) if save_html is None else save_html
+        save_token_scores_npz = self.config["output"].get("save_token_scores_npz", True)
 
         base_dir = os.path.join(self.run_dir, output_subdir)
         ensure_dir(base_dir)
@@ -964,7 +965,12 @@ class ConceptProbe:
         self._status(f"Scoring {total_texts} texts -> {out_dir}")
 
         for i, text in enumerate(texts):
-            messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": text}]
+            messages, used_prompt_system = _normalize_messages(
+                text,
+                sys_prompt,
+                warn=self._warn,
+                warn_prefix=f"score_texts.texts[{i}]",
+            )
             input_ids = apply_chat(tokenizer, messages, add_generation_prompt=False)
             hs_layers = forward_hidden_states_all_layers(model, input_ids)
             scores_per_layer, scores_agg = token_scores_from_hs_layers(
@@ -973,16 +979,19 @@ class ConceptProbe:
             token_ids = input_ids[0].detach().cpu().numpy().astype(np.int32)
             tokens = _decode_tokens(tokenizer, token_ids)
 
-            slug = _prompt_slug(text)
+            slug = _prompt_slug_any(text)
             base = f"text_{i:03d}_{slug}"
-            npz_path = os.path.join(out_dir, f"{base}.npz")
-            np.savez_compressed(
-                npz_path,
-                token_ids=token_ids,
-                scores_per_layer=scores_per_layer,
-                scores_agg=scores_agg,
-                layer_indices=np.array(layers, dtype=np.int32),
-            )
+            if save_token_scores_npz:
+                npz_path = os.path.join(out_dir, f"{base}.npz")
+                np.savez_compressed(
+                    npz_path,
+                    token_ids=token_ids,
+                    scores_per_layer=scores_per_layer,
+                    scores_agg=scores_agg,
+                    layer_indices=np.array(layers, dtype=np.int32),
+                )
+            else:
+                npz_path = None
 
             if save_html:
                 html_path = os.path.join(out_dir, f"{base}.html")
@@ -994,9 +1003,11 @@ class ConceptProbe:
             rec = {
                 "text": text,
                 "system_prompt": sys_prompt,
+                "system_prompt_overridden": bool(used_prompt_system),
                 "layers": layers,
                 "npz_path": npz_path,
                 "html_path": html_path,
+                "batch_dir": out_dir,
             }
             results.append(rec)
             self.logger.log("score_text", rec)
@@ -1037,6 +1048,8 @@ class ConceptProbe:
         sys_prompt = system_prompt or self.config["steering"]["steer_system"]
         save_html = self.config["plots"].get("heatmap_html", True) if save_html is None else save_html
         save_segments = False if save_segments is None else save_segments
+        do_steering = bool(self.config["steering"].get("do_steering", True))
+        save_token_scores_npz = self.config["output"].get("save_token_scores_npz", True)
 
         max_new_tokens = max_new_tokens if max_new_tokens is not None else self.config["steering"]["steer_max_new_tokens"]
         greedy = greedy if greedy is not None else (not self.config["steering"]["steer_sampling"])
@@ -1063,6 +1076,9 @@ class ConceptProbe:
         show_progress = self.console is not None and self.console.enabled
         if show_progress and total_runs:
             _progress_print(0, total_runs, label="Generating", enabled=True)
+
+        if not do_steering and any(abs(float(a)) > 1e-12 for a in alphas):
+            self._warn("steering.do_steering=false; non-zero alphas requested but steering is disabled.")
 
         if steer_layers is None:
             steer_layers = self.config["steering"]["steer_layers"]
@@ -1103,9 +1119,26 @@ class ConceptProbe:
                 attn = attention_mask_from_ids(input_ids).to(model.device)
                 prompt_len = int(input_ids.shape[-1])
 
-                with MultiLayerSteererLayerwise(
-                    model, steer_layer_list, self.concept_vectors, alpha_val, distribute=steer_distribute
-                ):
+                should_steer = do_steering and abs(float(alpha_val)) > 1e-12
+                if should_steer:
+                    context = MultiLayerSteererLayerwise(
+                        model, steer_layer_list, self.concept_vectors, alpha_val, distribute=steer_distribute
+                    )
+                else:
+                    context = None
+
+                if context is not None:
+                    with context:
+                        gen_ids = model.generate(
+                            input_ids=input_ids,
+                            attention_mask=attn,
+                            max_new_tokens=max_new_tokens,
+                            do_sample=not greedy,
+                            temperature=temperature if not greedy else None,
+                            top_p=top_p if not greedy else None,
+                            pad_token_id=tokenizer.eos_token_id,
+                        )[0].detach().cpu()
+                else:
                     gen_ids = model.generate(
                         input_ids=input_ids,
                         attention_mask=attn,
@@ -1125,18 +1158,23 @@ class ConceptProbe:
                 tokens = _decode_tokens(tokenizer, token_ids)
                 completion_ids = token_ids[prompt_len:]
                 completion_text = tokenizer.decode(completion_ids, skip_special_tokens=True)
+                completion_scores = scores_agg[prompt_len:] if prompt_len < scores_agg.shape[0] else scores_agg
+                score_mean = float(np.mean(completion_scores)) if completion_scores.size else float("nan")
 
                 alpha_label = _alpha_label(float(alpha), alpha_unit)
                 base = f"prompt_{i:03d}_{prompt_slug}_{alpha_label}"
-                npz_path = os.path.join(out_dir, f"{base}.npz")
-                np.savez_compressed(
-                    npz_path,
-                    token_ids=token_ids,
-                    prompt_len=np.array([prompt_len], dtype=np.int32),
-                    scores_per_layer=scores_per_layer,
-                    scores_agg=scores_agg,
-                    layer_indices=np.array(layers, dtype=np.int32),
-                )
+                if save_token_scores_npz:
+                    npz_path = os.path.join(out_dir, f"{base}.npz")
+                    np.savez_compressed(
+                        npz_path,
+                        token_ids=token_ids,
+                        prompt_len=np.array([prompt_len], dtype=np.int32),
+                        scores_per_layer=scores_per_layer,
+                        scores_agg=scores_agg,
+                        layer_indices=np.array(layers, dtype=np.int32),
+                    )
+                else:
+                    npz_path = None
 
                 if save_html:
                     html_path = os.path.join(out_dir, f"{base}.html")
@@ -1176,6 +1214,9 @@ class ConceptProbe:
                     "npz_path": npz_path,
                     "html_path": html_path,
                     "segments_path": segments_path,
+                    "score_mean": score_mean,
+                    "do_steering": bool(should_steer),
+                    "batch_dir": out_dir,
                 }
                 results.append(rec)
                 self.logger.log("score_prompt", rec)
@@ -1208,7 +1249,10 @@ class ConceptProbe:
         with open(concept_path, "r", encoding="utf-8") as f:
             c = ConceptSpec.from_config({"concept": json.loads(f.read())})
 
-        logger = JsonlLogger(os.path.join(run_dir, "log.jsonl"))
+        logger = JsonlLogger(
+            os.path.join(run_dir, "log.jsonl"),
+            enabled=bool(cfg.get("output", {}).get("log_jsonl", True)),
+        )
         console = ConsoleLogger(bool(cfg.get("output", {}).get("console", True)))
         obj = cls(
             model_bundle=model_bundle,
@@ -1317,7 +1361,7 @@ class ProbeWorkspace:
         concept_dir = os.path.join(self.root_dir, safe_slug(concept.name), run_tag)
         ensure_dir(concept_dir)
         log_path = os.path.join(concept_dir, "log.jsonl")
-        logger = JsonlLogger(log_path)
+        logger = JsonlLogger(log_path, enabled=bool(cfg.get("output", {}).get("log_jsonl", True)))
 
         probe = ConceptProbe(
             model_bundle=self.model_bundle,
