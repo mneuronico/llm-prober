@@ -16,7 +16,7 @@ This README is the full documentation: quickstart, configuration, usage, outputs
 Install from a GitHub repo:
 
 ```bash
-pip install git+https://github.com/<you>/<repo>.git
+pip install git+https://github.com/mneuronico/llm-prober.git
 ```
 
 Minimal deps:

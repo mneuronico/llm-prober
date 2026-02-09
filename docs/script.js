@@ -461,9 +461,9 @@ $$('.stat-num[data-target]').forEach(el=>counterObs.observe(el));
     // arrowhead at pos end
     const ahs=8;
     ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(ax-ux*ahs-uy*ahs*.6, ay-uy*ahs+ux*ahs*.6);
-    ctx.lineTo(ax-ux*ahs+uy*ahs*.6, ay-uy*ahs-ux*ahs*.6);
+    ctx.moveTo(bx, by);
+    ctx.lineTo(bx-ux*ahs-uy*ahs*.6, by-uy*ahs+ux*ahs*.6);
+    ctx.lineTo(bx-ux*ahs+uy*ahs*.6, by-uy*ahs-ux*ahs*.6);
     ctx.closePath();
     ctx.fillStyle='#34d399'; ctx.fill();
     ctx.restore();
