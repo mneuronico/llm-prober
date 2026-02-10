@@ -51,7 +51,7 @@ nav{
 }
 nav .container{display:flex;align-items:center;justify-content:space-between;height:64px}
 .nav-logo{font-weight:800;font-size:1.2rem;color:var(--text-bright);display:flex;align-items:center;gap:.5rem}
-.nav-logo svg{width:28px;height:28px}
+.nav-logo-icon{width:28px;height:28px}
 .nav-links{display:flex;gap:1.8rem;align-items:center}
 .nav-links a{font-size:.85rem;font-weight:500;color:var(--text-dim);transition:color .2s}
 .nav-links a:hover{color:var(--text-bright)}
