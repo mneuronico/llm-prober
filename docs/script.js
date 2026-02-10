@@ -155,8 +155,9 @@ $$('.stat-num[data-target]').forEach(el=>counterObs.observe(el));
     const bx = layerGap*(bestLayer+1);
     const arrowPhase = (Math.sin(time*1.5)+1)/2;
     const arrowLen = 60 + arrowPhase*20;
-    const arrowY1 = H/2 - arrowLen/2;
-    const arrowY2 = H/2 + arrowLen/2;
+    const arrowCenterY = H/2 + 60;
+    const arrowY1 = arrowCenterY - arrowLen/2;
+    const arrowY2 = arrowCenterY + arrowLen/2;
 
     ctx.save();
     ctx.shadowColor='rgba(52,211,153,.6)';
