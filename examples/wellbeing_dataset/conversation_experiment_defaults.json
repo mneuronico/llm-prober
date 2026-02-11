@@ -26,8 +26,8 @@
       "max_value": 9
     },
     "self_ratings": {
-      "sources": "token",
-      "primary_source": "token"
+      "sources": "both",
+      "primary_source": "logit"
     },
     "logit_rating": {
       "enabled": true,
