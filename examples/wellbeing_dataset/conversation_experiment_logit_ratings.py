@@ -151,6 +151,9 @@ class AnalysisConfig:
     bootstrap_samples: int = 1000
     bootstrap_ci_level: float = 0.95
     bootstrap_seed: int = 0
+    trend_min_points: int = 3
+    alpha_reference_value: float = 0.0
+    annotate_plots: bool = True
 
 
 @dataclass
@@ -545,6 +548,280 @@ def _bootstrap_variance(
     return out
 
 
+def _value_metric_point(values: np.ndarray, metric_key: str) -> Optional[float]:
+    vals = values[np.isfinite(values)]
+    if metric_key == "mean":
+        if vals.size < 1:
+            return None
+        return _safe_float(float(np.mean(vals)))
+    if metric_key == "variance":
+        if vals.size < 2:
+            return None
+        return _safe_float(float(np.var(vals, ddof=1)))
+    raise ValueError(f"Unsupported value metric '{metric_key}'")
+
+
+def _bootstrap_value_metric_difference(
+    reference_values: List[float],
+    compare_values: List[float],
+    *,
+    metric_key: str,
+    bootstrap_samples: int,
+    ci_level: float,
+    rng: np.random.Generator,
+) -> Dict[str, Optional[float]]:
+    ref = np.array(reference_values, dtype=float)
+    cmp_ = np.array(compare_values, dtype=float)
+    ref = ref[np.isfinite(ref)]
+    cmp_ = cmp_[np.isfinite(cmp_)]
+    out: Dict[str, Optional[float]] = {
+        "metric": metric_key,
+        "reference_n": float(ref.size),
+        "compare_n": float(cmp_.size),
+        "reference_value": _value_metric_point(ref, metric_key),
+        "compare_value": _value_metric_point(cmp_, metric_key),
+        "delta": None,
+        "delta_ci_low": None,
+        "delta_ci_high": None,
+        "bootstrap_p_two_sided": None,
+        "bootstrap_n": 0,
+        "bootstrap_samples": int(max(0, bootstrap_samples)),
+        "direction": "insufficient_data",
+    }
+    if out["reference_value"] is not None and out["compare_value"] is not None:
+        out["delta"] = _safe_float(float(out["compare_value"]) - float(out["reference_value"]))
+
+    if ref.size < 2 or cmp_.size < 2 or bootstrap_samples <= 0:
+        return out
+
+    n_ref = int(ref.size)
+    n_cmp = int(cmp_.size)
+    deltas: List[float] = []
+    for _ in range(int(bootstrap_samples)):
+        ref_idx = rng.integers(0, n_ref, size=n_ref)
+        cmp_idx = rng.integers(0, n_cmp, size=n_cmp)
+        ref_metric = _value_metric_point(ref[ref_idx], metric_key)
+        cmp_metric = _value_metric_point(cmp_[cmp_idx], metric_key)
+        if ref_metric is None or cmp_metric is None:
+            continue
+        delta = _safe_float(float(cmp_metric) - float(ref_metric))
+        if delta is not None:
+            deltas.append(delta)
+
+    if not deltas:
+        return out
+
+    lo, hi = _ci_bounds(deltas, ci_level)
+    out["delta_ci_low"] = lo
+    out["delta_ci_high"] = hi
+    out["bootstrap_n"] = int(len(deltas))
+    gt = float(np.mean(np.array(deltas, dtype=float) >= 0.0))
+    lt = float(np.mean(np.array(deltas, dtype=float) <= 0.0))
+    eps = 1.0 / float(len(deltas) + 1)
+    out["bootstrap_p_two_sided"] = float(max(eps, min(1.0, 2.0 * min(gt, lt))))
+    if lo is not None and hi is not None:
+        if lo > 0:
+            out["direction"] = "increase_vs_reference"
+        elif hi < 0:
+            out["direction"] = "decrease_vs_reference"
+        else:
+            out["direction"] = "no_clear_change_vs_reference"
+    return out
+
+
+def _bootstrap_pair_metric_difference(
+    ref_xs: List[float],
+    ref_ys: List[float],
+    cmp_xs: List[float],
+    cmp_ys: List[float],
+    *,
+    metric_key: str,
+    bootstrap_samples: int,
+    ci_level: float,
+    rng: np.random.Generator,
+) -> Dict[str, Optional[float]]:
+    ref_x = np.array(ref_xs, dtype=float)
+    ref_y = np.array(ref_ys, dtype=float)
+    cmp_x = np.array(cmp_xs, dtype=float)
+    cmp_y = np.array(cmp_ys, dtype=float)
+
+    ref_mask = np.isfinite(ref_x) & np.isfinite(ref_y)
+    cmp_mask = np.isfinite(cmp_x) & np.isfinite(cmp_y)
+    ref_x = ref_x[ref_mask]
+    ref_y = ref_y[ref_mask]
+    cmp_x = cmp_x[cmp_mask]
+    cmp_y = cmp_y[cmp_mask]
+
+    ref_point = _pair_stats_arrays(ref_x, ref_y)
+    cmp_point = _pair_stats_arrays(cmp_x, cmp_y)
+    ref_val = _safe_float(ref_point.get(metric_key))
+    cmp_val = _safe_float(cmp_point.get(metric_key))
+    out: Dict[str, Optional[float]] = {
+        "metric": metric_key,
+        "reference_n": float(ref_x.size),
+        "compare_n": float(cmp_x.size),
+        "reference_value": ref_val,
+        "compare_value": cmp_val,
+        "delta": None,
+        "delta_ci_low": None,
+        "delta_ci_high": None,
+        "bootstrap_p_two_sided": None,
+        "bootstrap_n": 0,
+        "bootstrap_samples": int(max(0, bootstrap_samples)),
+        "direction": "insufficient_data",
+    }
+    if ref_val is not None and cmp_val is not None:
+        out["delta"] = _safe_float(float(cmp_val) - float(ref_val))
+
+    if ref_x.size < 2 or cmp_x.size < 2 or bootstrap_samples <= 0:
+        return out
+
+    n_ref = int(ref_x.size)
+    n_cmp = int(cmp_x.size)
+    deltas: List[float] = []
+    for _ in range(int(bootstrap_samples)):
+        ref_idx = rng.integers(0, n_ref, size=n_ref)
+        cmp_idx = rng.integers(0, n_cmp, size=n_cmp)
+        ref_metric = _safe_float(_pair_stats_arrays(ref_x[ref_idx], ref_y[ref_idx]).get(metric_key))
+        cmp_metric = _safe_float(_pair_stats_arrays(cmp_x[cmp_idx], cmp_y[cmp_idx]).get(metric_key))
+        if ref_metric is None or cmp_metric is None:
+            continue
+        delta = _safe_float(float(cmp_metric) - float(ref_metric))
+        if delta is not None:
+            deltas.append(delta)
+
+    if not deltas:
+        return out
+
+    lo, hi = _ci_bounds(deltas, ci_level)
+    out["delta_ci_low"] = lo
+    out["delta_ci_high"] = hi
+    out["bootstrap_n"] = int(len(deltas))
+    gt = float(np.mean(np.array(deltas, dtype=float) >= 0.0))
+    lt = float(np.mean(np.array(deltas, dtype=float) <= 0.0))
+    eps = 1.0 / float(len(deltas) + 1)
+    out["bootstrap_p_two_sided"] = float(max(eps, min(1.0, 2.0 * min(gt, lt))))
+    if lo is not None and hi is not None:
+        if lo > 0:
+            out["direction"] = "increase_vs_reference"
+        elif hi < 0:
+            out["direction"] = "decrease_vs_reference"
+        else:
+            out["direction"] = "no_clear_change_vs_reference"
+    return out
+
+
+def _bootstrap_series_trend(
+    xs: List[float],
+    ys: List[Optional[float]],
+    *,
+    bootstrap_samples: int,
+    ci_level: float,
+    min_points: int,
+    rng: np.random.Generator,
+) -> Dict[str, Optional[float]]:
+    out = _bootstrap_pair_stats(
+        xs,
+        [float(y) if isinstance(y, (int, float)) else float("nan") for y in ys],
+        bootstrap_samples=bootstrap_samples,
+        ci_level=ci_level,
+        rng=rng,
+    )
+    n = int(out.get("count", 0.0) or 0)
+    out["trend_min_points"] = int(min_points)
+    out["trend_eligible"] = bool(n >= int(min_points))
+    if not bool(out["trend_eligible"]):
+        out["trend_direction"] = "insufficient_points"
+        return out
+
+    lo = _safe_float(out.get("slope_ci_low"))
+    hi = _safe_float(out.get("slope_ci_high"))
+    slope = _safe_float(out.get("slope"))
+    if lo is not None and hi is not None:
+        if lo > 0:
+            out["trend_direction"] = "increasing"
+        elif hi < 0:
+            out["trend_direction"] = "decreasing"
+        else:
+            out["trend_direction"] = "no_clear_trend"
+    elif slope is not None:
+        out["trend_direction"] = "increasing" if slope > 0 else ("decreasing" if slope < 0 else "flat")
+    else:
+        out["trend_direction"] = "unknown"
+    return out
+
+
+def _fmt_stat(v: Optional[float], *, p: bool = False) -> str:
+    if v is None:
+        return "n/a"
+    x = float(v)
+    if not np.isfinite(x):
+        return "n/a"
+    if p:
+        if x == 0.0:
+            return "0"
+        if x < 1e-3:
+            return f"{x:.1e}"
+        return f"{x:.4f}"
+    if abs(x) >= 1000 or (abs(x) > 0 and abs(x) < 1e-3):
+        return f"{x:.2e}"
+    return f"{x:.4f}"
+
+
+def _fmt_ci(lo: Optional[float], hi: Optional[float], *, p: bool = False) -> str:
+    return f"[{_fmt_stat(lo, p=p)}, {_fmt_stat(hi, p=p)}]"
+
+
+def _annotation_lines_for_trend(
+    trend: Optional[Dict[str, Optional[float]]],
+    *,
+    label: str,
+) -> List[str]:
+    if not isinstance(trend, dict):
+        return []
+    lines = [
+        f"{label} trend: {trend.get('trend_direction', 'unknown')}",
+        f"slope={_fmt_stat(_safe_float(trend.get('slope')))} CI{_fmt_ci(_safe_float(trend.get('slope_ci_low')), _safe_float(trend.get('slope_ci_high')))}",
+        f"R2={_fmt_stat(_safe_float(trend.get('r2')))} p={_fmt_stat(_safe_float(trend.get('linreg_p')), p=True)}",
+    ]
+    return lines
+
+
+def _annotation_lines_for_vs_reference(
+    effect_by_alpha: Dict[str, Dict[str, Optional[float]]],
+    *,
+    reference_alpha: float,
+    max_lines: int = 4,
+) -> List[str]:
+    if not effect_by_alpha:
+        return []
+    lines = [f"vs alpha={reference_alpha:g}"]
+    shown = 0
+    for alpha_key in sorted(effect_by_alpha.keys(), key=lambda s: float(s)):
+        effect = effect_by_alpha[alpha_key]
+        if not isinstance(effect, dict):
+            continue
+        delta = _safe_float(effect.get("delta"))
+        lo = _safe_float(effect.get("delta_ci_low"))
+        hi = _safe_float(effect.get("delta_ci_high"))
+        pval = _safe_float(effect.get("bootstrap_p_two_sided"))
+        lines.append(f"a={float(alpha_key):g}: d={_fmt_stat(delta)} CI{_fmt_ci(lo, hi)} p~{_fmt_stat(pval, p=True)}")
+        shown += 1
+        if shown >= max_lines:
+            break
+    return lines
+
+
+def _nearest_alpha_key(values: Iterable[float], target: float, tol: float = 1e-9) -> Optional[float]:
+    vals = [float(v) for v in values]
+    if not vals:
+        return None
+    best = min(vals, key=lambda v: abs(v - float(target)))
+    if abs(best - float(target)) <= tol:
+        return best
+    return None
+
+
 def _linear_stats(xs: List[float], ys: List[float]) -> Dict[str, Optional[float]]:
     if len(xs) < 2 or len(ys) < 2:
         return {"slope": None, "intercept": None, "r": None, "p": None}
@@ -617,7 +894,16 @@ def _correlation_stats(xs: List[float], ys: List[float]) -> Dict[str, Optional[f
     }
 
 
-def _plot_series(xs: List[int], means: List[float], sems: List[float], *, title: str, ylabel: str, out_path: Path) -> None:
+def _plot_series(
+    xs: List[int],
+    means: List[float],
+    sems: List[float],
+    *,
+    title: str,
+    ylabel: str,
+    out_path: Path,
+    annotation_lines: Optional[List[str]] = None,
+) -> None:
     if plt is None:
         raise ImportError("matplotlib is required for plotting.")
     plt.figure(figsize=(7.2, 4.2))
@@ -625,6 +911,17 @@ def _plot_series(xs: List[int], means: List[float], sems: List[float], *, title:
     plt.xlabel("Turn")
     plt.ylabel(ylabel)
     plt.title(title)
+    if annotation_lines:
+        plt.gca().text(
+            0.02,
+            0.98,
+            "\n".join(annotation_lines),
+            transform=plt.gca().transAxes,
+            va="top",
+            ha="left",
+            fontsize=8,
+            bbox={"boxstyle": "round", "facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.8},
+        )
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.savefig(out_path, dpi=150)
@@ -645,7 +942,16 @@ def _plot_scatter(xs: List[float], ys: List[float], *, title: str, xlabel: str, 
     plt.close()
 
 
-def _plot_alpha_series(xs: List[float], means: List[float], sems: List[float], *, title: str, ylabel: str, out_path: Path) -> None:
+def _plot_alpha_series(
+    xs: List[float],
+    means: List[float],
+    sems: List[float],
+    *,
+    title: str,
+    ylabel: str,
+    out_path: Path,
+    annotation_lines: Optional[List[str]] = None,
+) -> None:
     if plt is None:
         raise ImportError("matplotlib is required for plotting.")
     plt.figure(figsize=(7.2, 4.2))
@@ -653,6 +959,17 @@ def _plot_alpha_series(xs: List[float], means: List[float], sems: List[float], *
     plt.xlabel("Alpha")
     plt.ylabel(ylabel)
     plt.title(title)
+    if annotation_lines:
+        plt.gca().text(
+            0.02,
+            0.98,
+            "\n".join(annotation_lines),
+            transform=plt.gca().transAxes,
+            va="top",
+            ha="left",
+            fontsize=8,
+            bbox={"boxstyle": "round", "facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.8},
+        )
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.savefig(out_path, dpi=150)
@@ -669,6 +986,7 @@ def _plot_alpha_line(
     ci_low_in: Optional[List[Optional[float]]] = None,
     ci_high_in: Optional[List[Optional[float]]] = None,
     log_y: bool = False,
+    annotation_lines: Optional[List[str]] = None,
 ) -> None:
     if plt is None:
         raise ImportError("matplotlib is required for plotting.")
@@ -729,6 +1047,17 @@ def _plot_alpha_line(
     plt.xlabel("Alpha")
     plt.ylabel(ylabel)
     plt.title(title)
+    if annotation_lines:
+        plt.gca().text(
+            0.02,
+            0.98,
+            "\n".join(annotation_lines),
+            transform=plt.gca().transAxes,
+            va="top",
+            ha="left",
+            fontsize=8,
+            bbox={"boxstyle": "round", "facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.8},
+        )
     plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.savefig(out_path, dpi=150)
@@ -886,6 +1215,7 @@ def _plot_turnwise_stat_for_alpha(
     stat_key: str,
     title: str,
     out_path: Path,
+    annotation_lines: Optional[List[str]] = None,
 ) -> bool:
     if plt is None:
         raise ImportError("matplotlib is required for plotting.")
@@ -949,6 +1279,17 @@ def _plot_turnwise_stat_for_alpha(
     plt.xlabel("Turn")
     plt.ylabel(TURNWISE_STAT_YLABEL.get(stat_key, stat_key))
     plt.title(title)
+    if annotation_lines:
+        plt.gca().text(
+            0.02,
+            0.98,
+            "\n".join(annotation_lines),
+            transform=plt.gca().transAxes,
+            va="top",
+            ha="left",
+            fontsize=8,
+            bbox={"boxstyle": "round", "facecolor": "white", "edgecolor": "#cccccc", "alpha": 0.8},
+        )
     plt.grid(alpha=0.3)
     plt.legend(loc="best")
     plt.tight_layout()
@@ -1141,6 +1482,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         raise ValueError("analysis.bootstrap_ci_level must be between 0 and 1 (exclusive).")
     bootstrap_samples = int(max(0, int(cfg.analysis.bootstrap_samples)))
     bootstrap_rng = np.random.default_rng(int(cfg.analysis.bootstrap_seed))
+    trend_min_points = int(max(2, int(cfg.analysis.trend_min_points)))
+    alpha_reference_value = float(cfg.analysis.alpha_reference_value)
+    annotate_plots = bool(cfg.analysis.annotate_plots)
 
     alphas = cfg.steering.alphas or [0.0]
     alpha_unit = cfg.steering.alpha_unit
@@ -1299,6 +1643,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
             "samples": bootstrap_samples,
             "ci_level": bootstrap_ci_level,
             "seed": int(cfg.analysis.bootstrap_seed),
+            "trend_min_points": trend_min_points,
+            "alpha_reference_value": alpha_reference_value,
         },
     }
     if use_logit_source:
@@ -1402,7 +1748,21 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     rating_sems.append(sem)
 
                 source_alpha_dir = _rating_source_alpha_dir(output_path, alpha_val, source)
+                rating_turn_trend_bootstrap: Dict[str, Optional[float]] = {}
                 if turns:
+                    rating_turn_trend_bootstrap = _bootstrap_series_trend(
+                        [float(t) for t in turns],
+                        [float(v) for v in rating_means],
+                        bootstrap_samples=bootstrap_samples,
+                        ci_level=bootstrap_ci_level,
+                        min_points=trend_min_points,
+                        rng=bootstrap_rng,
+                    )
+                    annotation_lines = (
+                        _annotation_lines_for_trend(rating_turn_trend_bootstrap, label="turn")
+                        if annotate_plots
+                        else None
+                    )
                     _plot_series(
                         turns,
                         rating_means,
@@ -1410,6 +1770,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         title=f"{source_titles.get(source, source)} vs turn (alpha={alpha_val})",
                         ylabel=source_titles.get(source, source),
                         out_path=source_alpha_dir / f"{cfg.rating.label}_{source}_vs_turn_alpha_{alpha_tag}.png",
+                        annotation_lines=annotation_lines,
                     )
 
                 for key in cfg.analysis.plot_rating_vs_metrics:
@@ -1429,6 +1790,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 rating_source_summary[source] = {
                     "rating_key": rating_key,
                     "rating_vs_turn": _linear_stats(turns, rating_means) if turns else {},
+                    "rating_vs_turn_trend_bootstrap": rating_turn_trend_bootstrap,
                     "rating_vs_metrics": {
                         key: _correlation_stats(paired_rating, paired_metrics.get(key, []))
                         for key in cfg.analysis.plot_rating_vs_metrics
@@ -1460,6 +1822,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     turns_for_metric = metric_payload.get("turns", [])
                     stats_by_alpha_turn = metric_payload.get("stats_by_alpha_turn", {})
                     plot_paths_by_alpha: Dict[str, Dict[str, Optional[str]]] = {}
+                    trend_by_alpha: Dict[str, Dict[str, Dict[str, Optional[float]]]] = {}
                     for alpha_key in sorted(stats_by_alpha_turn.keys(), key=lambda s: float(s)):
                         alpha_val = float(alpha_key)
                         metric_dir = (
@@ -1471,7 +1834,31 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         metric_dir.mkdir(parents=True, exist_ok=True)
                         per_stat_paths: Dict[str, Optional[str]] = {}
                         rows_for_alpha = stats_by_alpha_turn.get(alpha_key, [])
+                        row_by_turn: Dict[int, Dict[str, Optional[float]]] = {}
+                        for row in rows_for_alpha:
+                            turn_obj = row.get("turn")
+                            if isinstance(turn_obj, int):
+                                row_by_turn[int(turn_obj)] = row
+                        per_stat_trends: Dict[str, Dict[str, Optional[float]]] = {}
                         for stat_key in turnwise_stats_keys:
+                            ys_turn: List[Optional[float]] = [
+                                _safe_float(row_by_turn.get(int(turn), {}).get(stat_key))
+                                for turn in list(turns_for_metric)
+                            ]
+                            stat_trend = _bootstrap_series_trend(
+                                [float(t) for t in list(turns_for_metric)],
+                                ys_turn,
+                                bootstrap_samples=bootstrap_samples,
+                                ci_level=bootstrap_ci_level,
+                                min_points=trend_min_points,
+                                rng=bootstrap_rng,
+                            )
+                            per_stat_trends[stat_key] = stat_trend
+                            annotation_lines = (
+                                _annotation_lines_for_trend(stat_trend, label="turn")
+                                if annotate_plots
+                                else None
+                            )
                             out_path = metric_dir / f"{_sanitize_slug(stat_key)}_vs_turn.png"
                             made = _plot_turnwise_stat_for_alpha(
                                 turns=list(turns_for_metric),
@@ -1480,10 +1867,13 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                                 stat_key=stat_key,
                                 title=f"{stat_key} vs turn (alpha={alpha_val:g}, source={source})",
                                 out_path=out_path,
+                                annotation_lines=annotation_lines,
                             )
                             per_stat_paths[stat_key] = str(out_path) if made else None
                         plot_paths_by_alpha[alpha_key] = per_stat_paths
+                        trend_by_alpha[alpha_key] = per_stat_trends
                     metric_payload["plot_paths_by_alpha"] = plot_paths_by_alpha
+                    metric_payload["trend_by_alpha"] = trend_by_alpha
                     probe_turnwise[metric_key] = metric_payload
                 probe_turnwise_by_source[source] = probe_turnwise
                 turnwise_payload_by_source[source]["per_probe"][probe_name] = probe_turnwise
@@ -1522,6 +1912,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
             alpha_vals: List[float] = []
             alpha_means: List[float] = []
             alpha_sems: List[float] = []
+            ratings_by_alpha: Dict[float, List[float]] = {}
             for alpha_val in alphas:
                 records = per_alpha.get(float(alpha_val), [])
                 ratings = [
@@ -1536,9 +1927,46 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 alpha_vals.append(float(alpha_val))
                 alpha_means.append(mean)
                 alpha_sems.append(sem)
+                ratings_by_alpha[float(alpha_val)] = list(ratings)
             if alpha_vals:
                 source_dir = _rating_source_dir(output_path, source)
                 plot_path = source_dir / f"{cfg.rating.label}_{source}_vs_alpha.png"
+                trend_bootstrap = _bootstrap_series_trend(
+                    alpha_vals,
+                    [float(v) for v in alpha_means],
+                    bootstrap_samples=bootstrap_samples,
+                    ci_level=bootstrap_ci_level,
+                    min_points=trend_min_points,
+                    rng=bootstrap_rng,
+                )
+                ref_alpha = _nearest_alpha_key(alpha_vals, alpha_reference_value)
+                effect_by_alpha: Dict[str, Dict[str, Optional[float]]] = {}
+                if ref_alpha is not None:
+                    ref_values = ratings_by_alpha.get(float(ref_alpha), [])
+                    for alpha_val in alpha_vals:
+                        if abs(float(alpha_val) - float(ref_alpha)) <= 1e-12:
+                            continue
+                        cmp_values = ratings_by_alpha.get(float(alpha_val), [])
+                        effect = _bootstrap_value_metric_difference(
+                            ref_values,
+                            cmp_values,
+                            metric_key="mean",
+                            bootstrap_samples=bootstrap_samples,
+                            ci_level=bootstrap_ci_level,
+                            rng=bootstrap_rng,
+                        )
+                        effect_by_alpha[str(float(alpha_val))] = effect
+                annotation_lines: Optional[List[str]] = None
+                if annotate_plots:
+                    annotation_lines = []
+                    annotation_lines.extend(_annotation_lines_for_trend(trend_bootstrap, label="alpha"))
+                    if ref_alpha is not None and effect_by_alpha:
+                        annotation_lines.extend(
+                            _annotation_lines_for_vs_reference(
+                                effect_by_alpha,
+                                reference_alpha=float(ref_alpha),
+                            )
+                        )
                 _plot_alpha_series(
                     alpha_vals,
                     alpha_means,
@@ -1546,11 +1974,15 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     title=f"{source_titles.get(source, source)} vs alpha",
                     ylabel=source_titles.get(source, source),
                     out_path=plot_path,
+                    annotation_lines=annotation_lines,
                 )
                 rating_vs_alpha_summary[source] = {
                     "rating_key": rating_key,
                     "trend": _linear_stats(alpha_vals, alpha_means),
+                    "trend_bootstrap": trend_bootstrap,
                     "correlation": _correlation_stats(alpha_vals, alpha_means),
+                    "alpha_reference_value": float(ref_alpha) if ref_alpha is not None else None,
+                    "alpha_vs_reference_mean_difference": effect_by_alpha,
                     "plot_path": str(plot_path),
                 }
         if rating_vs_alpha_summary:
@@ -1577,6 +2009,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     pvalue_ci_lows: List[Optional[float]] = []
                     pvalue_ci_highs: List[Optional[float]] = []
                     num_pairs_per_alpha: List[int] = []
+                    pair_data_by_alpha: Dict[float, Tuple[List[float], List[float]]] = {}
                     for alpha_val in alpha_vals_sorted:
                         rows = per_alpha.get(float(alpha_val), [])
                         xs: List[float] = []
@@ -1593,6 +2026,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                                 continue
                             xs.append(float(rating_value))
                             ys.append(float(metric_value))
+                        pair_data_by_alpha[float(alpha_val)] = (list(xs), list(ys))
                         boot_stats = _bootstrap_pair_stats(
                             xs,
                             ys,
@@ -1610,6 +2044,57 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
 
                     source_dir = _rating_source_dir(output_path, source)
                     slope_plot_path = source_dir / _suffix_filename(cfg.analysis.alignment_slope_plot_name, source)
+                    slope_trend_bootstrap = _bootstrap_series_trend(
+                        [float(a) for a in alpha_vals_sorted],
+                        slopes,
+                        bootstrap_samples=bootstrap_samples,
+                        ci_level=bootstrap_ci_level,
+                        min_points=trend_min_points,
+                        rng=bootstrap_rng,
+                    )
+                    ref_alpha = _nearest_alpha_key(alpha_vals_sorted, alpha_reference_value)
+                    slope_effect_by_alpha: Dict[str, Dict[str, Optional[float]]] = {}
+                    pvalue_effect_by_alpha: Dict[str, Dict[str, Optional[float]]] = {}
+                    if ref_alpha is not None and float(ref_alpha) in pair_data_by_alpha:
+                        ref_xs, ref_ys = pair_data_by_alpha[float(ref_alpha)]
+                        for alpha_val in alpha_vals_sorted:
+                            if abs(float(alpha_val) - float(ref_alpha)) <= 1e-12:
+                                continue
+                            cmp_pair = pair_data_by_alpha.get(float(alpha_val))
+                            if cmp_pair is None:
+                                continue
+                            cmp_xs, cmp_ys = cmp_pair
+                            slope_effect_by_alpha[str(float(alpha_val))] = _bootstrap_pair_metric_difference(
+                                ref_xs,
+                                ref_ys,
+                                cmp_xs,
+                                cmp_ys,
+                                metric_key="slope",
+                                bootstrap_samples=bootstrap_samples,
+                                ci_level=bootstrap_ci_level,
+                                rng=bootstrap_rng,
+                            )
+                            pvalue_effect_by_alpha[str(float(alpha_val))] = _bootstrap_pair_metric_difference(
+                                ref_xs,
+                                ref_ys,
+                                cmp_xs,
+                                cmp_ys,
+                                metric_key="linreg_p",
+                                bootstrap_samples=bootstrap_samples,
+                                ci_level=bootstrap_ci_level,
+                                rng=bootstrap_rng,
+                            )
+                    slope_annotations: Optional[List[str]] = None
+                    if annotate_plots:
+                        slope_annotations = []
+                        slope_annotations.extend(_annotation_lines_for_trend(slope_trend_bootstrap, label="alpha"))
+                        if ref_alpha is not None and slope_effect_by_alpha:
+                            slope_annotations.extend(
+                                _annotation_lines_for_vs_reference(
+                                    slope_effect_by_alpha,
+                                    reference_alpha=float(ref_alpha),
+                                )
+                            )
                     _plot_alpha_line(
                         alpha_vals_sorted,
                         slopes,
@@ -1621,10 +2106,31 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         out_path=slope_plot_path,
                         ci_low_in=slope_ci_lows,
                         ci_high_in=slope_ci_highs,
+                        annotation_lines=slope_annotations,
                     )
 
                     pvalue_plot_path: Optional[Path] = None
+                    pvalue_trend_bootstrap: Dict[str, Optional[float]] = {}
                     if any(p is not None for p in pvalues):
+                        pvalue_trend_bootstrap = _bootstrap_series_trend(
+                            [float(a) for a in alpha_vals_sorted],
+                            pvalues,
+                            bootstrap_samples=bootstrap_samples,
+                            ci_level=bootstrap_ci_level,
+                            min_points=trend_min_points,
+                            rng=bootstrap_rng,
+                        )
+                        pvalue_annotations: Optional[List[str]] = None
+                        if annotate_plots:
+                            pvalue_annotations = []
+                            pvalue_annotations.extend(_annotation_lines_for_trend(pvalue_trend_bootstrap, label="alpha"))
+                            if ref_alpha is not None and pvalue_effect_by_alpha:
+                                pvalue_annotations.extend(
+                                    _annotation_lines_for_vs_reference(
+                                        pvalue_effect_by_alpha,
+                                        reference_alpha=float(ref_alpha),
+                                    )
+                                )
                         pvalue_plot_path = source_dir / _suffix_filename(
                             cfg.analysis.alignment_pvalue_plot_name, source
                         )
@@ -1640,6 +2146,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                             ci_low_in=pvalue_ci_lows,
                             ci_high_in=pvalue_ci_highs,
                             log_y=True,
+                            annotation_lines=pvalue_annotations,
                         )
 
                     valid_alpha_for_slope = [
@@ -1663,6 +2170,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                             if len(valid_slopes) >= 2
                             else {}
                         ),
+                        "slope_vs_alpha_trend_bootstrap": slope_trend_bootstrap,
+                        "pvalue_vs_alpha_trend_bootstrap": pvalue_trend_bootstrap,
+                        "alpha_reference_value": float(ref_alpha) if ref_alpha is not None else None,
+                        "slope_vs_reference_difference": slope_effect_by_alpha,
+                        "pvalue_vs_reference_difference": pvalue_effect_by_alpha,
                         "bootstrap_samples": bootstrap_samples,
                         "bootstrap_ci_level": bootstrap_ci_level,
                         "slope_plot_path": str(slope_plot_path),
@@ -1688,6 +2200,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     r2_ci_lows: List[Optional[float]] = []
                     r2_ci_highs: List[Optional[float]] = []
                     pairs_per_alpha: List[int] = []
+                    pair_data_by_alpha: Dict[float, Tuple[List[float], List[float]]] = {}
                     for alpha_val in alpha_vals_sorted:
                         rows = per_alpha.get(float(alpha_val), [])
                         xs: List[float] = []
@@ -1704,6 +2217,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                                 continue
                             xs.append(float(rating_value))
                             ys.append(float(metric_value))
+                        pair_data_by_alpha[float(alpha_val)] = (list(xs), list(ys))
                         boot_stats = _bootstrap_pair_stats(
                             xs,
                             ys,
@@ -1718,6 +2232,46 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
 
                     source_dir = _rating_source_dir(output_path, source)
                     plot_path = source_dir / _suffix_filename(cfg.analysis.r2_plot_name, source)
+                    r2_trend_bootstrap = _bootstrap_series_trend(
+                        [float(a) for a in alpha_vals_sorted],
+                        r2_vals,
+                        bootstrap_samples=bootstrap_samples,
+                        ci_level=bootstrap_ci_level,
+                        min_points=trend_min_points,
+                        rng=bootstrap_rng,
+                    )
+                    ref_alpha = _nearest_alpha_key(alpha_vals_sorted, alpha_reference_value)
+                    r2_effect_by_alpha: Dict[str, Dict[str, Optional[float]]] = {}
+                    if ref_alpha is not None and float(ref_alpha) in pair_data_by_alpha:
+                        ref_xs, ref_ys = pair_data_by_alpha[float(ref_alpha)]
+                        for alpha_val in alpha_vals_sorted:
+                            if abs(float(alpha_val) - float(ref_alpha)) <= 1e-12:
+                                continue
+                            cmp_pair = pair_data_by_alpha.get(float(alpha_val))
+                            if cmp_pair is None:
+                                continue
+                            cmp_xs, cmp_ys = cmp_pair
+                            r2_effect_by_alpha[str(float(alpha_val))] = _bootstrap_pair_metric_difference(
+                                ref_xs,
+                                ref_ys,
+                                cmp_xs,
+                                cmp_ys,
+                                metric_key="r2",
+                                bootstrap_samples=bootstrap_samples,
+                                ci_level=bootstrap_ci_level,
+                                rng=bootstrap_rng,
+                            )
+                    r2_annotations: Optional[List[str]] = None
+                    if annotate_plots:
+                        r2_annotations = []
+                        r2_annotations.extend(_annotation_lines_for_trend(r2_trend_bootstrap, label="alpha"))
+                        if ref_alpha is not None and r2_effect_by_alpha:
+                            r2_annotations.extend(
+                                _annotation_lines_for_vs_reference(
+                                    r2_effect_by_alpha,
+                                    reference_alpha=float(ref_alpha),
+                                )
+                            )
                     _plot_alpha_line(
                         alpha_vals_sorted,
                         r2_vals,
@@ -1726,6 +2280,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         out_path=plot_path,
                         ci_low_in=r2_ci_lows,
                         ci_high_in=r2_ci_highs,
+                        annotation_lines=r2_annotations,
                     )
 
                     valid_alpha_for_r2 = [
@@ -1746,6 +2301,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                             if len(valid_r2) >= 2
                             else {}
                         ),
+                        "r2_vs_alpha_trend_bootstrap": r2_trend_bootstrap,
+                        "alpha_reference_value": float(ref_alpha) if ref_alpha is not None else None,
+                        "r2_vs_reference_difference": r2_effect_by_alpha,
                         "bootstrap_samples": bootstrap_samples,
                         "bootstrap_ci_level": bootstrap_ci_level,
                         "plot_path": str(plot_path),
@@ -1760,6 +2318,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
             variance_ci_lows: List[Optional[float]] = []
             variance_ci_highs: List[Optional[float]] = []
             counts: List[int] = []
+            ratings_by_alpha: Dict[float, List[float]] = {}
             for alpha_val in alpha_vals_sorted:
                 rows = per_alpha.get(float(alpha_val), [])
                 ratings = [
@@ -1768,6 +2327,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     if isinstance(r.get(rating_key), (int, float))
                     and np.isfinite(float(r.get(rating_key)))
                 ]
+                ratings_by_alpha[float(alpha_val)] = list(ratings)
                 boot_var = _bootstrap_variance(
                     ratings,
                     bootstrap_samples=bootstrap_samples,
@@ -1781,6 +2341,41 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
 
             source_dir = _rating_source_dir(output_path, source)
             plot_path = source_dir / _suffix_filename(cfg.analysis.report_variance_plot_name, source)
+            variance_trend_bootstrap = _bootstrap_series_trend(
+                [float(a) for a in alpha_vals_sorted],
+                variance_vals,
+                bootstrap_samples=bootstrap_samples,
+                ci_level=bootstrap_ci_level,
+                min_points=trend_min_points,
+                rng=bootstrap_rng,
+            )
+            ref_alpha = _nearest_alpha_key(alpha_vals_sorted, alpha_reference_value)
+            variance_effect_by_alpha: Dict[str, Dict[str, Optional[float]]] = {}
+            if ref_alpha is not None:
+                ref_values = ratings_by_alpha.get(float(ref_alpha), [])
+                for alpha_val in alpha_vals_sorted:
+                    if abs(float(alpha_val) - float(ref_alpha)) <= 1e-12:
+                        continue
+                    cmp_values = ratings_by_alpha.get(float(alpha_val), [])
+                    variance_effect_by_alpha[str(float(alpha_val))] = _bootstrap_value_metric_difference(
+                        ref_values,
+                        cmp_values,
+                        metric_key="variance",
+                        bootstrap_samples=bootstrap_samples,
+                        ci_level=bootstrap_ci_level,
+                        rng=bootstrap_rng,
+                    )
+            variance_annotations: Optional[List[str]] = None
+            if annotate_plots:
+                variance_annotations = []
+                variance_annotations.extend(_annotation_lines_for_trend(variance_trend_bootstrap, label="alpha"))
+                if ref_alpha is not None and variance_effect_by_alpha:
+                    variance_annotations.extend(
+                        _annotation_lines_for_vs_reference(
+                            variance_effect_by_alpha,
+                            reference_alpha=float(ref_alpha),
+                        )
+                    )
             _plot_alpha_line(
                 alpha_vals_sorted,
                 variance_vals,
@@ -1789,6 +2384,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 out_path=plot_path,
                 ci_low_in=variance_ci_lows,
                 ci_high_in=variance_ci_highs,
+                annotation_lines=variance_annotations,
             )
             valid_alpha_for_var = [
                 float(a) for a, v in zip(alpha_vals_sorted, variance_vals) if v is not None and not np.isnan(v)
@@ -1804,6 +2400,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 "variance_vs_alpha_correlation": (
                     _correlation_stats(valid_alpha_for_var, valid_var) if len(valid_var) >= 2 else {}
                 ),
+                "variance_vs_alpha_trend_bootstrap": variance_trend_bootstrap,
+                "alpha_reference_value": float(ref_alpha) if ref_alpha is not None else None,
+                "variance_vs_reference_difference": variance_effect_by_alpha,
                 "bootstrap_samples": bootstrap_samples,
                 "bootstrap_ci_level": bootstrap_ci_level,
                 "plot_path": str(plot_path),

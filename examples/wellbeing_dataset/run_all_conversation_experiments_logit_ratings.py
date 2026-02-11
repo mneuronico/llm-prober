@@ -109,7 +109,7 @@ def _build_configs_from_split(
     defaults_config_path: Path,
     experiments_config_path: Path,
     selected_experiment_names: Optional[List[str]],
-    generated_configs_dir: Path,
+    generated_configs_dir: Optional[Path],
 ) -> List[Path]:
     if not defaults_config_path.exists():
         raise FileNotFoundError(f"Defaults config not found: {defaults_config_path}")
@@ -134,7 +134,8 @@ def _build_configs_from_split(
             raise ValueError(f"Requested experiment names not found: {missing}")
         experiments = [item for item in experiments if str(item["name"]) in selected_set]
 
-    generated_configs_dir.mkdir(parents=True, exist_ok=True)
+    if generated_configs_dir is not None:
+        generated_configs_dir.mkdir(parents=True, exist_ok=True)
     out_paths: List[Path] = []
     for item in experiments:
         name = str(item["name"])
@@ -144,7 +145,19 @@ def _build_configs_from_split(
         merged = _deep_merge(defaults_block, overrides)
         if not isinstance(merged, dict):
             raise ValueError(f"Experiment '{name}' merged config is not an object.")
-        out_path = generated_configs_dir / f"{_sanitize_filename(name)}.json"
+        output_dir_template = str(
+            merged.get("output_dir_template", "analysis/conversation_experiment_logit_ratings_{timestamp}")
+        )
+        if "{timestamp}" in output_dir_template:
+            output_dir_template = output_dir_template.format(timestamp=_now_tag())
+            merged["output_dir_template"] = output_dir_template
+        output_dir_path = _resolve_path(output_dir_template)
+        output_dir_path.mkdir(parents=True, exist_ok=True)
+
+        if generated_configs_dir is not None:
+            out_path = generated_configs_dir / f"{_sanitize_filename(name)}.json"
+        else:
+            out_path = output_dir_path / f"{_sanitize_filename(name)}.generated_config.json"
         out_path.write_text(json.dumps(merged, indent=2, ensure_ascii=False), encoding="utf-8")
         out_paths.append(out_path)
     return out_paths
@@ -152,6 +165,14 @@ def _build_configs_from_split(
 
 def _default_logs_dir() -> Path:
     return REPO_ROOT / "analysis" / f"conversation_experiment_logit_ratings_batch_{_now_tag()}" / "logs"
+
+
+def _resolve_output_dir_from_config(config_path: Path) -> Path:
+    raw = _load_json(config_path)
+    output_dir_template = str(raw.get("output_dir_template", "analysis/conversation_experiment_logit_ratings"))
+    if "{timestamp}" in output_dir_template:
+        output_dir_template = output_dir_template.format(timestamp=_now_tag())
+    return _resolve_path(output_dir_template)
 
 
 def _run_one(
@@ -175,6 +196,7 @@ def _run_one(
         return 0
 
     start_time = time.time()
+    log_path.parent.mkdir(parents=True, exist_ok=True)
     with open(log_path, "wb", buffering=0) as log_fh:
         env = dict(os.environ)
         env["PYTHONUNBUFFERED"] = "1"
@@ -279,9 +301,13 @@ def _parse_args() -> argparse.Namespace:
 def main() -> None:
     args = _parse_args()
 
-    logs_dir = Path(args.logs_dir).resolve() if args.logs_dir else _default_logs_dir()
-    logs_dir.mkdir(parents=True, exist_ok=True)
     using_split_mode = bool(args.defaults_config or args.experiments_config)
+    split_inline_artifacts = bool(using_split_mode and not args.logs_dir and not args.generated_configs_dir)
+    logs_dir = Path(args.logs_dir).resolve() if args.logs_dir else (
+        None if split_inline_artifacts else _default_logs_dir()
+    )
+    if logs_dir is not None:
+        logs_dir.mkdir(parents=True, exist_ok=True)
 
     if using_split_mode and args.configs is not None:
         raise ValueError("Use either --configs or split mode (--defaults-config + --experiments-config), not both.")
@@ -291,11 +317,7 @@ def main() -> None:
             raise ValueError("Split mode requires both --defaults-config and --experiments-config.")
         defaults_path = _resolve_path(args.defaults_config)
         experiments_path = _resolve_path(args.experiments_config)
-        generated_dir = (
-            Path(args.generated_configs_dir).resolve()
-            if args.generated_configs_dir
-            else logs_dir.parent / "generated_configs"
-        )
+        generated_dir = Path(args.generated_configs_dir).resolve() if args.generated_configs_dir else None
         config_paths = _build_configs_from_split(
             defaults_config_path=defaults_path,
             experiments_config_path=experiments_path,
@@ -304,7 +326,10 @@ def main() -> None:
         )
         print(f"Split mode defaults: {defaults_path}")
         print(f"Split mode experiments: {experiments_path}")
-        print(f"Generated configs: {generated_dir}")
+        if generated_dir is not None:
+            print(f"Generated configs: {generated_dir}")
+        else:
+            print("Generated configs: per-experiment output folders")
     else:
         config_paths = _resolve_configs(args.configs)
 
@@ -312,14 +337,22 @@ def main() -> None:
     print(f"Python: {args.python}")
     print(f"Config count: {len(config_paths)}")
     print("Mode: sequential")
-    print(f"Logs dir: {logs_dir}")
+    if logs_dir is not None:
+        print(f"Logs dir: {logs_dir}")
+    else:
+        print("Logs dir: per-experiment output folders")
 
     failures = 0
     completed = 0
 
     try:
         for config_path in config_paths:
-            log_path = logs_dir / f"{config_path.stem}.log"
+            if logs_dir is not None:
+                log_path = logs_dir / f"{config_path.stem}.log"
+            else:
+                out_dir = _resolve_output_dir_from_config(config_path)
+                out_dir.mkdir(parents=True, exist_ok=True)
+                log_path = out_dir / "run_all.log"
             rc = _run_one(
                 python_exec=args.python,
                 config_path=config_path,

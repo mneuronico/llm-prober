@@ -58,7 +58,10 @@
       "plot_turnwise_relationship_vs_alpha": true,
       "bootstrap_samples": 1000,
       "bootstrap_ci_level": 0.95,
-      "bootstrap_seed": 0
+      "bootstrap_seed": 0,
+      "trend_min_points": 3,
+      "alpha_reference_value": 0.0,
+      "annotate_plots": true
     }
   }
 }
