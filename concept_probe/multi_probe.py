@@ -9,7 +9,7 @@ from .modeling import apply_chat, attention_mask_from_ids
 from .probe import (
     ConceptProbe,
     PromptLike,
-    _extract_generation_logits_arrays,
+    _pack_generation_logits_arrays,
     _alpha_label,
     _decode_tokens,
     _normalize_messages,
@@ -269,44 +269,6 @@ def multi_probe_score_prompts(
                     float(alpha_val),
                     distribute=steer_distribute,
                 ):
-                    if save_generation_logits:
-                        gen_out = model.generate(
-                            input_ids=input_ids,
-                            attention_mask=attn,
-                            max_new_tokens=max_new_tokens,
-                            do_sample=not greedy,
-                            temperature=temperature if not greedy else None,
-                            top_p=top_p if not greedy else None,
-                            pad_token_id=tokenizer.eos_token_id,
-                            return_dict_in_generate=True,
-                            output_scores=True,
-                        )
-                        gen_ids = gen_out.sequences[0].detach().cpu()
-                    else:
-                        gen_ids = model.generate(
-                            input_ids=input_ids,
-                            attention_mask=attn,
-                            max_new_tokens=max_new_tokens,
-                            do_sample=not greedy,
-                            temperature=temperature if not greedy else None,
-                            top_p=top_p if not greedy else None,
-                            pad_token_id=tokenizer.eos_token_id,
-                        )[0].detach().cpu()
-            else:
-                if save_generation_logits:
-                    gen_out = model.generate(
-                        input_ids=input_ids,
-                        attention_mask=attn,
-                        max_new_tokens=max_new_tokens,
-                        do_sample=not greedy,
-                        temperature=temperature if not greedy else None,
-                        top_p=top_p if not greedy else None,
-                        pad_token_id=tokenizer.eos_token_id,
-                        return_dict_in_generate=True,
-                        output_scores=True,
-                    )
-                    gen_ids = gen_out.sequences[0].detach().cpu()
-                else:
                     gen_ids = model.generate(
                         input_ids=input_ids,
                         attention_mask=attn,
@@ -316,18 +278,47 @@ def multi_probe_score_prompts(
                         top_p=top_p if not greedy else None,
                         pad_token_id=tokenizer.eos_token_id,
                     )[0].detach().cpu()
-
-            hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
+                    if save_generation_logits:
+                        hs_layers, generation_step_logits = forward_hidden_states_all_layers(
+                            model,
+                            gen_ids.unsqueeze(0),
+                            return_generation_logits=True,
+                            generation_prompt_len=prompt_len,
+                        )
+                    else:
+                        hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
+                        generation_step_logits = None
+            else:
+                gen_ids = model.generate(
+                    input_ids=input_ids,
+                    attention_mask=attn,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=not greedy,
+                    temperature=temperature if not greedy else None,
+                    top_p=top_p if not greedy else None,
+                    pad_token_id=tokenizer.eos_token_id,
+                )[0].detach().cpu()
+                if save_generation_logits:
+                    hs_layers, generation_step_logits = forward_hidden_states_all_layers(
+                        model,
+                        gen_ids.unsqueeze(0),
+                        return_generation_logits=True,
+                        generation_prompt_len=prompt_len,
+                    )
+                else:
+                    hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
+                    generation_step_logits = None
             token_ids = gen_ids.numpy().astype(np.int32)
             tokens = _decode_tokens(tokenizer, token_ids)
             completion_ids = token_ids[prompt_len:]
             completion_text = tokenizer.decode(completion_ids, skip_special_tokens=True)
             generation_logits_payload: Dict[str, np.ndarray] = {}
-            if save_generation_logits:
-                generation_logits_payload = _extract_generation_logits_arrays(
-                    gen_out,
+            if save_generation_logits and generation_step_logits is not None:
+                generation_logits_payload = _pack_generation_logits_arrays(
+                    generation_step_logits,
                     logits_top_k=generation_logits_top_k,
                     logits_dtype_name=generation_logits_dtype,
+                    logits_source="raw_model",
                 )
 
             scores_agg_list: List[np.ndarray] = []
@@ -414,6 +405,11 @@ def multi_probe_score_prompts(
                     int(generation_logits_payload["generation_logits_steps"][0])
                     if "generation_logits_steps" in generation_logits_payload
                     else 0
+                ),
+                "generation_logits_source": (
+                    str(generation_logits_payload["generation_logits_source"][0])
+                    if "generation_logits_source" in generation_logits_payload
+                    else None
                 ),
                 "batch_dir": out_dir,
             }

@@ -1,0 +1,99 @@
+{
+  "experiments": [
+    {
+      "name": "empathy",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/empathy_vs_detachment/20260109_150734"
+        ],
+        "output_dir_template": "analysis/empathy_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how empathic you are feeling right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "empathy"
+        },
+        "analysis": {
+          "alignment_probe_name": "empathy_vs_detachment",
+          "r2_probe_name": "empathy_vs_detachment"
+        }
+      }
+    },
+    {
+      "name": "focus",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/distracted_vs_focused/20260122_095601"
+        ],
+        "output_dir_template": "analysis/focus_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how focused you feel on this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number"
+        },
+        "rating": {
+          "label": "focus"
+        },
+        "analysis": {
+          "alignment_probe_name": "distracted_vs_focused",
+          "r2_probe_name": "distracted_vs_focused"
+        }
+      }
+    },
+    {
+      "name": "wellbeing",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/sad_vs_happy/20260106_181019"
+        ],
+        "output_dir_template": "analysis/wellbeing_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how happy you are right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number"
+        },
+        "rating": {
+          "label": "wellbeing"
+        },
+        "analysis": {
+          "alignment_probe_name": "sad_vs_happy",
+          "r2_probe_name": "sad_vs_happy"
+        }
+      }
+    },
+    {
+      "name": "interest",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/bored_vs_interested/20260122_112208"
+        ],
+        "output_dir_template": "analysis/interest_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number"
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    },
+    {
+      "name": "impulsivity",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/impulsive_vs_planning/20260120_181954"
+        ],
+        "output_dir_template": "analysis/impulsivity_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how impulsive are you feeling right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "impulsiveness"
+        },
+        "analysis": {
+          "alignment_probe_name": "impulsive_vs_planning",
+          "r2_probe_name": "impulsive_vs_planning"
+        }
+      }
+    }
+  ]
+}

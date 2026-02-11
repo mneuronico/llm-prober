@@ -202,6 +202,10 @@ Generation-logit output keys in `output`:
 - `generation_logits_top_k` (int or `null`; `null`/`0` stores full-vocab logits)
 - `generation_logits_dtype` (`"float16"` or `"float32"`)
 
+When enabled, saved generation logits are raw model next-token logits (pre-sampling, pre-filtering).
+They are not affected by `top_p`, `top_k`, temperature, or other sampling filters.
+If steering is active for a run, logits are captured under the same steering context used for generation.
+
 ---
 
 ## Readout Modes
@@ -482,6 +486,7 @@ Outputs:
 - `batch_prompts.html` with shared scale.
 - Optional generation logits in each `.npz` (all generated steps) when
   `save_generation_logits=True`.
+  - Saved logits are raw model logits for each generated step (pre-filtering).
   - Logits are written alongside token scores, so `output.save_token_scores_npz` must be `true`.
 
 Names include prompt snippets and alpha labels for clarity.
@@ -821,6 +826,7 @@ Notes:
 - `scores_agg` in the `.npz` is shaped `(num_probes, num_tokens)`.
 - Generation logits (same completion used by all probes) can be saved per prompt/alpha
   with `save_generation_logits=True`.
+  - Saved logits are raw model logits for each generated step (pre-filtering).
   - Logits are persisted in `.npz`, so `output.save_token_scores_npz` must be `true`.
 
 ### Keeping outputs together (batch folders)
@@ -973,7 +979,8 @@ Multi-probe `.npz` contents:
   - Full-vocab mode: `generation_logits` with shape `(num_generated_steps, vocab_size)`.
   - Top-k mode: `generation_logits_topk_values` and `generation_logits_topk_indices`
     with shape `(num_generated_steps, k)`.
-  - Metadata: `generation_logits_steps`, `generation_logits_topk_k`, `generation_logits_dtype`.
+  - Metadata: `generation_logits_steps`, `generation_logits_topk_k`, `generation_logits_dtype`, `generation_logits_source`.
+  - `generation_logits_source` is currently `"raw_model"` (pre-filter logits).
 - `prompt_..._segments.json` per prompt/alpha (if `save_segments=True`), with per-probe segments.
 
 Single-probe prompt `.npz` contents (`score_prompts`):

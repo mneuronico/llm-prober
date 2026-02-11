@@ -251,38 +251,26 @@ def _normalize_generation_logits_dtype(dtype_name: Optional[str]) -> Tuple[str, 
     )
 
 
-def _extract_generation_logits_arrays(
-    generation_output: Any,
+def _pack_generation_logits_arrays(
+    generation_step_logits: torch.Tensor,
     *,
     logits_top_k: Optional[int],
     logits_dtype_name: Optional[str],
+    logits_source: str = "raw_model",
 ) -> Dict[str, np.ndarray]:
-    scores = getattr(generation_output, "scores", None)
-    if not scores:
+    if generation_step_logits.ndim != 2:
+        raise ValueError(
+            f"Expected generation_step_logits to have shape (num_steps, vocab_size); got {tuple(generation_step_logits.shape)}"
+        )
+    if generation_step_logits.shape[0] <= 0:
         return {}
 
     dtype_name, torch_dtype = _normalize_generation_logits_dtype(logits_dtype_name)
-    step_logits: List[torch.Tensor] = []
-    for step in scores:
-        if step is None:
-            continue
-        if step.ndim == 2:
-            if step.shape[0] < 1:
-                continue
-            vec = step[0]
-        elif step.ndim == 1:
-            vec = step
-        else:
-            raise ValueError(f"Unexpected generation score tensor shape: {tuple(step.shape)}")
-        step_logits.append(vec.detach().to(dtype=torch.float32, device="cpu"))
-
-    if not step_logits:
-        return {}
-
-    logits = torch.stack(step_logits, dim=0)
+    logits = generation_step_logits.detach().to(dtype=torch.float32, device="cpu")
     out: Dict[str, np.ndarray] = {
         "generation_logits_steps": np.array([int(logits.shape[0])], dtype=np.int32),
         "generation_logits_dtype": np.array([dtype_name]),
+        "generation_logits_source": np.array([str(logits_source)]),
     }
 
     if logits_top_k is not None and int(logits_top_k) > 0:
@@ -298,8 +286,36 @@ def _extract_generation_logits_arrays(
     return out
 
 
+def _slice_generation_step_logits(
+    full_logits: torch.Tensor,
+    *,
+    prompt_len: int,
+    total_tokens: int,
+) -> torch.Tensor:
+    if full_logits.ndim != 2:
+        raise ValueError(f"Expected full logits shape (seq_len, vocab_size); got {tuple(full_logits.shape)}")
+
+    generated_steps = max(0, int(total_tokens) - int(prompt_len))
+    if generated_steps <= 0:
+        return full_logits.new_empty((0, int(full_logits.shape[-1])))
+
+    start = 0 if int(prompt_len) <= 0 else int(prompt_len) - 1
+    end = start + generated_steps
+    if end > int(full_logits.shape[0]):
+        raise ValueError(
+            f"Cannot slice generation logits: prompt_len={prompt_len}, total_tokens={total_tokens}, logits_seq_len={int(full_logits.shape[0])}"
+        )
+    return full_logits[start:end]
+
+
 @torch.no_grad()
-def forward_hidden_states_all_layers(model, input_ids: torch.Tensor) -> List[torch.Tensor]:
+def forward_hidden_states_all_layers(
+    model,
+    input_ids: torch.Tensor,
+    *,
+    return_generation_logits: bool = False,
+    generation_prompt_len: Optional[int] = None,
+) -> Union[List[torch.Tensor], Tuple[List[torch.Tensor], torch.Tensor]]:
     attn = attention_mask_from_ids(input_ids).to(model.device)
     out = model(
         input_ids=input_ids.to(model.device),
@@ -310,7 +326,22 @@ def forward_hidden_states_all_layers(model, input_ids: torch.Tensor) -> List[tor
     )
     hs = out.hidden_states
     num_layers = len(hs) - 1
-    return [hs[l + 1][0].detach().float().cpu() for l in range(num_layers)]
+    hs_layers = [hs[l + 1][0].detach().float().cpu() for l in range(num_layers)]
+    if not return_generation_logits:
+        return hs_layers
+
+    logits = getattr(out, "logits", None)
+    if logits is None:
+        raise ValueError("Model output does not include logits; cannot save generation logits.")
+    logits_2d = logits[0]
+    seq_len = int(input_ids.shape[-1])
+    prompt_len = seq_len if generation_prompt_len is None else int(generation_prompt_len)
+    step_logits = _slice_generation_step_logits(
+        logits_2d,
+        prompt_len=prompt_len,
+        total_tokens=seq_len,
+    )
+    return hs_layers, step_logits.detach().to(dtype=torch.float32, device="cpu")
 
 
 def reps_from_hs_layers(
@@ -1201,44 +1232,6 @@ class ConceptProbe:
 
                 if context is not None:
                     with context:
-                        if save_generation_logits:
-                            gen_out = model.generate(
-                                input_ids=input_ids,
-                                attention_mask=attn,
-                                max_new_tokens=max_new_tokens,
-                                do_sample=not greedy,
-                                temperature=temperature if not greedy else None,
-                                top_p=top_p if not greedy else None,
-                                pad_token_id=tokenizer.eos_token_id,
-                                return_dict_in_generate=True,
-                                output_scores=True,
-                            )
-                            gen_ids = gen_out.sequences[0].detach().cpu()
-                        else:
-                            gen_ids = model.generate(
-                                input_ids=input_ids,
-                                attention_mask=attn,
-                                max_new_tokens=max_new_tokens,
-                                do_sample=not greedy,
-                                temperature=temperature if not greedy else None,
-                                top_p=top_p if not greedy else None,
-                                pad_token_id=tokenizer.eos_token_id,
-                            )[0].detach().cpu()
-                else:
-                    if save_generation_logits:
-                        gen_out = model.generate(
-                            input_ids=input_ids,
-                            attention_mask=attn,
-                            max_new_tokens=max_new_tokens,
-                            do_sample=not greedy,
-                            temperature=temperature if not greedy else None,
-                            top_p=top_p if not greedy else None,
-                            pad_token_id=tokenizer.eos_token_id,
-                            return_dict_in_generate=True,
-                            output_scores=True,
-                        )
-                        gen_ids = gen_out.sequences[0].detach().cpu()
-                    else:
                         gen_ids = model.generate(
                             input_ids=input_ids,
                             attention_mask=attn,
@@ -1248,17 +1241,46 @@ class ConceptProbe:
                             top_p=top_p if not greedy else None,
                             pad_token_id=tokenizer.eos_token_id,
                         )[0].detach().cpu()
-
-                hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
+                        if save_generation_logits:
+                            hs_layers, generation_step_logits = forward_hidden_states_all_layers(
+                                model,
+                                gen_ids.unsqueeze(0),
+                                return_generation_logits=True,
+                                generation_prompt_len=prompt_len,
+                            )
+                        else:
+                            hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
+                            generation_step_logits = None
+                else:
+                    gen_ids = model.generate(
+                        input_ids=input_ids,
+                        attention_mask=attn,
+                        max_new_tokens=max_new_tokens,
+                        do_sample=not greedy,
+                        temperature=temperature if not greedy else None,
+                        top_p=top_p if not greedy else None,
+                        pad_token_id=tokenizer.eos_token_id,
+                    )[0].detach().cpu()
+                    if save_generation_logits:
+                        hs_layers, generation_step_logits = forward_hidden_states_all_layers(
+                            model,
+                            gen_ids.unsqueeze(0),
+                            return_generation_logits=True,
+                            generation_prompt_len=prompt_len,
+                        )
+                    else:
+                        hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
+                        generation_step_logits = None
                 scores_per_layer, scores_agg = token_scores_from_hs_layers(
                     hs_layers, self.concept_vectors, layers, aggregate=aggregate
                 )
                 generation_logits_payload: Dict[str, np.ndarray] = {}
-                if save_generation_logits:
-                    generation_logits_payload = _extract_generation_logits_arrays(
-                        gen_out,
+                if save_generation_logits and generation_step_logits is not None:
+                    generation_logits_payload = _pack_generation_logits_arrays(
+                        generation_step_logits,
                         logits_top_k=generation_logits_top_k,
                         logits_dtype_name=generation_logits_dtype,
+                        logits_source="raw_model",
                     )
 
                 token_ids = gen_ids.numpy().astype(np.int32)
@@ -1334,6 +1356,11 @@ class ConceptProbe:
                         int(generation_logits_payload["generation_logits_steps"][0])
                         if "generation_logits_steps" in generation_logits_payload
                         else 0
+                    ),
+                    "generation_logits_source": (
+                        str(generation_logits_payload["generation_logits_source"][0])
+                        if "generation_logits_source" in generation_logits_payload
+                        else None
                     ),
                     "batch_dir": out_dir,
                 }

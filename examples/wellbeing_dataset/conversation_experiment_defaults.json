@@ -8,7 +8,7 @@
       "max_turns": null
     },
     "steering": {
-      "alphas": [-2, -1, 0, 1, 2],
+      "alphas": [0],
       "alpha_unit": "raw",
       "steer_probe": 0
     },
@@ -16,7 +16,7 @@
       "max_new_tokens": 8,
       "greedy": false,
       "temperature": 0.8,
-      "top_p": 0.9,
+      "top_p": 1.0,
       "save_html": false,
       "save_segments": true
     },
@@ -35,7 +35,7 @@
       "option_token_templates": ["{value}", " {value}", "\\n{value}"],
       "step_index": 0,
       "save_option_probabilities": true,
-      "save_generation_logits": false,
+      "save_generation_logits": true,
       "generation_logits_top_k": null,
       "generation_logits_dtype": "float16"
     },
@@ -55,7 +55,10 @@
       "plot_report_variance_vs_alpha": true,
       "report_variance_rating_key": "rating",
       "report_variance_plot_name": "report_variance_vs_alpha.png",
-      "plot_turnwise_relationship_vs_alpha": true
+      "plot_turnwise_relationship_vs_alpha": true,
+      "bootstrap_samples": 1000,
+      "bootstrap_ci_level": 0.95,
+      "bootstrap_seed": 0
     }
   }
 }

@@ -148,6 +148,9 @@ class AnalysisConfig:
         default_factory=lambda: list(DEFAULT_TURNWISE_RELATIONSHIP_STATS)
     )
     turnwise_relationship_json_name: str = "turnwise_relationship_vs_alpha.json"
+    bootstrap_samples: int = 1000
+    bootstrap_ci_level: float = 0.95
+    bootstrap_seed: int = 0
 
 
 @dataclass
@@ -289,6 +292,8 @@ def _logsumexp(values: np.ndarray) -> float:
     if values.size == 0:
         return float("-inf")
     m = float(np.max(values))
+    if not np.isfinite(m):
+        return float(m)
     return float(m + np.log(np.sum(np.exp(values - m))))
 
 
@@ -326,9 +331,34 @@ def _compute_logit_rating_from_npz(
         option_scores[option_key] = _logsumexp(np.array(candidate_vals, dtype=np.float64))
 
     score_vals = np.array([option_scores[k] for k in option_values.keys()], dtype=np.float64)
+    finite_mask = np.isfinite(score_vals)
+    if not np.any(finite_mask):
+        return {
+            "logit_rating": None,
+            "logit_rating_probs": None,
+            "logit_rating_status": "all_option_logits_nonfinite",
+        }
     norm = _logsumexp(score_vals)
+    if not np.isfinite(norm):
+        return {
+            "logit_rating": None,
+            "logit_rating_probs": None,
+            "logit_rating_status": "normalization_nonfinite",
+        }
     probs = np.exp(score_vals - norm)
+    if not np.all(np.isfinite(probs)):
+        return {
+            "logit_rating": None,
+            "logit_rating_probs": None,
+            "logit_rating_status": "probabilities_nonfinite",
+        }
     rating = float(sum(option_values[k] * float(p) for k, p in zip(option_values.keys(), probs)))
+    if not np.isfinite(rating):
+        return {
+            "logit_rating": None,
+            "logit_rating_probs": None,
+            "logit_rating_status": "rating_nonfinite",
+        }
     prob_map = {k: float(p) for k, p in zip(option_values.keys(), probs)} if save_option_probabilities else None
     return {
         "logit_rating": rating,
@@ -346,6 +376,173 @@ def _mean_sem(values: List[float]) -> Tuple[float, float]:
         return (mean, 0.0)
     sem = float(arr.std(ddof=1) / math.sqrt(len(values)))
     return (mean, sem)
+
+
+def _ci_bounds(values: List[float], ci_level: float) -> Tuple[Optional[float], Optional[float]]:
+    finite = [float(v) for v in values if np.isfinite(float(v))]
+    if not finite:
+        return (None, None)
+    lo_q = 100.0 * (1.0 - float(ci_level)) / 2.0
+    hi_q = 100.0 - lo_q
+    arr = np.array(finite, dtype=float)
+    lo, hi = np.percentile(arr, [lo_q, hi_q])
+    return (float(lo), float(hi))
+
+
+def _pair_stats_arrays(x: np.ndarray, y: np.ndarray) -> Dict[str, Optional[float]]:
+    stats: Dict[str, Optional[float]] = {
+        "slope": None,
+        "intercept": None,
+        "linreg_r": None,
+        "linreg_p": None,
+        "r2": None,
+        "pearson_r": None,
+        "pearson_p": None,
+        "spearman_rho": None,
+        "spearman_p": None,
+        "y_variance": None,
+    }
+    if x.size < 2 or y.size < 2:
+        return stats
+
+    if y.size >= 2:
+        try:
+            stats["y_variance"] = _safe_float(float(np.var(y, ddof=1)))
+        except Exception:
+            pass
+
+    x_const = bool(np.allclose(x, x[0])) if x.size else True
+    y_const = bool(np.allclose(y, y[0])) if y.size else True
+
+    if not x_const:
+        if linregress is not None:
+            try:
+                res = linregress(x, y)
+                stats["slope"] = _safe_float(res.slope)
+                stats["intercept"] = _safe_float(res.intercept)
+                stats["linreg_r"] = _safe_float(res.rvalue)
+                stats["linreg_p"] = _safe_float(res.pvalue)
+                if stats["linreg_r"] is not None:
+                    stats["r2"] = float(stats["linreg_r"] ** 2)
+            except Exception:
+                pass
+        else:
+            try:
+                slope, intercept = np.polyfit(x, y, 1)
+                stats["slope"] = _safe_float(slope)
+                stats["intercept"] = _safe_float(intercept)
+                corr = _safe_float(np.corrcoef(x, y)[0, 1])
+                stats["linreg_r"] = corr
+                if corr is not None:
+                    stats["r2"] = float(corr ** 2)
+            except Exception:
+                pass
+
+    if not x_const and not y_const:
+        if pearsonr is not None:
+            try:
+                pr = pearsonr(x, y)
+                stats["pearson_r"] = _safe_float(pr.statistic)
+                stats["pearson_p"] = _safe_float(pr.pvalue)
+            except Exception:
+                pass
+        else:
+            stats["pearson_r"] = _safe_float(np.corrcoef(x, y)[0, 1])
+
+        if spearmanr is not None:
+            try:
+                sr = spearmanr(x, y)
+                stats["spearman_rho"] = _safe_float(sr.correlation)
+                stats["spearman_p"] = _safe_float(sr.pvalue)
+            except Exception:
+                pass
+
+    return stats
+
+
+def _bootstrap_pair_stats(
+    xs: List[float],
+    ys: List[float],
+    *,
+    bootstrap_samples: int,
+    ci_level: float,
+    rng: np.random.Generator,
+) -> Dict[str, Optional[float]]:
+    x = np.array(xs, dtype=float)
+    y = np.array(ys, dtype=float)
+    mask = np.isfinite(x) & np.isfinite(y)
+    x = x[mask]
+    y = y[mask]
+
+    out: Dict[str, Optional[float]] = {"count": float(x.size)}
+    point = _pair_stats_arrays(x, y)
+    out.update(point)
+
+    if x.size < 2 or bootstrap_samples <= 0:
+        out["bootstrap_samples"] = 0
+        return out
+
+    metric_keys = list(point.keys())
+    samples: Dict[str, List[float]] = {k: [] for k in metric_keys}
+    n = int(x.size)
+    for _ in range(int(bootstrap_samples)):
+        idx = rng.integers(0, n, size=n)
+        xb = x[idx]
+        yb = y[idx]
+        boot_stats = _pair_stats_arrays(xb, yb)
+        for key in metric_keys:
+            val = boot_stats.get(key)
+            if isinstance(val, (int, float)) and np.isfinite(float(val)):
+                samples[key].append(float(val))
+
+    for key in metric_keys:
+        lo, hi = _ci_bounds(samples.get(key, []), ci_level)
+        out[f"{key}_ci_low"] = lo
+        out[f"{key}_ci_high"] = hi
+        out[f"{key}_bootstrap_n"] = int(len(samples.get(key, [])))
+    out["bootstrap_samples"] = int(bootstrap_samples)
+    return out
+
+
+def _bootstrap_variance(
+    values: List[float],
+    *,
+    bootstrap_samples: int,
+    ci_level: float,
+    rng: np.random.Generator,
+) -> Dict[str, Optional[float]]:
+    arr = np.array(values, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    out: Dict[str, Optional[float]] = {
+        "variance": None,
+        "variance_ci_low": None,
+        "variance_ci_high": None,
+        "bootstrap_samples": 0,
+        "bootstrap_n": 0,
+    }
+    if arr.size < 2:
+        return out
+
+    out["variance"] = float(np.var(arr, ddof=1))
+    if bootstrap_samples <= 0:
+        return out
+
+    n = int(arr.size)
+    vals: List[float] = []
+    for _ in range(int(bootstrap_samples)):
+        idx = rng.integers(0, n, size=n)
+        vb = arr[idx]
+        if vb.size < 2:
+            continue
+        v = float(np.var(vb, ddof=1))
+        if np.isfinite(v):
+            vals.append(v)
+    lo, hi = _ci_bounds(vals, ci_level)
+    out["variance_ci_low"] = lo
+    out["variance_ci_high"] = hi
+    out["bootstrap_samples"] = int(bootstrap_samples)
+    out["bootstrap_n"] = int(len(vals))
+    return out
 
 
 def _linear_stats(xs: List[float], ys: List[float]) -> Dict[str, Optional[float]]:
@@ -469,20 +666,66 @@ def _plot_alpha_line(
     title: str,
     ylabel: str,
     out_path: Path,
+    ci_low_in: Optional[List[Optional[float]]] = None,
+    ci_high_in: Optional[List[Optional[float]]] = None,
+    log_y: bool = False,
 ) -> None:
     if plt is None:
         raise ImportError("matplotlib is required for plotting.")
     xs_plot: List[float] = []
     ys_plot: List[float] = []
-    for x, y in zip(xs, ys_in):
+    ci_low_plot: List[float] = []
+    ci_high_plot: List[float] = []
+    for idx, (x, y) in enumerate(zip(xs, ys_in)):
         if y is None or np.isnan(y):
             continue
+        y_f = float(y)
+        if log_y and y_f <= 0:
+            continue
         xs_plot.append(float(x))
-        ys_plot.append(float(y))
+        ys_plot.append(y_f)
+        if ci_low_in is not None and ci_high_in is not None:
+            low = ci_low_in[idx] if idx < len(ci_low_in) else None
+            high = ci_high_in[idx] if idx < len(ci_high_in) else None
+            low_f = float(low) if isinstance(low, (int, float)) else float("nan")
+            high_f = float(high) if isinstance(high, (int, float)) else float("nan")
+            if log_y and (not np.isfinite(low_f) or low_f <= 0):
+                low_f = float("nan")
+            if log_y and (not np.isfinite(high_f) or high_f <= 0):
+                high_f = float("nan")
+            ci_low_plot.append(low_f)
+            ci_high_plot.append(high_f)
     if not xs_plot:
         return
     plt.figure(figsize=(7.2, 4.2))
     plt.plot(xs_plot, ys_plot, marker="o", linewidth=1.6)
+    if ci_low_in is not None and ci_high_in is not None and ci_low_plot and ci_high_plot:
+        low_arr = np.array(ci_low_plot, dtype=float)
+        high_arr = np.array(ci_high_plot, dtype=float)
+        ok = np.isfinite(low_arr) & np.isfinite(high_arr)
+        if np.any(ok):
+            plt.fill_between(
+                np.array(xs_plot, dtype=float),
+                low_arr,
+                high_arr,
+                where=ok,
+                alpha=0.20,
+                linewidth=0.0,
+            )
+            y_arr = np.array(ys_plot, dtype=float)
+            yerr_low = np.where(ok, np.maximum(0.0, y_arr - low_arr), np.nan)
+            yerr_high = np.where(ok, np.maximum(0.0, high_arr - y_arr), np.nan)
+            plt.errorbar(
+                np.array(xs_plot, dtype=float),
+                y_arr,
+                yerr=np.vstack([yerr_low, yerr_high]),
+                fmt="none",
+                capsize=3,
+                linewidth=1.0,
+                alpha=0.9,
+            )
+    if log_y:
+        plt.yscale("log")
     plt.xlabel("Alpha")
     plt.ylabel(ylabel)
     plt.title(title)
@@ -556,72 +799,21 @@ def _normalize_turnwise_stats(stats_raw: Union[str, List[str], Tuple[str, ...]])
     return parsed
 
 
-def _turnwise_pair_stats(xs: List[float], ys: List[float]) -> Dict[str, Optional[float]]:
-    stats: Dict[str, Optional[float]] = {
-        "count": float(len(xs)),
-        "slope": None,
-        "intercept": None,
-        "linreg_r": None,
-        "linreg_p": None,
-        "r2": None,
-        "pearson_r": None,
-        "pearson_p": None,
-        "spearman_rho": None,
-        "spearman_p": None,
-    }
-    if len(xs) < 2 or len(ys) < 2:
-        return stats
-
-    x = np.array(xs, dtype=float)
-    y = np.array(ys, dtype=float)
-    if np.allclose(x, x[0]):
-        return stats
-
-    if linregress is not None:
-        try:
-            res = linregress(x, y)
-            stats["slope"] = _safe_float(res.slope)
-            stats["intercept"] = _safe_float(res.intercept)
-            stats["linreg_r"] = _safe_float(res.rvalue)
-            stats["linreg_p"] = _safe_float(res.pvalue)
-            if stats["linreg_r"] is not None:
-                stats["r2"] = float(stats["linreg_r"] ** 2)
-        except Exception:
-            pass
-    else:
-        try:
-            slope, intercept = np.polyfit(x, y, 1)
-            stats["slope"] = _safe_float(slope)
-            stats["intercept"] = _safe_float(intercept)
-            corr = _safe_float(np.corrcoef(x, y)[0, 1])
-            stats["linreg_r"] = corr
-            if corr is not None:
-                stats["r2"] = float(corr ** 2)
-        except Exception:
-            pass
-
-    if np.allclose(y, y[0]):
-        return stats
-
-    if pearsonr is not None:
-        try:
-            pr = pearsonr(x, y)
-            stats["pearson_r"] = _safe_float(pr.statistic)
-            stats["pearson_p"] = _safe_float(pr.pvalue)
-        except Exception:
-            pass
-    else:
-        stats["pearson_r"] = _safe_float(np.corrcoef(x, y)[0, 1])
-
-    if spearmanr is not None:
-        try:
-            sr = spearmanr(x, y)
-            stats["spearman_rho"] = _safe_float(sr.correlation)
-            stats["spearman_p"] = _safe_float(sr.pvalue)
-        except Exception:
-            pass
-
-    return stats
+def _turnwise_pair_stats(
+    xs: List[float],
+    ys: List[float],
+    *,
+    bootstrap_samples: int,
+    bootstrap_ci_level: float,
+    bootstrap_rng: np.random.Generator,
+) -> Dict[str, Optional[float]]:
+    return _bootstrap_pair_stats(
+        xs,
+        ys,
+        bootstrap_samples=bootstrap_samples,
+        ci_level=bootstrap_ci_level,
+        rng=bootstrap_rng,
+    )
 
 
 def _build_turnwise_relationship_by_alpha(
@@ -630,6 +822,9 @@ def _build_turnwise_relationship_by_alpha(
     probe_name: str,
     metric_key: str,
     rating_key: str,
+    bootstrap_samples: int,
+    bootstrap_ci_level: float,
+    bootstrap_rng: np.random.Generator,
 ) -> Dict[str, object]:
     alphas = sorted(records_by_alpha.keys())
     turns: List[int] = sorted(
@@ -659,7 +854,13 @@ def _build_turnwise_relationship_by_alpha(
                 xs.append(float(rating_val))
                 ys.append(float(metric_val))
 
-            stats = _turnwise_pair_stats(xs, ys)
+            stats = _turnwise_pair_stats(
+                xs,
+                ys,
+                bootstrap_samples=bootstrap_samples,
+                bootstrap_ci_level=bootstrap_ci_level,
+                bootstrap_rng=bootstrap_rng,
+            )
             row_out: Dict[str, Optional[float]] = {"turn": int(turn)}
             if stats.get("count") is not None:
                 stats["count"] = int(stats["count"])
@@ -690,25 +891,61 @@ def _plot_turnwise_stat_for_alpha(
         raise ImportError("matplotlib is required for plotting.")
 
     plt.figure(figsize=(8.0, 4.8))
-    values_by_turn: Dict[int, Optional[float]] = {
-        int(row.get("turn")): _safe_float(row.get(stat_key))
-        for row in rows_for_alpha
-        if isinstance(row.get("turn"), int)
-    }
+    values_by_turn: Dict[int, Optional[float]] = {}
+    low_by_turn: Dict[int, Optional[float]] = {}
+    high_by_turn: Dict[int, Optional[float]] = {}
+    for row in rows_for_alpha:
+        turn_obj = row.get("turn")
+        if not isinstance(turn_obj, int):
+            continue
+        turn = int(turn_obj)
+        values_by_turn[turn] = _safe_float(row.get(stat_key))
+        low_by_turn[turn] = _safe_float(row.get(f"{stat_key}_ci_low"))
+        high_by_turn[turn] = _safe_float(row.get(f"{stat_key}_ci_high"))
+
+    log_y = stat_key.endswith("_p")
     xs_plot: List[int] = []
     ys_plot: List[float] = []
+    ci_low_plot: List[float] = []
+    ci_high_plot: List[float] = []
     for turn in turns:
         val = values_by_turn.get(turn)
         if val is None:
             continue
+        if log_y and float(val) <= 0:
+            continue
         xs_plot.append(int(turn))
         ys_plot.append(float(val))
+        low = low_by_turn.get(turn)
+        high = high_by_turn.get(turn)
+        low_f = float(low) if isinstance(low, (int, float)) else float("nan")
+        high_f = float(high) if isinstance(high, (int, float)) else float("nan")
+        if log_y and (not np.isfinite(low_f) or low_f <= 0):
+            low_f = float("nan")
+        if log_y and (not np.isfinite(high_f) or high_f <= 0):
+            high_f = float("nan")
+        ci_low_plot.append(low_f)
+        ci_high_plot.append(high_f)
 
     if not xs_plot:
         plt.close()
         return False
 
     plt.plot(xs_plot, ys_plot, marker="o", linewidth=1.5, label=f"alpha={float(alpha):g}")
+    low_arr = np.array(ci_low_plot, dtype=float)
+    high_arr = np.array(ci_high_plot, dtype=float)
+    ok = np.isfinite(low_arr) & np.isfinite(high_arr)
+    if np.any(ok):
+        plt.fill_between(
+            np.array(xs_plot, dtype=float),
+            low_arr,
+            high_arr,
+            where=ok,
+            alpha=0.20,
+            linewidth=0.0,
+        )
+    if log_y:
+        plt.yscale("log")
     plt.xlabel("Turn")
     plt.ylabel(TURNWISE_STAT_YLABEL.get(stat_key, stat_key))
     plt.title(title)
@@ -899,6 +1136,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         if not option_values:
             raise ValueError("logit_rating.option_values is empty.")
         option_token_ids = _build_option_token_id_map(tokenizer, cfg.logit_rating)
+    bootstrap_ci_level = float(cfg.analysis.bootstrap_ci_level)
+    if not (0.0 < bootstrap_ci_level < 1.0):
+        raise ValueError("analysis.bootstrap_ci_level must be between 0 and 1 (exclusive).")
+    bootstrap_samples = int(max(0, int(cfg.analysis.bootstrap_samples)))
+    bootstrap_rng = np.random.default_rng(int(cfg.analysis.bootstrap_seed))
 
     alphas = cfg.steering.alphas or [0.0]
     alpha_unit = cfg.steering.alpha_unit
@@ -1053,6 +1295,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         "rating_sources": rating_sources,
         "primary_rating_source": primary_source,
         "rating_keys": rating_key_by_source,
+        "bootstrap": {
+            "samples": bootstrap_samples,
+            "ci_level": bootstrap_ci_level,
+            "seed": int(cfg.analysis.bootstrap_seed),
+        },
     }
     if use_logit_source:
         summary["logit_rating"] = {
@@ -1206,6 +1453,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         probe_name=probe_name,
                         metric_key=metric_key,
                         rating_key=rating_key_by_source[source],
+                        bootstrap_samples=bootstrap_samples,
+                        bootstrap_ci_level=bootstrap_ci_level,
+                        bootstrap_rng=bootstrap_rng,
                     )
                     turns_for_metric = metric_payload.get("turns", [])
                     stats_by_alpha_turn = metric_payload.get("stats_by_alpha_turn", {})
@@ -1322,6 +1572,10 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     rating_key = rating_key_by_source[source]
                     slopes: List[Optional[float]] = []
                     pvalues: List[Optional[float]] = []
+                    slope_ci_lows: List[Optional[float]] = []
+                    slope_ci_highs: List[Optional[float]] = []
+                    pvalue_ci_lows: List[Optional[float]] = []
+                    pvalue_ci_highs: List[Optional[float]] = []
                     num_pairs_per_alpha: List[int] = []
                     for alpha_val in alpha_vals_sorted:
                         rows = per_alpha.get(float(alpha_val), [])
@@ -1339,10 +1593,20 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                                 continue
                             xs.append(float(rating_value))
                             ys.append(float(metric_value))
-                        slope, pval = _linear_slope_p(xs, ys)
-                        slopes.append(slope)
-                        pvalues.append(pval)
-                        num_pairs_per_alpha.append(len(xs))
+                        boot_stats = _bootstrap_pair_stats(
+                            xs,
+                            ys,
+                            bootstrap_samples=bootstrap_samples,
+                            ci_level=bootstrap_ci_level,
+                            rng=bootstrap_rng,
+                        )
+                        slopes.append(_safe_float(boot_stats.get("slope")))
+                        pvalues.append(_safe_float(boot_stats.get("linreg_p")))
+                        slope_ci_lows.append(_safe_float(boot_stats.get("slope_ci_low")))
+                        slope_ci_highs.append(_safe_float(boot_stats.get("slope_ci_high")))
+                        pvalue_ci_lows.append(_safe_float(boot_stats.get("linreg_p_ci_low")))
+                        pvalue_ci_highs.append(_safe_float(boot_stats.get("linreg_p_ci_high")))
+                        num_pairs_per_alpha.append(int(boot_stats.get("count", 0.0) or 0))
 
                     source_dir = _rating_source_dir(output_path, source)
                     slope_plot_path = source_dir / _suffix_filename(cfg.analysis.alignment_slope_plot_name, source)
@@ -1355,6 +1619,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         ),
                         ylabel="Slope",
                         out_path=slope_plot_path,
+                        ci_low_in=slope_ci_lows,
+                        ci_high_in=slope_ci_highs,
                     )
 
                     pvalue_plot_path: Optional[Path] = None
@@ -1371,6 +1637,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                             ),
                             ylabel="P-value",
                             out_path=pvalue_plot_path,
+                            ci_low_in=pvalue_ci_lows,
+                            ci_high_in=pvalue_ci_highs,
+                            log_y=True,
                         )
 
                     valid_alpha_for_slope = [
@@ -1384,12 +1653,18 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         "alphas": [float(a) for a in alpha_vals_sorted],
                         "slopes": slopes,
                         "pvalues": pvalues,
+                        "slope_ci_lows": slope_ci_lows,
+                        "slope_ci_highs": slope_ci_highs,
+                        "pvalue_ci_lows": pvalue_ci_lows,
+                        "pvalue_ci_highs": pvalue_ci_highs,
                         "num_pairs_per_alpha": num_pairs_per_alpha,
                         "slope_vs_alpha_correlation": (
                             _correlation_stats(valid_alpha_for_slope, valid_slopes)
                             if len(valid_slopes) >= 2
                             else {}
                         ),
+                        "bootstrap_samples": bootstrap_samples,
+                        "bootstrap_ci_level": bootstrap_ci_level,
                         "slope_plot_path": str(slope_plot_path),
                         "pvalue_plot_path": str(pvalue_plot_path) if pvalue_plot_path is not None else None,
                     }
@@ -1410,6 +1685,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 for source in rating_sources:
                     rating_key = rating_key_by_source[source]
                     r2_vals: List[Optional[float]] = []
+                    r2_ci_lows: List[Optional[float]] = []
+                    r2_ci_highs: List[Optional[float]] = []
                     pairs_per_alpha: List[int] = []
                     for alpha_val in alpha_vals_sorted:
                         rows = per_alpha.get(float(alpha_val), [])
@@ -1427,8 +1704,17 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                                 continue
                             xs.append(float(rating_value))
                             ys.append(float(metric_value))
-                        r2_vals.append(_r_squared(xs, ys))
-                        pairs_per_alpha.append(len(xs))
+                        boot_stats = _bootstrap_pair_stats(
+                            xs,
+                            ys,
+                            bootstrap_samples=bootstrap_samples,
+                            ci_level=bootstrap_ci_level,
+                            rng=bootstrap_rng,
+                        )
+                        r2_vals.append(_safe_float(boot_stats.get("r2")))
+                        r2_ci_lows.append(_safe_float(boot_stats.get("r2_ci_low")))
+                        r2_ci_highs.append(_safe_float(boot_stats.get("r2_ci_high")))
+                        pairs_per_alpha.append(int(boot_stats.get("count", 0.0) or 0))
 
                     source_dir = _rating_source_dir(output_path, source)
                     plot_path = source_dir / _suffix_filename(cfg.analysis.r2_plot_name, source)
@@ -1438,6 +1724,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         title=f"R^2 vs alpha: {r2_probe_name} {cfg.analysis.r2_metric_key} vs {rating_key}",
                         ylabel="R^2",
                         out_path=plot_path,
+                        ci_low_in=r2_ci_lows,
+                        ci_high_in=r2_ci_highs,
                     )
 
                     valid_alpha_for_r2 = [
@@ -1450,12 +1738,16 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         "rating_key": rating_key,
                         "alphas": [float(a) for a in alpha_vals_sorted],
                         "r2_values": r2_vals,
+                        "r2_ci_lows": r2_ci_lows,
+                        "r2_ci_highs": r2_ci_highs,
                         "num_pairs_per_alpha": pairs_per_alpha,
                         "r2_vs_alpha_correlation": (
                             _correlation_stats(valid_alpha_for_r2, valid_r2)
                             if len(valid_r2) >= 2
                             else {}
                         ),
+                        "bootstrap_samples": bootstrap_samples,
+                        "bootstrap_ci_level": bootstrap_ci_level,
                         "plot_path": str(plot_path),
                     }
         summary["r2_vs_alpha"] = r2_summary
@@ -1465,6 +1757,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         for source in rating_sources:
             rating_key = rating_key_by_source[source]
             variance_vals: List[Optional[float]] = []
+            variance_ci_lows: List[Optional[float]] = []
+            variance_ci_highs: List[Optional[float]] = []
             counts: List[int] = []
             for alpha_val in alpha_vals_sorted:
                 rows = per_alpha.get(float(alpha_val), [])
@@ -1474,11 +1768,16 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     if isinstance(r.get(rating_key), (int, float))
                     and np.isfinite(float(r.get(rating_key)))
                 ]
+                boot_var = _bootstrap_variance(
+                    ratings,
+                    bootstrap_samples=bootstrap_samples,
+                    ci_level=bootstrap_ci_level,
+                    rng=bootstrap_rng,
+                )
                 counts.append(len(ratings))
-                if len(ratings) < 2:
-                    variance_vals.append(None)
-                else:
-                    variance_vals.append(float(np.var(np.array(ratings, dtype=float), ddof=1)))
+                variance_vals.append(_safe_float(boot_var.get("variance")))
+                variance_ci_lows.append(_safe_float(boot_var.get("variance_ci_low")))
+                variance_ci_highs.append(_safe_float(boot_var.get("variance_ci_high")))
 
             source_dir = _rating_source_dir(output_path, source)
             plot_path = source_dir / _suffix_filename(cfg.analysis.report_variance_plot_name, source)
@@ -1488,6 +1787,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 title=f"Report variance vs alpha ({rating_key})",
                 ylabel="Variance",
                 out_path=plot_path,
+                ci_low_in=variance_ci_lows,
+                ci_high_in=variance_ci_highs,
             )
             valid_alpha_for_var = [
                 float(a) for a, v in zip(alpha_vals_sorted, variance_vals) if v is not None and not np.isnan(v)
@@ -1497,10 +1798,14 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 "rating_key": rating_key,
                 "alphas": [float(a) for a in alpha_vals_sorted],
                 "variances": variance_vals,
+                "variance_ci_lows": variance_ci_lows,
+                "variance_ci_highs": variance_ci_highs,
                 "counts": counts,
                 "variance_vs_alpha_correlation": (
                     _correlation_stats(valid_alpha_for_var, valid_var) if len(valid_var) >= 2 else {}
                 ),
+                "bootstrap_samples": bootstrap_samples,
+                "bootstrap_ci_level": bootstrap_ci_level,
                 "plot_path": str(plot_path),
             }
         summary["report_variance_vs_alpha"] = variance_summary

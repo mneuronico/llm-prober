@@ -175,26 +175,33 @@ def _run_one(
         return 0
 
     start_time = time.time()
-    with open(log_path, "w", encoding="utf-8") as log_fh:
+    with open(log_path, "wb", buffering=0) as log_fh:
         env = dict(os.environ)
         env["PYTHONUNBUFFERED"] = "1"
+        env["CP_PROGRESS_INLINE"] = env.get("CP_PROGRESS_INLINE", "1")
         proc = subprocess.Popen(
             cmd,
             cwd=str(REPO_ROOT),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            bufsize=1,
+            text=False,
+            bufsize=0,
             env=env,
         )
         if proc.stdout is None:
             raise RuntimeError("Failed to capture child process stdout.")
-        for line in proc.stdout:
-            sys.stdout.write(line)
-            sys.stdout.flush()
-            log_fh.write(line)
+        while True:
+            chunk = proc.stdout.read(1)
+            if chunk == b"":
+                break
+            # Keep carriage returns intact so child inline progress bars stay on one line.
+            if hasattr(sys.stdout, "buffer"):
+                sys.stdout.buffer.write(chunk)
+                sys.stdout.buffer.flush()
+            else:
+                sys.stdout.write(chunk.decode("utf-8", errors="replace"))
+                sys.stdout.flush()
+            log_fh.write(chunk)
         proc.stdout.close()
         result_code = proc.wait()
     elapsed = time.time() - start_time
