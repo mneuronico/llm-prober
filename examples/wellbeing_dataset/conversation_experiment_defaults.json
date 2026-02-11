@@ -21,9 +21,23 @@
       "save_segments": true
     },
     "rating": {
-      "pattern": "\\b(10|[1-9])\\b",
-      "min_value": 1,
-      "max_value": 10
+      "pattern": "\\b([0-9])\\b",
+      "min_value": 0,
+      "max_value": 9
+    },
+    "self_ratings": {
+      "sources": "token",
+      "primary_source": "token"
+    },
+    "logit_rating": {
+      "enabled": true,
+      "option_values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "option_token_templates": ["{value}", " {value}", "\\n{value}"],
+      "step_index": 0,
+      "save_option_probabilities": true,
+      "save_generation_logits": false,
+      "generation_logits_top_k": null,
+      "generation_logits_dtype": "float16"
     },
     "analysis": {
       "plot_vs_turn_metrics": ["completion_assistant_mean", "prompt_assistant_last_mean"],

@@ -194,8 +194,13 @@ workspace = ProbeWorkspace(
 - `evaluation`: eval mode and layer selection.
 - `steering`: steering defaults.
 - `plots`: plots + HTML toggles.
-- `output`: output folder + logging behavior.
+- `output`: output folder, logging behavior, and optional generation-logit capture.
 - `random`: seed.
+
+Generation-logit output keys in `output`:
+- `save_generation_logits` (bool, default `false`)
+- `generation_logits_top_k` (int or `null`; `null`/`0` stores full-vocab logits)
+- `generation_logits_dtype` (`"float16"` or `"float32"`)
 
 ---
 
@@ -463,6 +468,9 @@ probe.score_prompts(
     alphas=[0.0, 6.0, -6.0],
     alpha_unit="sigma",
     steer_layers="window",
+    save_generation_logits=True,         # optional
+    generation_logits_top_k=None,        # None/0 => full vocab logits per generated step
+    generation_logits_dtype="float16",   # or "float32"
 )
 ```
 
@@ -472,6 +480,9 @@ Outputs:
 - `.html` per prompt/alpha.
 - `*_segments.json` per prompt/alpha (if `save_segments=True`).
 - `batch_prompts.html` with shared scale.
+- Optional generation logits in each `.npz` (all generated steps) when
+  `save_generation_logits=True`.
+  - Logits are written alongside token scores, so `output.save_token_scores_npz` must be `true`.
 
 Names include prompt snippets and alpha labels for clarity.
 
@@ -798,6 +809,9 @@ results = multi_probe_score_prompts(
     steer_probe="lying_vs_truthfulness",  # or index 1, or the ConceptProbe object
     alphas=[-5.0, 0.0, 5.0],
     alpha_unit="raw",
+    save_generation_logits=True,          # optional
+    generation_logits_top_k=None,         # None/0 => full vocab logits per generated step
+    generation_logits_dtype="float16",    # or "float32"
 )
 ```
 
@@ -805,6 +819,9 @@ Notes:
 - All probes must be trained on the same `model_id`.
 - If `steer_probe` is `None`, steering is disabled and only a single alpha (`0.0`) is used.
 - `scores_agg` in the `.npz` is shaped `(num_probes, num_tokens)`.
+- Generation logits (same completion used by all probes) can be saved per prompt/alpha
+  with `save_generation_logits=True`.
+  - Logits are persisted in `.npz`, so `output.save_token_scores_npz` must be `true`.
 
 ### Keeping outputs together (batch folders)
 
@@ -952,7 +969,20 @@ Multi-probe `.npz` contents:
 - `prompt_len`: length of the prompt portion.
 - `scores_agg`: array of shape `(num_probes, num_tokens)`.
 - `probe_names`: list of probe names aligned with `scores_agg`.
+- Optional generation logits (if `save_generation_logits=True`):
+  - Full-vocab mode: `generation_logits` with shape `(num_generated_steps, vocab_size)`.
+  - Top-k mode: `generation_logits_topk_values` and `generation_logits_topk_indices`
+    with shape `(num_generated_steps, k)`.
+  - Metadata: `generation_logits_steps`, `generation_logits_topk_k`, `generation_logits_dtype`.
 - `prompt_..._segments.json` per prompt/alpha (if `save_segments=True`), with per-probe segments.
+
+Single-probe prompt `.npz` contents (`score_prompts`):
+- `token_ids`: full token ids for prompt + completion.
+- `prompt_len`: length of prompt portion.
+- `scores_per_layer`: per-layer scores for selected layers.
+- `scores_agg`: aggregated score per token.
+- `layer_indices`: selected layers used for `scores_per_layer`.
+- Optional generation logits (same keys/modes as above) when `save_generation_logits=True`.
 
 Key files:
 - `config.json`: full resolved config.

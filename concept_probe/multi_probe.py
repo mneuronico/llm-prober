@@ -9,6 +9,7 @@ from .modeling import apply_chat, attention_mask_from_ids
 from .probe import (
     ConceptProbe,
     PromptLike,
+    _extract_generation_logits_arrays,
     _alpha_label,
     _decode_tokens,
     _normalize_messages,
@@ -106,6 +107,9 @@ def multi_probe_score_prompts(
     steer_distribute: Optional[bool] = None,
     save_html: Optional[bool] = None,
     save_segments: Optional[bool] = None,
+    save_generation_logits: Optional[bool] = None,
+    generation_logits_top_k: Optional[int] = None,
+    generation_logits_dtype: Optional[str] = None,
     batch_subdir: Optional[str] = None,
 ) -> Dict[str, Any]:
     if not probes:
@@ -138,6 +142,19 @@ def multi_probe_score_prompts(
     save_segments = False if save_segments is None else save_segments
     do_steering = bool(steer_cfg.get("do_steering", True))
     save_token_scores_npz = bool(probes[0].config.get("output", {}).get("save_token_scores_npz", True))
+    if save_generation_logits is None:
+        save_generation_logits = bool(probes[0].config.get("output", {}).get("save_generation_logits", False))
+    else:
+        save_generation_logits = bool(save_generation_logits)
+    if generation_logits_top_k is None:
+        generation_logits_top_k = probes[0].config.get("output", {}).get("generation_logits_top_k", None)
+    if generation_logits_dtype is None:
+        generation_logits_dtype = probes[0].config.get("output", {}).get("generation_logits_dtype", "float16")
+    if save_generation_logits and not save_token_scores_npz:
+        probes[0]._warn(
+            "save_generation_logits requested but output.save_token_scores_npz=false; logits will not be saved."
+        )
+    save_generation_logits = bool(save_generation_logits and save_token_scores_npz)
     if steer_distribute is None:
         steer_distribute = steer_cfg.get("steer_distribute", True)
 
@@ -174,6 +191,9 @@ def multi_probe_score_prompts(
             "greedy": greedy,
             "temperature": temperature,
             "top_p": top_p,
+            "save_generation_logits": bool(save_generation_logits),
+            "generation_logits_top_k": generation_logits_top_k,
+            "generation_logits_dtype": generation_logits_dtype,
         },
         "steering": {
             "do_steering": do_steering,
@@ -249,6 +269,44 @@ def multi_probe_score_prompts(
                     float(alpha_val),
                     distribute=steer_distribute,
                 ):
+                    if save_generation_logits:
+                        gen_out = model.generate(
+                            input_ids=input_ids,
+                            attention_mask=attn,
+                            max_new_tokens=max_new_tokens,
+                            do_sample=not greedy,
+                            temperature=temperature if not greedy else None,
+                            top_p=top_p if not greedy else None,
+                            pad_token_id=tokenizer.eos_token_id,
+                            return_dict_in_generate=True,
+                            output_scores=True,
+                        )
+                        gen_ids = gen_out.sequences[0].detach().cpu()
+                    else:
+                        gen_ids = model.generate(
+                            input_ids=input_ids,
+                            attention_mask=attn,
+                            max_new_tokens=max_new_tokens,
+                            do_sample=not greedy,
+                            temperature=temperature if not greedy else None,
+                            top_p=top_p if not greedy else None,
+                            pad_token_id=tokenizer.eos_token_id,
+                        )[0].detach().cpu()
+            else:
+                if save_generation_logits:
+                    gen_out = model.generate(
+                        input_ids=input_ids,
+                        attention_mask=attn,
+                        max_new_tokens=max_new_tokens,
+                        do_sample=not greedy,
+                        temperature=temperature if not greedy else None,
+                        top_p=top_p if not greedy else None,
+                        pad_token_id=tokenizer.eos_token_id,
+                        return_dict_in_generate=True,
+                        output_scores=True,
+                    )
+                    gen_ids = gen_out.sequences[0].detach().cpu()
+                else:
                     gen_ids = model.generate(
                         input_ids=input_ids,
                         attention_mask=attn,
@@ -258,22 +316,19 @@ def multi_probe_score_prompts(
                         top_p=top_p if not greedy else None,
                         pad_token_id=tokenizer.eos_token_id,
                     )[0].detach().cpu()
-            else:
-                gen_ids = model.generate(
-                    input_ids=input_ids,
-                    attention_mask=attn,
-                    max_new_tokens=max_new_tokens,
-                    do_sample=not greedy,
-                    temperature=temperature if not greedy else None,
-                    top_p=top_p if not greedy else None,
-                    pad_token_id=tokenizer.eos_token_id,
-                )[0].detach().cpu()
 
             hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
             token_ids = gen_ids.numpy().astype(np.int32)
             tokens = _decode_tokens(tokenizer, token_ids)
             completion_ids = token_ids[prompt_len:]
             completion_text = tokenizer.decode(completion_ids, skip_special_tokens=True)
+            generation_logits_payload: Dict[str, np.ndarray] = {}
+            if save_generation_logits:
+                generation_logits_payload = _extract_generation_logits_arrays(
+                    gen_out,
+                    logits_top_k=generation_logits_top_k,
+                    logits_dtype_name=generation_logits_dtype,
+                )
 
             scores_agg_list: List[np.ndarray] = []
             for probe in probes:
@@ -296,13 +351,14 @@ def multi_probe_score_prompts(
             base = f"prompt_{i:03d}_{prompt_slug}_{alpha_label}"
             if save_token_scores_npz:
                 npz_path = os.path.join(out_dir, f"{base}.npz")
-                np.savez_compressed(
-                    npz_path,
+                npz_payload: Dict[str, Any] = dict(
                     token_ids=token_ids,
                     prompt_len=np.array([prompt_len], dtype=np.int32),
                     scores_agg=scores_agg_stack,
                     probe_names=np.array(probe_names),
                 )
+                npz_payload.update(generation_logits_payload)
+                np.savez_compressed(npz_path, **npz_payload)
             else:
                 npz_path = None
 
@@ -348,6 +404,17 @@ def multi_probe_score_prompts(
                 "html_path": html_path,
                 "segments_path": segments_path,
                 "score_mean_by_probe": score_mean_by_probe,
+                "generation_logits_saved": bool(generation_logits_payload),
+                "generation_logits_top_k": (
+                    int(generation_logits_payload["generation_logits_topk_k"][0])
+                    if "generation_logits_topk_k" in generation_logits_payload
+                    else None
+                ),
+                "generation_logits_steps": (
+                    int(generation_logits_payload["generation_logits_steps"][0])
+                    if "generation_logits_steps" in generation_logits_payload
+                    else 0
+                ),
                 "batch_dir": out_dir,
             }
             results.append(rec)

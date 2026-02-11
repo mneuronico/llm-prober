@@ -101,6 +101,9 @@
     "root_dir": "outputs",
     "save_reps_to_npz": true,
     "save_token_scores_npz": true,
+    "save_generation_logits": false,
+    "generation_logits_top_k": null,
+    "generation_logits_dtype": "float16",
     "log_jsonl": true,
     "pretty_json_log": true,
     "console": true

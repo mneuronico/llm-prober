@@ -240,6 +240,64 @@ def _alpha_label(alpha: float, unit: str) -> str:
     return safe_slug(label)
 
 
+def _normalize_generation_logits_dtype(dtype_name: Optional[str]) -> Tuple[str, torch.dtype]:
+    raw = "float16" if dtype_name is None else str(dtype_name).strip().lower()
+    if raw in {"float16", "fp16", "half"}:
+        return ("float16", torch.float16)
+    if raw in {"float32", "fp32", "single"}:
+        return ("float32", torch.float32)
+    raise ValueError(
+        f"Unsupported generation logits dtype '{dtype_name}'. Use 'float16' or 'float32'."
+    )
+
+
+def _extract_generation_logits_arrays(
+    generation_output: Any,
+    *,
+    logits_top_k: Optional[int],
+    logits_dtype_name: Optional[str],
+) -> Dict[str, np.ndarray]:
+    scores = getattr(generation_output, "scores", None)
+    if not scores:
+        return {}
+
+    dtype_name, torch_dtype = _normalize_generation_logits_dtype(logits_dtype_name)
+    step_logits: List[torch.Tensor] = []
+    for step in scores:
+        if step is None:
+            continue
+        if step.ndim == 2:
+            if step.shape[0] < 1:
+                continue
+            vec = step[0]
+        elif step.ndim == 1:
+            vec = step
+        else:
+            raise ValueError(f"Unexpected generation score tensor shape: {tuple(step.shape)}")
+        step_logits.append(vec.detach().to(dtype=torch.float32, device="cpu"))
+
+    if not step_logits:
+        return {}
+
+    logits = torch.stack(step_logits, dim=0)
+    out: Dict[str, np.ndarray] = {
+        "generation_logits_steps": np.array([int(logits.shape[0])], dtype=np.int32),
+        "generation_logits_dtype": np.array([dtype_name]),
+    }
+
+    if logits_top_k is not None and int(logits_top_k) > 0:
+        k = int(max(1, min(int(logits_top_k), int(logits.shape[-1]))))
+        top_vals, top_idx = torch.topk(logits, k=k, dim=-1)
+        out["generation_logits_topk_values"] = top_vals.to(dtype=torch_dtype).numpy()
+        out["generation_logits_topk_indices"] = top_idx.to(dtype=torch.int32).numpy().astype(np.int32, copy=False)
+        out["generation_logits_topk_k"] = np.array([k], dtype=np.int32)
+    else:
+        out["generation_logits"] = logits.to(dtype=torch_dtype).numpy()
+        out["generation_logits_topk_k"] = np.array([0], dtype=np.int32)
+
+    return out
+
+
 @torch.no_grad()
 def forward_hidden_states_all_layers(model, input_ids: torch.Tensor) -> List[torch.Tensor]:
     attn = attention_mask_from_ids(input_ids).to(model.device)
@@ -1038,6 +1096,9 @@ class ConceptProbe:
         steer_distribute: Optional[bool] = None,
         save_html: Optional[bool] = None,
         save_segments: Optional[bool] = None,
+        save_generation_logits: Optional[bool] = None,
+        generation_logits_top_k: Optional[int] = None,
+        generation_logits_dtype: Optional[str] = None,
         batch_subdir: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         self._require_trained()
@@ -1050,6 +1111,17 @@ class ConceptProbe:
         save_segments = False if save_segments is None else save_segments
         do_steering = bool(self.config["steering"].get("do_steering", True))
         save_token_scores_npz = self.config["output"].get("save_token_scores_npz", True)
+        if save_generation_logits is None:
+            save_generation_logits = bool(self.config["output"].get("save_generation_logits", False))
+        else:
+            save_generation_logits = bool(save_generation_logits)
+        if generation_logits_top_k is None:
+            generation_logits_top_k = self.config["output"].get("generation_logits_top_k", None)
+        if generation_logits_dtype is None:
+            generation_logits_dtype = self.config["output"].get("generation_logits_dtype", "float16")
+        if save_generation_logits and not save_token_scores_npz:
+            self._warn("save_generation_logits requested but output.save_token_scores_npz=false; logits will not be saved.")
+        save_generation_logits = bool(save_generation_logits and save_token_scores_npz)
 
         max_new_tokens = max_new_tokens if max_new_tokens is not None else self.config["steering"]["steer_max_new_tokens"]
         greedy = greedy if greedy is not None else (not self.config["steering"]["steer_sampling"])
@@ -1129,6 +1201,44 @@ class ConceptProbe:
 
                 if context is not None:
                     with context:
+                        if save_generation_logits:
+                            gen_out = model.generate(
+                                input_ids=input_ids,
+                                attention_mask=attn,
+                                max_new_tokens=max_new_tokens,
+                                do_sample=not greedy,
+                                temperature=temperature if not greedy else None,
+                                top_p=top_p if not greedy else None,
+                                pad_token_id=tokenizer.eos_token_id,
+                                return_dict_in_generate=True,
+                                output_scores=True,
+                            )
+                            gen_ids = gen_out.sequences[0].detach().cpu()
+                        else:
+                            gen_ids = model.generate(
+                                input_ids=input_ids,
+                                attention_mask=attn,
+                                max_new_tokens=max_new_tokens,
+                                do_sample=not greedy,
+                                temperature=temperature if not greedy else None,
+                                top_p=top_p if not greedy else None,
+                                pad_token_id=tokenizer.eos_token_id,
+                            )[0].detach().cpu()
+                else:
+                    if save_generation_logits:
+                        gen_out = model.generate(
+                            input_ids=input_ids,
+                            attention_mask=attn,
+                            max_new_tokens=max_new_tokens,
+                            do_sample=not greedy,
+                            temperature=temperature if not greedy else None,
+                            top_p=top_p if not greedy else None,
+                            pad_token_id=tokenizer.eos_token_id,
+                            return_dict_in_generate=True,
+                            output_scores=True,
+                        )
+                        gen_ids = gen_out.sequences[0].detach().cpu()
+                    else:
                         gen_ids = model.generate(
                             input_ids=input_ids,
                             attention_mask=attn,
@@ -1138,21 +1248,18 @@ class ConceptProbe:
                             top_p=top_p if not greedy else None,
                             pad_token_id=tokenizer.eos_token_id,
                         )[0].detach().cpu()
-                else:
-                    gen_ids = model.generate(
-                        input_ids=input_ids,
-                        attention_mask=attn,
-                        max_new_tokens=max_new_tokens,
-                        do_sample=not greedy,
-                        temperature=temperature if not greedy else None,
-                        top_p=top_p if not greedy else None,
-                        pad_token_id=tokenizer.eos_token_id,
-                    )[0].detach().cpu()
 
                 hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
                 scores_per_layer, scores_agg = token_scores_from_hs_layers(
                     hs_layers, self.concept_vectors, layers, aggregate=aggregate
                 )
+                generation_logits_payload: Dict[str, np.ndarray] = {}
+                if save_generation_logits:
+                    generation_logits_payload = _extract_generation_logits_arrays(
+                        gen_out,
+                        logits_top_k=generation_logits_top_k,
+                        logits_dtype_name=generation_logits_dtype,
+                    )
 
                 token_ids = gen_ids.numpy().astype(np.int32)
                 tokens = _decode_tokens(tokenizer, token_ids)
@@ -1165,14 +1272,15 @@ class ConceptProbe:
                 base = f"prompt_{i:03d}_{prompt_slug}_{alpha_label}"
                 if save_token_scores_npz:
                     npz_path = os.path.join(out_dir, f"{base}.npz")
-                    np.savez_compressed(
-                        npz_path,
+                    npz_payload: Dict[str, Any] = dict(
                         token_ids=token_ids,
                         prompt_len=np.array([prompt_len], dtype=np.int32),
                         scores_per_layer=scores_per_layer,
                         scores_agg=scores_agg,
                         layer_indices=np.array(layers, dtype=np.int32),
                     )
+                    npz_payload.update(generation_logits_payload)
+                    np.savez_compressed(npz_path, **npz_payload)
                 else:
                     npz_path = None
 
@@ -1216,6 +1324,17 @@ class ConceptProbe:
                     "segments_path": segments_path,
                     "score_mean": score_mean,
                     "do_steering": bool(should_steer),
+                    "generation_logits_saved": bool(generation_logits_payload),
+                    "generation_logits_top_k": (
+                        int(generation_logits_payload["generation_logits_topk_k"][0])
+                        if "generation_logits_topk_k" in generation_logits_payload
+                        else None
+                    ),
+                    "generation_logits_steps": (
+                        int(generation_logits_payload["generation_logits_steps"][0])
+                        if "generation_logits_steps" in generation_logits_payload
+                        else 0
+                    ),
                     "batch_dir": out_dir,
                 }
                 results.append(rec)
