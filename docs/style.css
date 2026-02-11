@@ -371,6 +371,7 @@ footer a{color:var(--accent2)}
   .hero-actions{justify-content:center}
   .hero-visual{min-width:unset;width:100%}
   .radar-section{flex-direction:column}
+  .stats-row{justify-content:center !important;width:100%}
 }
 @media(max-width:640px){
   .nav-links{
