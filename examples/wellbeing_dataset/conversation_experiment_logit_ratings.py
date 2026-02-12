@@ -34,6 +34,7 @@ DEFAULT_TURNWISE_RELATIONSHIP_STATS = [
     "count",
     "slope",
     "r2",
+    "isotonic_r2",
     "linreg_p",
     "pearson_r",
     "pearson_p",
@@ -48,6 +49,7 @@ TURNWISE_STAT_YLABEL = {
     "linreg_r": "Linear regression r",
     "linreg_p": "Linear regression p-value",
     "r2": "R^2",
+    "isotonic_r2": "Isotonic R^2",
     "pearson_r": "Pearson r",
     "pearson_p": "Pearson p-value",
     "spearman_rho": "Spearman rho",
@@ -392,6 +394,90 @@ def _ci_bounds(values: List[float], ci_level: float) -> Tuple[Optional[float], O
     return (float(lo), float(hi))
 
 
+def _isotonic_fit_1d(y: np.ndarray, *, increasing: bool) -> np.ndarray:
+    vals = np.array(y, dtype=np.float64)
+    n = int(vals.size)
+    if n == 0:
+        return vals
+    if n == 1:
+        return vals.copy()
+
+    levels: List[float] = [float(v) for v in vals]
+    weights: List[float] = [1.0] * n
+    starts: List[int] = list(range(n))
+    ends: List[int] = list(range(n))
+
+    i = 0
+    while i < len(levels) - 1:
+        violation = (levels[i] > levels[i + 1]) if increasing else (levels[i] < levels[i + 1])
+        if not violation:
+            i += 1
+            continue
+        w = weights[i] + weights[i + 1]
+        level = (weights[i] * levels[i] + weights[i + 1] * levels[i + 1]) / w
+        levels[i] = float(level)
+        weights[i] = float(w)
+        ends[i] = ends[i + 1]
+
+        del levels[i + 1]
+        del weights[i + 1]
+        del starts[i + 1]
+        del ends[i + 1]
+
+        while i > 0:
+            prev_violation = (levels[i - 1] > levels[i]) if increasing else (levels[i - 1] < levels[i])
+            if not prev_violation:
+                break
+            w2 = weights[i - 1] + weights[i]
+            level2 = (weights[i - 1] * levels[i - 1] + weights[i] * levels[i]) / w2
+            levels[i - 1] = float(level2)
+            weights[i - 1] = float(w2)
+            ends[i - 1] = ends[i]
+            del levels[i]
+            del weights[i]
+            del starts[i]
+            del ends[i]
+            i -= 1
+
+    fitted = np.empty(n, dtype=np.float64)
+    for level, s, e in zip(levels, starts, ends):
+        fitted[int(s) : int(e) + 1] = float(level)
+    return fitted
+
+
+def _isotonic_stats(x: np.ndarray, y: np.ndarray) -> Dict[str, Optional[float]]:
+    out: Dict[str, Optional[float]] = {
+        "isotonic_r2": None,
+        "isotonic_rmse": None,
+        "isotonic_mae": None,
+    }
+    if x.size < 2 or y.size < 2:
+        return out
+    if np.allclose(y, y[0]):
+        return out
+
+    order = np.argsort(np.array(x, dtype=np.float64), kind="mergesort")
+    y_sorted = np.array(y[order], dtype=np.float64)
+
+    fit_inc = _isotonic_fit_1d(y_sorted, increasing=True)
+    fit_dec = _isotonic_fit_1d(y_sorted, increasing=False)
+    sse_inc = float(np.sum((y_sorted - fit_inc) ** 2))
+    sse_dec = float(np.sum((y_sorted - fit_dec) ** 2))
+    y_fit_sorted = fit_inc if sse_inc <= sse_dec else fit_dec
+
+    y_fit = np.empty_like(y_fit_sorted)
+    y_fit[order] = y_fit_sorted
+
+    residuals = np.array(y, dtype=np.float64) - np.array(y_fit, dtype=np.float64)
+    sse = float(np.sum(residuals ** 2))
+    tss = float(np.sum((np.array(y, dtype=np.float64) - float(np.mean(y))) ** 2))
+    if tss > 0:
+        out["isotonic_r2"] = _safe_float(1.0 - (sse / tss))
+    out["isotonic_rmse"] = _safe_float(float(np.sqrt(np.mean(residuals ** 2))))
+    out["isotonic_mae"] = _safe_float(float(np.mean(np.abs(residuals))))
+    return out
+
+
 def _pair_stats_arrays(x: np.ndarray, y: np.ndarray) -> Dict[str, Optional[float]]:
     stats: Dict[str, Optional[float]] = {
         "slope": None,
@@ -404,6 +490,9 @@ def _pair_stats_arrays(x: np.ndarray, y: np.ndarray) -> Dict[str, Optional[float
         "spearman_rho": None,
         "spearman_p": None,
         "y_variance": None,
+        "isotonic_r2": None,
+        "isotonic_rmse": None,
+        "isotonic_mae": None,
     }
     if x.size < 2 or y.size < 2:
         return stats
@@ -459,6 +548,13 @@ def _pair_stats_arrays(x: np.ndarray, y: np.ndarray) -> Dict[str, Optional[float
                 stats["spearman_p"] = _safe_float(sr.pvalue)
             except Exception:
                 pass
+
+    try:
+        iso_stats = _isotonic_stats(x, y)
+        for key, value in iso_stats.items():
+            stats[key] = _safe_float(value)
+    except Exception:
+        pass
 
     return stats
 
@@ -2199,6 +2295,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     r2_vals: List[Optional[float]] = []
                     r2_ci_lows: List[Optional[float]] = []
                     r2_ci_highs: List[Optional[float]] = []
+                    isotonic_r2_vals: List[Optional[float]] = []
+                    isotonic_r2_ci_lows: List[Optional[float]] = []
+                    isotonic_r2_ci_highs: List[Optional[float]] = []
                     pairs_per_alpha: List[int] = []
                     pair_data_by_alpha: Dict[float, Tuple[List[float], List[float]]] = {}
                     for alpha_val in alpha_vals_sorted:
@@ -2228,10 +2327,14 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         r2_vals.append(_safe_float(boot_stats.get("r2")))
                         r2_ci_lows.append(_safe_float(boot_stats.get("r2_ci_low")))
                         r2_ci_highs.append(_safe_float(boot_stats.get("r2_ci_high")))
+                        isotonic_r2_vals.append(_safe_float(boot_stats.get("isotonic_r2")))
+                        isotonic_r2_ci_lows.append(_safe_float(boot_stats.get("isotonic_r2_ci_low")))
+                        isotonic_r2_ci_highs.append(_safe_float(boot_stats.get("isotonic_r2_ci_high")))
                         pairs_per_alpha.append(int(boot_stats.get("count", 0.0) or 0))
 
                     source_dir = _rating_source_dir(output_path, source)
                     plot_path = source_dir / _suffix_filename(cfg.analysis.r2_plot_name, source)
+                    isotonic_plot_path = source_dir / _suffix_filename(cfg.analysis.r2_plot_name, f"{source}_isotonic")
                     r2_trend_bootstrap = _bootstrap_series_trend(
                         [float(a) for a in alpha_vals_sorted],
                         r2_vals,
@@ -2240,8 +2343,17 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         min_points=trend_min_points,
                         rng=bootstrap_rng,
                     )
+                    isotonic_r2_trend_bootstrap = _bootstrap_series_trend(
+                        [float(a) for a in alpha_vals_sorted],
+                        isotonic_r2_vals,
+                        bootstrap_samples=bootstrap_samples,
+                        ci_level=bootstrap_ci_level,
+                        min_points=trend_min_points,
+                        rng=bootstrap_rng,
+                    )
                     ref_alpha = _nearest_alpha_key(alpha_vals_sorted, alpha_reference_value)
                     r2_effect_by_alpha: Dict[str, Dict[str, Optional[float]]] = {}
+                    isotonic_r2_effect_by_alpha: Dict[str, Dict[str, Optional[float]]] = {}
                     if ref_alpha is not None and float(ref_alpha) in pair_data_by_alpha:
                         ref_xs, ref_ys = pair_data_by_alpha[float(ref_alpha)]
                         for alpha_val in alpha_vals_sorted:
@@ -2261,6 +2373,16 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                                 ci_level=bootstrap_ci_level,
                                 rng=bootstrap_rng,
                             )
+                            isotonic_r2_effect_by_alpha[str(float(alpha_val))] = _bootstrap_pair_metric_difference(
+                                ref_xs,
+                                ref_ys,
+                                cmp_xs,
+                                cmp_ys,
+                                metric_key="isotonic_r2",
+                                bootstrap_samples=bootstrap_samples,
+                                ci_level=bootstrap_ci_level,
+                                rng=bootstrap_rng,
+                            )
                     r2_annotations: Optional[List[str]] = None
                     if annotate_plots:
                         r2_annotations = []
@@ -2269,6 +2391,19 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                             r2_annotations.extend(
                                 _annotation_lines_for_vs_reference(
                                     r2_effect_by_alpha,
+                                    reference_alpha=float(ref_alpha),
+                                )
+                            )
+                    isotonic_r2_annotations: Optional[List[str]] = None
+                    if annotate_plots:
+                        isotonic_r2_annotations = []
+                        isotonic_r2_annotations.extend(
+                            _annotation_lines_for_trend(isotonic_r2_trend_bootstrap, label="alpha")
+                        )
+                        if ref_alpha is not None and isotonic_r2_effect_by_alpha:
+                            isotonic_r2_annotations.extend(
+                                _annotation_lines_for_vs_reference(
+                                    isotonic_r2_effect_by_alpha,
                                     reference_alpha=float(ref_alpha),
                                 )
                             )
@@ -2282,11 +2417,31 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         ci_high_in=r2_ci_highs,
                         annotation_lines=r2_annotations,
                     )
+                    _plot_alpha_line(
+                        alpha_vals_sorted,
+                        isotonic_r2_vals,
+                        title=f"Isotonic R^2 vs alpha: {r2_probe_name} {cfg.analysis.r2_metric_key} vs {rating_key}",
+                        ylabel="Isotonic R^2",
+                        out_path=isotonic_plot_path,
+                        ci_low_in=isotonic_r2_ci_lows,
+                        ci_high_in=isotonic_r2_ci_highs,
+                        annotation_lines=isotonic_r2_annotations,
+                    )
 
                     valid_alpha_for_r2 = [
                         float(a) for a, r2 in zip(alpha_vals_sorted, r2_vals) if r2 is not None and not np.isnan(r2)
                     ]
                     valid_r2 = [float(r2) for r2 in r2_vals if r2 is not None and not np.isnan(r2)]
+                    valid_alpha_for_iso_r2 = [
+                        float(a)
+                        for a, iso_r2 in zip(alpha_vals_sorted, isotonic_r2_vals)
+                        if iso_r2 is not None and not np.isnan(iso_r2)
+                    ]
+                    valid_iso_r2 = [
+                        float(iso_r2)
+                        for iso_r2 in isotonic_r2_vals
+                        if iso_r2 is not None and not np.isnan(iso_r2)
+                    ]
                     r2_summary[source] = {
                         "probe_name": r2_probe_name,
                         "metric_key": cfg.analysis.r2_metric_key,
@@ -2302,11 +2457,22 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                             else {}
                         ),
                         "r2_vs_alpha_trend_bootstrap": r2_trend_bootstrap,
+                        "isotonic_r2_values": isotonic_r2_vals,
+                        "isotonic_r2_ci_lows": isotonic_r2_ci_lows,
+                        "isotonic_r2_ci_highs": isotonic_r2_ci_highs,
+                        "isotonic_r2_vs_alpha_correlation": (
+                            _correlation_stats(valid_alpha_for_iso_r2, valid_iso_r2)
+                            if len(valid_iso_r2) >= 2
+                            else {}
+                        ),
+                        "isotonic_r2_vs_alpha_trend_bootstrap": isotonic_r2_trend_bootstrap,
                         "alpha_reference_value": float(ref_alpha) if ref_alpha is not None else None,
                         "r2_vs_reference_difference": r2_effect_by_alpha,
+                        "isotonic_r2_vs_reference_difference": isotonic_r2_effect_by_alpha,
                         "bootstrap_samples": bootstrap_samples,
                         "bootstrap_ci_level": bootstrap_ci_level,
                         "plot_path": str(plot_path),
+                        "isotonic_plot_path": str(isotonic_plot_path),
                     }
         summary["r2_vs_alpha"] = r2_summary
 

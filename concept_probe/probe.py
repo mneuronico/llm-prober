@@ -1161,6 +1161,12 @@ class ConceptProbe:
 
         if alphas is None:
             alphas = [0.0]
+        nonzero_alpha_requested = any(abs(float(a)) > 1e-12 for a in alphas)
+        if nonzero_alpha_requested and not do_steering:
+            self._warn(
+                "Non-zero alphas provided; overriding steering.do_steering=false and enabling steering."
+            )
+            do_steering = True
 
         base_dir = os.path.join(self.run_dir, output_subdir)
         ensure_dir(base_dir)
@@ -1179,9 +1185,6 @@ class ConceptProbe:
         show_progress = self.console is not None and self.console.enabled
         if show_progress and total_runs:
             _progress_print(0, total_runs, label="Generating", enabled=True)
-
-        if not do_steering and any(abs(float(a)) > 1e-12 for a in alphas):
-            self._warn("steering.do_steering=false; non-zero alphas requested but steering is disabled.")
 
         if steer_layers is None:
             steer_layers = self.config["steering"]["steer_layers"]

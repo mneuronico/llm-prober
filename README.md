@@ -822,7 +822,9 @@ results = multi_probe_score_prompts(
 
 Notes:
 - All probes must be trained on the same `model_id`.
-- If `steer_probe` is `None`, steering is disabled and only a single alpha (`0.0`) is used.
+- If non-zero `alphas` are provided, steering is enabled even when `steering.do_steering` is `false`.
+- In multi-probe mode, if non-zero `alphas` are provided and `steer_probe` is `None`, the first probe is used for steering.
+- If `steer_probe` is `None` and all `alphas` are zero, steering is disabled and only `0.0` is used.
 - `scores_agg` in the `.npz` is shaped `(num_probes, num_tokens)`.
 - Generation logits (same completion used by all probes) can be saved per prompt/alpha
   with `save_generation_logits=True`.

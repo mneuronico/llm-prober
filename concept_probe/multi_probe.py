@@ -129,8 +129,15 @@ def multi_probe_score_prompts(
 
     if alphas is None or len(alphas) == 0:
         alphas = [0.0]
+    nonzero_alpha_requested = any(abs(float(a)) > 1e-12 for a in alphas)
+    if steer_probe_obj is None and nonzero_alpha_requested:
+        steer_probe_obj = probes[0]
+        probes[0]._warn(
+            "Non-zero alphas provided without steer_probe; defaulting steer_probe to the first probe."
+        )
     if steer_probe_obj is None:
         alphas = [0.0]
+        nonzero_alpha_requested = False
 
     sys_prompt = system_prompt or probes[0].config["prompts"].get("neutral_system", "You are a helpful assistant.")
     steer_cfg = probes[0].config.get("steering", {})
@@ -158,10 +165,14 @@ def multi_probe_score_prompts(
     if steer_distribute is None:
         steer_distribute = steer_cfg.get("steer_distribute", True)
 
+    if nonzero_alpha_requested and not do_steering:
+        probes[0]._warn(
+            "Non-zero alphas provided; overriding steering.do_steering=false and enabling steering."
+        )
+        do_steering = True
+
     if not do_steering:
         steer_probe_obj = None
-        if any(abs(float(a)) > 1e-12 for a in alphas):
-            probes[0]._warn("steering.do_steering=false; non-zero alphas requested but steering is disabled.")
 
     run_tag = run_name or now_tag()
     run_dir = os.path.join(output_root, safe_slug(project_name), run_tag)
