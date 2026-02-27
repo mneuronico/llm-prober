@@ -1,7 +1,7 @@
 import os
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
@@ -74,4 +74,44 @@ class ModelBundle:
 
     @property
     def num_layers(self) -> int:
-        return len(self.model.model.layers)
+        return len(get_transformer_layers(self.model))
+
+
+def _resolve_attr_path(root: Any, path: str) -> Any:
+    node = root
+    for part in path.split("."):
+        if not hasattr(node, part):
+            return None
+        node = getattr(node, part)
+    return node
+
+
+def get_transformer_layers(model: Any) -> Iterable[Any]:
+    """
+    Resolve the transformer block list across model families/wrappers.
+    """
+    candidate_paths = [
+        # Llama/Mistral/Gemma text-only
+        "model.layers",
+        # Gemma 3 multimodal wrappers
+        "model.language_model.layers",
+        # Alternative wrappers seen in HF stacks
+        "language_model.layers",
+        "model.model.layers",
+        "model.model.language_model.layers",
+        "base_model.model.layers",
+        "base_model.model.language_model.layers",
+        # GPT-like fallbacks
+        "transformer.h",
+    ]
+    for path in candidate_paths:
+        layers = _resolve_attr_path(model, path)
+        if layers is None:
+            continue
+        try:
+            len(layers)
+            return layers
+        except TypeError:
+            continue
+    tried = ", ".join(candidate_paths)
+    raise AttributeError(f"Could not resolve transformer layers for {type(model).__name__}; tried: {tried}")

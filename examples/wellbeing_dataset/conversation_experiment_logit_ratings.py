@@ -59,6 +59,7 @@ TURNWISE_STAT_YLABEL = {
 DEFAULT_CONVERSATION_DATASET_PATH = (
     "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_20260206_194607.json"
 )
+CANONICAL_NEUTRAL_SYSTEM_PROMPT = "You are a helpful assistant."
 
 
 @dataclass
@@ -102,6 +103,11 @@ class RatingConfig:
 class SelfRatingsConfig:
     sources: Union[str, List[str]] = "token"
     primary_source: str = "token"
+    logit_temp_temperature: float = 2.0
+    logit_temp_auto_target_max_prob: Optional[float] = None
+    logit_temp_auto_min_temperature: float = 0.25
+    logit_temp_auto_max_temperature: float = 10.0
+    logit_temp_auto_steps: int = 32
 
 
 @dataclass
@@ -179,7 +185,7 @@ def _now_tag() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
 
-def _load_json(path: Path) -> Dict[str, object]:
+def _load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -213,8 +219,10 @@ def _normalize_rating_sources(value: Union[str, List[str]]) -> List[str]:
                 if source not in out:
                     out.append(source)
             continue
-        if item not in {"token", "logit"}:
-            raise ValueError("self_ratings.sources must be 'token', 'logit', 'both', or a list of these.")
+        if item not in {"token", "logit", "logit_temp"}:
+            raise ValueError(
+                "self_ratings.sources must be 'token', 'logit', 'logit_temp', 'both', or a list of these."
+            )
         if item not in out:
             out.append(item)
     return out
@@ -225,17 +233,162 @@ def _rating_source_key(source: str) -> str:
         return "token_rating"
     if source == "logit":
         return "logit_rating"
+    if source == "logit_temp":
+        return "logit_temp_rating"
     raise ValueError(f"Unknown rating source: {source}")
 
 
-def _rating_source_dir(output_path: Path, source: str) -> Path:
-    out_dir = output_path / "rating_sources" / source
+def _format_probability_suffix(probability: float) -> Optional[str]:
+    try:
+        prob = float(probability)
+    except Exception:
+        return None
+    if not np.isfinite(prob) or prob < 0.0 or prob > 1.0:
+        return None
+    pct = prob * 100.0
+    txt = f"{pct:.6f}".rstrip("0").rstrip(".")
+    if not txt:
+        return None
+    return txt.replace("-", "m").replace(".", "p")
+
+
+def _rating_source_dir_name(source: str, *, logit_temp_target_max_prob: Optional[float]) -> str:
+    if source == "logit_temp" and logit_temp_target_max_prob is not None:
+        suffix = _format_probability_suffix(logit_temp_target_max_prob)
+        if suffix:
+            return f"logit_temp_{suffix}"
+    return source
+
+
+def _temperature_scale_prob_map(prob_map: Dict[str, float], temperature: float) -> Optional[Dict[str, float]]:
+    try:
+        temp = float(temperature)
+    except Exception:
+        return None
+    if not np.isfinite(temp) or temp <= 0.0:
+        return None
+
+    keys = list(prob_map.keys())
+    vals = np.array([float(prob_map[k]) for k in keys], dtype=np.float64)
+    if vals.size == 0 or not np.all(np.isfinite(vals)):
+        return None
+    vals = np.clip(vals, 1e-300, None)
+    logits = np.log(vals) / temp
+    norm = _logsumexp(logits)
+    if not np.isfinite(norm):
+        return None
+    probs = np.exp(logits - norm)
+    if not np.all(np.isfinite(probs)):
+        return None
+    return {k: float(p) for k, p in zip(keys, probs)}
+
+
+def _expected_rating_from_prob_map(prob_map: Dict[str, float]) -> Optional[float]:
+    weighted = 0.0
+    total = 0.0
+    for k, v in prob_map.items():
+        try:
+            val = float(k)
+            p = float(v)
+        except Exception:
+            return None
+        if not np.isfinite(val) or not np.isfinite(p):
+            return None
+        weighted += val * p
+        total += p
+    if not np.isfinite(total) or total <= 0.0:
+        return None
+    return float(weighted / total)
+
+
+def _mean_max_probability_at_temperature(prob_maps: List[Dict[str, float]], temperature: float) -> Optional[float]:
+    max_probs: List[float] = []
+    for prob_map in prob_maps:
+        scaled = _temperature_scale_prob_map(prob_map, temperature)
+        if not scaled:
+            continue
+        vals = [float(v) for v in scaled.values() if np.isfinite(float(v))]
+        if not vals:
+            continue
+        max_probs.append(float(max(vals)))
+    if not max_probs:
+        return None
+    return float(np.mean(max_probs))
+
+
+def _fit_temperature_for_target_max_prob(
+    prob_maps: List[Dict[str, float]],
+    *,
+    target_max_prob: float,
+    min_temperature: float,
+    max_temperature: float,
+    steps: int,
+) -> Optional[float]:
+    try:
+        target = float(target_max_prob)
+        lo = float(min_temperature)
+        hi = float(max_temperature)
+        n_steps = int(steps)
+    except Exception:
+        return None
+    if not np.isfinite(target) or not (0.0 < target < 1.0):
+        return None
+    if not np.isfinite(lo) or not np.isfinite(hi) or lo <= 0.0 or hi <= 0.0 or lo >= hi:
+        return None
+    if n_steps <= 0:
+        n_steps = 16
+
+    lo_val = _mean_max_probability_at_temperature(prob_maps, lo)
+    hi_val = _mean_max_probability_at_temperature(prob_maps, hi)
+    if lo_val is None or hi_val is None:
+        return None
+
+    if target >= lo_val:
+        return lo
+    if target <= hi_val:
+        return hi
+
+    for _ in range(n_steps):
+        mid = 0.5 * (lo + hi)
+        mid_val = _mean_max_probability_at_temperature(prob_maps, mid)
+        if mid_val is None:
+            return None
+        if mid_val > target:
+            lo = mid
+        else:
+            hi = mid
+    return float(0.5 * (lo + hi))
+
+
+def _rating_source_dir(
+    output_path: Path,
+    source: str,
+    *,
+    source_dir_names: Optional[Dict[str, str]] = None,
+) -> Path:
+    source_dir = (
+        source_dir_names.get(source, source)
+        if isinstance(source_dir_names, dict)
+        else source
+    )
+    out_dir = output_path / "rating_sources" / source_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir
 
 
-def _rating_source_alpha_dir(output_path: Path, alpha: float, source: str) -> Path:
-    out_dir = _alpha_plot_dir(output_path, alpha) / "rating_sources" / source
+def _rating_source_alpha_dir(
+    output_path: Path,
+    alpha: float,
+    source: str,
+    *,
+    source_dir_names: Optional[Dict[str, str]] = None,
+) -> Path:
+    source_dir = (
+        source_dir_names.get(source, source)
+        if isinstance(source_dir_names, dict)
+        else source
+    )
+    out_dir = _alpha_plot_dir(output_path, alpha) / "rating_sources" / source_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir
 
@@ -1172,6 +1325,45 @@ def _safe_float(value: object) -> Optional[float]:
     return None
 
 
+def _resolve_probe_name(requested: Optional[str], available: List[str]) -> Tuple[Optional[str], Optional[str]]:
+    if not available:
+        return None, "No probes available."
+    if requested is None:
+        return available[0], None
+    req = str(requested).strip()
+    if not req:
+        return available[0], None
+    if req in available:
+        return req, None
+
+    req_norm = req.lower().replace("-", "_")
+    candidates: List[str] = []
+    for name in available:
+        n = str(name).strip()
+        n_norm = n.lower().replace("-", "_")
+        if n_norm == req_norm:
+            candidates.append(n)
+            continue
+        if n_norm.startswith(req_norm + "_"):
+            candidates.append(n)
+            continue
+        if req_norm.startswith(n_norm + "_"):
+            candidates.append(n)
+            continue
+    deduped: List[str] = []
+    for c in candidates:
+        if c not in deduped:
+            deduped.append(c)
+    if len(deduped) == 1:
+        return deduped[0], None
+    if len(deduped) > 1:
+        return None, (
+            f"Requested probe '{requested}' is ambiguous. Matches: {deduped}. "
+            f"Available probes: {available}."
+        )
+    return None, f"Requested probe '{requested}' not found. Available probes: {available}."
+
+
 def _sanitize_slug(text: str) -> str:
     slug = re.sub(r"[^A-Za-z0-9._-]+", "_", text.strip())
     slug = slug.strip("_")
@@ -1470,6 +1662,210 @@ def _load_segments_from_npz(tokenizer, npz_path: str, scores: np.ndarray, prompt
     return segment_token_scores(tokens, scores.tolist(), prompt_len=prompt_len)
 
 
+def _extract_prompt_len(npz_payload: np.lib.npyio.NpzFile, fallback: int = 0) -> int:
+    value = npz_payload.get("prompt_len")
+    if isinstance(value, np.ndarray):
+        if value.size > 0:
+            return int(np.array(value).reshape(-1)[0])
+        return int(fallback)
+    if isinstance(value, (int, float)):
+        return int(value)
+    return int(fallback)
+
+
+def _resolve_model_id_for_tokenizer(cfg: ExperimentConfig) -> str:
+    if cfg.model_id:
+        return str(cfg.model_id)
+    if not cfg.probe_dirs:
+        raise ValueError("Cannot resolve tokenizer model_id: no model_id in config and no probe_dirs.")
+    cfg_path = Path(cfg.probe_dirs[0]) / "config.json"
+    if not cfg_path.exists():
+        raise FileNotFoundError(f"Probe config not found: {cfg_path}")
+    probe_cfg = _load_json(cfg_path)
+    if not isinstance(probe_cfg, dict):
+        raise ValueError(f"Probe config has unexpected format: {cfg_path}")
+    model_cfg = probe_cfg.get("model", {})
+    if not isinstance(model_cfg, dict):
+        raise ValueError(f"Probe config missing 'model' object: {cfg_path}")
+    model_id = model_cfg.get("model_id")
+    if not isinstance(model_id, str) or not model_id.strip():
+        raise ValueError(f"Probe config missing model.model_id: {cfg_path}")
+    return model_id.strip()
+
+
+def _load_tokenizer_only(model_id: str):
+    try:
+        from transformers import AutoTokenizer
+    except Exception as exc:
+        raise RuntimeError("transformers is required to load tokenizer for reanalysis.") from exc
+    return AutoTokenizer.from_pretrained(model_id)
+
+
+def _flatten_tokens_scores_from_segments(
+    segments_payload: List[Dict[str, object]],
+) -> Tuple[List[str], List[float]]:
+    ordered = sorted(
+        [seg for seg in segments_payload if isinstance(seg, dict)],
+        key=lambda seg: int(seg.get("segment_index", 0)),
+    )
+    tokens: List[str] = []
+    scores: List[float] = []
+    for seg in ordered:
+        seg_tokens = seg.get("tokens", [])
+        seg_scores = seg.get("scores", [])
+        if not isinstance(seg_tokens, list) or not isinstance(seg_scores, list):
+            continue
+        n = min(len(seg_tokens), len(seg_scores))
+        for i in range(n):
+            tok = seg_tokens[i]
+            sc = seg_scores[i]
+            if not isinstance(tok, str):
+                continue
+            if not isinstance(sc, (int, float)) or not np.isfinite(float(sc)):
+                continue
+            tokens.append(tok)
+            scores.append(float(sc))
+    return tokens, scores
+
+
+def _row_probe_names(row: Dict[str, object], default_probe_names: List[str]) -> List[str]:
+    row_probe_metrics = row.get("probe_metrics", {})
+    row_probe_names = (
+        [str(k) for k in row_probe_metrics.keys()] if isinstance(row_probe_metrics, dict) else []
+    )
+    if not row_probe_names:
+        row_probe_names = list(default_probe_names)
+    if not row_probe_names:
+        row_probe_names = ["probe_0"]
+    return row_probe_names
+
+
+def _row_has_any_finite_probe_metric(row: Dict[str, object], metric_key: str) -> bool:
+    probe_metrics = row.get("probe_metrics", {})
+    if not isinstance(probe_metrics, dict):
+        return False
+    for metric_map in probe_metrics.values():
+        if not isinstance(metric_map, dict):
+            continue
+        value = metric_map.get(metric_key)
+        if isinstance(value, (int, float)) and np.isfinite(float(value)):
+            return True
+    return False
+
+
+def _has_any_finite_probe_metric(rows: List[Dict[str, object]], metric_key: str) -> bool:
+    return any(_row_has_any_finite_probe_metric(row, metric_key) for row in rows)
+
+
+def _recompute_probe_metrics_from_segments_rows(
+    rows: List[Dict[str, object]],
+    *,
+    default_probe_names: List[str],
+) -> int:
+    updated = 0
+    for row in rows:
+        segments_path = row.get("segments_path")
+        if not isinstance(segments_path, str) or not segments_path:
+            continue
+        seg_file = Path(segments_path)
+        if not seg_file.exists():
+            continue
+        try:
+            seg_payload = _load_json(seg_file)
+        except Exception:
+            continue
+        if not isinstance(seg_payload, dict):
+            continue
+        prompt_len_obj = seg_payload.get("prompt_len", 0)
+        prompt_len = int(prompt_len_obj) if isinstance(prompt_len_obj, (int, float)) else 0
+        names = _row_probe_names(row, default_probe_names)
+        rebuilt: Dict[str, Dict[str, Optional[float]]] = {}
+
+        seg_by_probe = seg_payload.get("segments_by_probe")
+        if isinstance(seg_by_probe, dict):
+            for name in names:
+                seg_list = seg_by_probe.get(name, [])
+                if not isinstance(seg_list, list):
+                    continue
+                tokens, scores = _flatten_tokens_scores_from_segments(seg_list)
+                if not tokens or not scores:
+                    continue
+                segments = segment_token_scores(tokens, scores, prompt_len=prompt_len)
+                rebuilt[name] = _summarize_segments(segments)
+            if not rebuilt:
+                for name, seg_list in seg_by_probe.items():
+                    if not isinstance(name, str) or not isinstance(seg_list, list):
+                        continue
+                    tokens, scores = _flatten_tokens_scores_from_segments(seg_list)
+                    if not tokens or not scores:
+                        continue
+                    segments = segment_token_scores(tokens, scores, prompt_len=prompt_len)
+                    rebuilt[name] = _summarize_segments(segments)
+        else:
+            seg_list = seg_payload.get("segments", [])
+            if isinstance(seg_list, list):
+                tokens, scores = _flatten_tokens_scores_from_segments(seg_list)
+                if tokens and scores:
+                    segments = segment_token_scores(tokens, scores, prompt_len=prompt_len)
+                    rebuilt[names[0]] = _summarize_segments(segments)
+
+        if rebuilt:
+            row["probe_metrics"] = rebuilt
+            updated += 1
+    return updated
+
+
+def _recompute_probe_metrics_from_npz_rows(
+    rows: List[Dict[str, object]],
+    *,
+    tokenizer,
+    default_probe_names: List[str],
+) -> None:
+    for row in rows:
+        npz_path = row.get("npz_path")
+        if not isinstance(npz_path, str) or not npz_path:
+            continue
+        npz_file = Path(npz_path)
+        if not npz_file.exists():
+            continue
+        try:
+            npz = np.load(npz_file)
+        except Exception:
+            continue
+
+        token_ids = npz.get("token_ids")
+        scores_agg = npz.get("scores_agg")
+        if token_ids is None or scores_agg is None:
+            continue
+
+        prompt_len = _extract_prompt_len(npz, fallback=0)
+        token_list = np.array(token_ids, dtype=np.int64).tolist()
+        tokens = tokenizer.convert_ids_to_tokens(token_list)
+
+        row_probe_names = _row_probe_names(row, default_probe_names)
+
+        rebuilt: Dict[str, Dict[str, Optional[float]]] = {}
+        arr = np.array(scores_agg, dtype=np.float32)
+        if arr.ndim == 1:
+            segments = segment_token_scores(tokens, arr.tolist(), prompt_len=prompt_len)
+            rebuilt[row_probe_names[0]] = _summarize_segments(segments)
+        else:
+            n_probe = int(arr.shape[0])
+            n_names = int(len(row_probe_names))
+            n = min(n_probe, n_names)
+            for idx in range(n):
+                segments = segment_token_scores(tokens, arr[idx].tolist(), prompt_len=prompt_len)
+                rebuilt[row_probe_names[idx]] = _summarize_segments(segments)
+            if n_probe > n_names:
+                for idx in range(n_names, n_probe):
+                    fallback_name = f"probe_{idx}"
+                    segments = segment_token_scores(tokens, arr[idx].tolist(), prompt_len=prompt_len)
+                    rebuilt[fallback_name] = _summarize_segments(segments)
+
+        if rebuilt:
+            row["probe_metrics"] = rebuilt
+
+
 def _summarize_segments(segments: List[Dict[str, object]]) -> Dict[str, Optional[float]]:
     def weighted_mean(items: Iterable[Dict[str, object]]) -> Optional[float]:
         total = 0.0
@@ -1511,15 +1907,31 @@ def _summarize_segments(segments: List[Dict[str, object]]) -> Dict[str, Optional
     return summary
 
 
-def run_experiment(cfg: ExperimentConfig) -> Path:
+def run_experiment(
+    cfg: ExperimentConfig,
+    *,
+    reanalyze_only: bool = False,
+    existing_output_dir: Optional[Union[str, Path]] = None,
+) -> Path:
     dataset_path = Path(cfg.dataset_path).resolve()
     if not dataset_path.exists():
         raise FileNotFoundError(f"Dataset not found: {dataset_path}")
 
     output_dir = cfg.output_dir_template
-    if "{timestamp}" in output_dir:
-        output_dir = output_dir.format(timestamp=_now_tag())
-    output_path = Path(output_dir).resolve()
+    if reanalyze_only:
+        if existing_output_dir is not None:
+            output_path = Path(existing_output_dir).resolve()
+        else:
+            if "{timestamp}" in output_dir:
+                raise ValueError(
+                    "Reanalysis needs a concrete output directory. "
+                    "Either use a generated config with fixed output_dir_template or pass existing_output_dir."
+                )
+            output_path = Path(output_dir).resolve()
+    else:
+        if "{timestamp}" in output_dir:
+            output_dir = output_dir.format(timestamp=_now_tag())
+        output_path = Path(output_dir).resolve()
     output_path.mkdir(parents=True, exist_ok=True)
 
     dataset = _load_json(dataset_path)
@@ -1527,44 +1939,51 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         raise ValueError("cfg.prompt must be provided.")
 
     prompts, metas = _collect_prompts(dataset, cfg.prompt)
-    if not prompts:
+    if not prompts and not reanalyze_only:
         raise ValueError("No prompts generated from dataset.")
-
-    use_multi = cfg.multi_probe if cfg.multi_probe is not None else len(cfg.probe_dirs) > 1
-    if use_multi:
-        probes = _load_multi_probes(cfg.probe_dirs, cfg.model_id)
-        model_bundle = probes[0].model_bundle
-    else:
-        probe = _load_single_probe(cfg.probe_dirs[0], cfg.model_id)
-        probes = [probe]
-        model_bundle = probe.model_bundle
-
-    tokenizer = model_bundle.tokenizer
     rating_sources = _normalize_rating_sources(cfg.self_ratings.sources)
     primary_source = str(cfg.self_ratings.primary_source).strip().lower()
     if primary_source not in rating_sources:
         primary_source = rating_sources[0]
+    logit_temp_target_max_prob = (
+        float(cfg.self_ratings.logit_temp_auto_target_max_prob)
+        if cfg.self_ratings.logit_temp_auto_target_max_prob is not None
+        else None
+    )
+    rating_source_dir_names = {
+        source: _rating_source_dir_name(
+            source,
+            logit_temp_target_max_prob=logit_temp_target_max_prob,
+        )
+        for source in rating_sources
+    }
     rating_key_by_source = {source: _rating_source_key(source) for source in rating_sources}
     source_titles = {
         "token": f"{cfg.rating.label.capitalize()} (token)",
         "logit": f"{cfg.rating.label.capitalize()} (logit)",
+        "logit_temp": f"{cfg.rating.label.capitalize()} (logit, temp-scaled)",
     }
 
-    use_logit_source = "logit" in rating_sources
-    if use_logit_source and not cfg.logit_rating.enabled:
-        raise ValueError("self_ratings.sources includes 'logit' but logit_rating.enabled is false.")
+    use_logit_source = ("logit" in rating_sources) or ("logit_temp" in rating_sources)
+    use_logit_temp_source = "logit_temp" in rating_sources
+    if use_logit_source and not cfg.logit_rating.enabled and not reanalyze_only:
+        raise ValueError("self_ratings.sources includes a logit-based source but logit_rating.enabled is false.")
     save_generation_logits = bool(
         cfg.logit_rating.save_generation_logits and cfg.logit_rating.enabled and use_logit_source
     )
-    if use_logit_source and not save_generation_logits:
+    if use_logit_source and not save_generation_logits and not reanalyze_only:
         raise ValueError(
             "Logit self-ratings require generation logits. "
             "Set logit_rating.save_generation_logits=true."
         )
+    if use_logit_temp_source and not bool(cfg.logit_rating.save_option_probabilities):
+        raise ValueError(
+            "self_ratings.sources includes 'logit_temp' but logit_rating.save_option_probabilities is false."
+        )
 
     option_values: Dict[str, float] = {}
     option_token_ids: Dict[str, List[int]] = {}
-    if use_logit_source:
+    if use_logit_source and not reanalyze_only:
         for raw_value in cfg.logit_rating.option_values:
             value = int(raw_value)
             key = str(value)
@@ -1572,7 +1991,6 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 option_values[key] = float(value)
         if not option_values:
             raise ValueError("logit_rating.option_values is empty.")
-        option_token_ids = _build_option_token_id_map(tokenizer, cfg.logit_rating)
     bootstrap_ci_level = float(cfg.analysis.bootstrap_ci_level)
     if not (0.0 < bootstrap_ci_level < 1.0):
         raise ValueError("analysis.bootstrap_ci_level must be between 0 and 1 (exclusive).")
@@ -1584,144 +2002,318 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
 
     alphas = cfg.steering.alphas or [0.0]
     alpha_unit = cfg.steering.alpha_unit
-
-    if use_multi:
-        result_payload = multi_probe_score_prompts(
-            probes=probes,
-            prompts=prompts,
-            output_root="outputs_multi",
-            project_name="conversation_experiment_logit_ratings",
-            output_subdir=cfg.output_subdir,
-            alphas=alphas,
-            alpha_unit=alpha_unit,
-            steer_probe=cfg.steering.steer_probe,
-            steer_layers=cfg.steering.steer_layers,
-            steer_window_radius=cfg.steering.steer_window_radius,
-            steer_distribute=cfg.steering.steer_distribute,
-            max_new_tokens=cfg.generation.max_new_tokens,
-            greedy=cfg.generation.greedy,
-            temperature=cfg.generation.temperature,
-            top_p=cfg.generation.top_p,
-            save_html=cfg.generation.save_html,
-            save_segments=cfg.generation.save_segments,
-            save_generation_logits=save_generation_logits,
-            generation_logits_top_k=cfg.logit_rating.generation_logits_top_k,
-            generation_logits_dtype=cfg.logit_rating.generation_logits_dtype,
-        )
-        recs = result_payload["results"]
-        probe_names = [p.concept.name for p in probes]
-    else:
-        recs = probe.score_prompts(
-            prompts=prompts,
-            output_subdir=cfg.output_subdir,
-            alphas=alphas,
-            alpha_unit=alpha_unit,
-            max_new_tokens=cfg.generation.max_new_tokens,
-            greedy=cfg.generation.greedy,
-            temperature=cfg.generation.temperature,
-            top_p=cfg.generation.top_p,
-            save_html=cfg.generation.save_html,
-            save_segments=cfg.generation.save_segments,
-            save_generation_logits=save_generation_logits,
-            generation_logits_top_k=cfg.logit_rating.generation_logits_top_k,
-            generation_logits_dtype=cfg.logit_rating.generation_logits_dtype,
-        )
-        probe_names = [probes[0].concept.name]
+    system_prompt_used = CANONICAL_NEUTRAL_SYSTEM_PROMPT
 
     results: List[Dict[str, object]] = []
     per_alpha: Dict[float, List[Dict[str, object]]] = {float(a): [] for a in alphas}
-
-    for idx, rec in enumerate(recs):
-        prompt_idx = idx // len(alphas)
-        if prompt_idx >= len(metas):
-            break
-        meta = metas[prompt_idx]
-        completion = str(rec.get("completion", ""))
-        token_rating = _parse_rating(completion, cfg.rating)
-        prompt_len = int(rec.get("prompt_len", 0))
-        npz_path = rec.get("npz_path")
-        segments_path = rec.get("segments_path")
-
-        probe_metrics: Dict[str, Dict[str, Optional[float]]] = {}
-
-        if segments_path:
-            seg_payload = _load_json(Path(segments_path))
-            if use_multi:
-                seg_by_probe = seg_payload.get("segments_by_probe", {})
-                for name in probe_names:
-                    segments = seg_by_probe.get(name, [])
-                    if isinstance(segments, list):
-                        probe_metrics[name] = _summarize_segments(segments)
-            else:
-                segments = seg_payload.get("segments", [])
-                if isinstance(segments, list):
-                    probe_metrics[probe_names[0]] = _summarize_segments(segments)
-        else:
-            if not npz_path:
-                raise ValueError("Missing npz_path; cannot compute segments.")
-            npz = np.load(npz_path)
-            scores_agg = npz.get("scores_agg")
-            if scores_agg is None:
-                raise ValueError("scores_agg missing from npz; cannot compute segments.")
-            if use_multi:
-                for probe_idx, name in enumerate(probe_names):
-                    segments = _load_segments_from_npz(
-                        tokenizer,
-                        npz_path,
-                        scores_agg[probe_idx],
-                        prompt_len,
-                    )
-                    probe_metrics[name] = _summarize_segments(segments)
-            else:
-                segments = _load_segments_from_npz(tokenizer, npz_path, scores_agg, prompt_len)
-                probe_metrics[probe_names[0]] = _summarize_segments(segments)
-
-        logit_rating_value: Optional[float] = None
-        logit_rating_probs: Optional[Dict[str, float]] = None
-        logit_rating_status = "disabled"
-        if use_logit_source:
-            if isinstance(npz_path, str):
-                payload = _compute_logit_rating_from_npz(
-                    npz_path,
-                    option_token_ids=option_token_ids,
-                    option_values=option_values,
-                    step_index=int(cfg.logit_rating.step_index),
-                    save_option_probabilities=bool(cfg.logit_rating.save_option_probabilities),
-                )
-                rating_value = payload.get("logit_rating")
-                if isinstance(rating_value, (int, float)) and np.isfinite(float(rating_value)):
-                    logit_rating_value = float(rating_value)
-                probs = payload.get("logit_rating_probs")
-                if isinstance(probs, dict):
-                    logit_rating_probs = {str(k): float(v) for k, v in probs.items()}
-                logit_rating_status = str(payload.get("logit_rating_status", "error"))
-            else:
-                logit_rating_status = "missing_npz_path"
-
-        primary_key = rating_key_by_source[primary_source]
-        primary_rating = token_rating if primary_key == "token_rating" else logit_rating_value
-
-        record = {
-            **meta,
-            "completion": completion,
-            "rating": primary_rating,
-            "token_rating": token_rating,
-            "logit_rating": logit_rating_value,
-            "logit_rating_probs": logit_rating_probs,
-            "logit_rating_status": logit_rating_status,
-            "rating_source_primary": primary_source,
-            "alpha": float(rec.get("alpha", 0.0)),
-            "alpha_unit": str(rec.get("alpha_unit", alpha_unit)),
-            "npz_path": npz_path,
-            "segments_path": segments_path,
-            "probe_metrics": probe_metrics,
-            "generation_logits_saved": bool(rec.get("generation_logits_saved", False)),
-        }
-        results.append(record)
-        alpha_key = float(rec.get("alpha", 0.0))
-        per_alpha.setdefault(alpha_key, []).append(record)
-
+    probe_names: List[str] = []
     results_path = output_path / "results.json"
+
+    if reanalyze_only:
+        if not results_path.exists():
+            raise FileNotFoundError(f"results.json not found for reanalysis: {results_path}")
+        rows = _load_json(results_path)
+        if not isinstance(rows, list):
+            raise ValueError(f"Expected list in results.json, got: {type(rows)}")
+        results = [row for row in rows if isinstance(row, dict)]
+        per_alpha = {}
+        for row in results:
+            alpha_key = float(row.get("alpha", 0.0))
+            per_alpha.setdefault(alpha_key, []).append(row)
+            probe_metrics = row.get("probe_metrics", {})
+            if isinstance(probe_metrics, dict):
+                for name in probe_metrics.keys():
+                    if name not in probe_names:
+                        probe_names.append(str(name))
+        if per_alpha:
+            alphas = sorted(per_alpha.keys())
+        for alpha in alphas:
+            per_alpha.setdefault(float(alpha), [])
+        needs_metric_refresh = not _has_any_finite_probe_metric(
+            results, cfg.analysis.metric_last_assistant_key
+        )
+        if needs_metric_refresh:
+            _recompute_probe_metrics_from_segments_rows(
+                results,
+                default_probe_names=probe_names,
+            )
+            missing_rows = [
+                row
+                for row in results
+                if not _row_has_any_finite_probe_metric(row, cfg.analysis.metric_last_assistant_key)
+            ]
+            if missing_rows:
+                model_id_for_tokenizer = _resolve_model_id_for_tokenizer(cfg)
+                tokenizer = _load_tokenizer_only(model_id_for_tokenizer)
+                _recompute_probe_metrics_from_npz_rows(
+                    missing_rows,
+                    tokenizer=tokenizer,
+                    default_probe_names=probe_names,
+                )
+        per_alpha = {}
+        probe_names = []
+        for row in results:
+            alpha_key = float(row.get("alpha", 0.0))
+            per_alpha.setdefault(alpha_key, []).append(row)
+            probe_metrics = row.get("probe_metrics", {})
+            if isinstance(probe_metrics, dict):
+                for name in probe_metrics.keys():
+                    if name not in probe_names:
+                        probe_names.append(str(name))
+        if per_alpha:
+            alphas = sorted(per_alpha.keys())
+        for alpha in alphas:
+            per_alpha.setdefault(float(alpha), [])
+        results_path.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+    else:
+        use_multi = cfg.multi_probe if cfg.multi_probe is not None else len(cfg.probe_dirs) > 1
+        if use_multi:
+            probes = _load_multi_probes(cfg.probe_dirs, cfg.model_id)
+            model_bundle = probes[0].model_bundle
+        else:
+            probe = _load_single_probe(cfg.probe_dirs[0], cfg.model_id)
+            probes = [probe]
+            model_bundle = probe.model_bundle
+        tokenizer = model_bundle.tokenizer
+        if use_logit_source:
+            option_token_ids = _build_option_token_id_map(tokenizer, cfg.logit_rating)
+
+        if use_multi:
+            result_payload = multi_probe_score_prompts(
+                probes=probes,
+                prompts=prompts,
+                system_prompt=system_prompt_used,
+                output_root="outputs_multi",
+                project_name="conversation_experiment_logit_ratings",
+                output_subdir=cfg.output_subdir,
+                alphas=alphas,
+                alpha_unit=alpha_unit,
+                steer_probe=cfg.steering.steer_probe,
+                steer_layers=cfg.steering.steer_layers,
+                steer_window_radius=cfg.steering.steer_window_radius,
+                steer_distribute=cfg.steering.steer_distribute,
+                max_new_tokens=cfg.generation.max_new_tokens,
+                greedy=cfg.generation.greedy,
+                temperature=cfg.generation.temperature,
+                top_p=cfg.generation.top_p,
+                save_html=cfg.generation.save_html,
+                save_segments=cfg.generation.save_segments,
+                save_generation_logits=save_generation_logits,
+                generation_logits_top_k=cfg.logit_rating.generation_logits_top_k,
+                generation_logits_dtype=cfg.logit_rating.generation_logits_dtype,
+            )
+            recs = result_payload["results"]
+            probe_names = [p.concept.name for p in probes]
+        else:
+            recs = probe.score_prompts(
+                prompts=prompts,
+                system_prompt=system_prompt_used,
+                output_subdir=cfg.output_subdir,
+                alphas=alphas,
+                alpha_unit=alpha_unit,
+                max_new_tokens=cfg.generation.max_new_tokens,
+                greedy=cfg.generation.greedy,
+                temperature=cfg.generation.temperature,
+                top_p=cfg.generation.top_p,
+                save_html=cfg.generation.save_html,
+                save_segments=cfg.generation.save_segments,
+                save_generation_logits=save_generation_logits,
+                generation_logits_top_k=cfg.logit_rating.generation_logits_top_k,
+                generation_logits_dtype=cfg.logit_rating.generation_logits_dtype,
+            )
+            probe_names = [probes[0].concept.name]
+
+        for idx, rec in enumerate(recs):
+            prompt_idx = idx // len(alphas)
+            if prompt_idx >= len(metas):
+                break
+            meta = metas[prompt_idx]
+            completion = str(rec.get("completion", ""))
+            token_rating = _parse_rating(completion, cfg.rating)
+            prompt_len = int(rec.get("prompt_len", 0))
+            npz_path = rec.get("npz_path")
+            segments_path = rec.get("segments_path")
+
+            probe_metrics: Dict[str, Dict[str, Optional[float]]] = {}
+
+            if segments_path:
+                seg_payload = _load_json(Path(segments_path))
+                if use_multi:
+                    seg_by_probe = seg_payload.get("segments_by_probe", {})
+                    for name in probe_names:
+                        segments = seg_by_probe.get(name, [])
+                        if isinstance(segments, list):
+                            probe_metrics[name] = _summarize_segments(segments)
+                else:
+                    segments = seg_payload.get("segments", [])
+                    if isinstance(segments, list):
+                        probe_metrics[probe_names[0]] = _summarize_segments(segments)
+            else:
+                if not npz_path:
+                    raise ValueError("Missing npz_path; cannot compute segments.")
+                npz = np.load(npz_path)
+                scores_agg = npz.get("scores_agg")
+                if scores_agg is None:
+                    raise ValueError("scores_agg missing from npz; cannot compute segments.")
+                if use_multi:
+                    for probe_idx, name in enumerate(probe_names):
+                        segments = _load_segments_from_npz(
+                            tokenizer,
+                            npz_path,
+                            scores_agg[probe_idx],
+                            prompt_len,
+                        )
+                        probe_metrics[name] = _summarize_segments(segments)
+                else:
+                    segments = _load_segments_from_npz(tokenizer, npz_path, scores_agg, prompt_len)
+                    probe_metrics[probe_names[0]] = _summarize_segments(segments)
+
+            logit_rating_value: Optional[float] = None
+            logit_rating_probs: Optional[Dict[str, float]] = None
+            logit_rating_status = "disabled"
+            if use_logit_source:
+                if isinstance(npz_path, str):
+                    payload = _compute_logit_rating_from_npz(
+                        npz_path,
+                        option_token_ids=option_token_ids,
+                        option_values=option_values,
+                        step_index=int(cfg.logit_rating.step_index),
+                        save_option_probabilities=bool(cfg.logit_rating.save_option_probabilities),
+                    )
+                    rating_value = payload.get("logit_rating")
+                    if isinstance(rating_value, (int, float)) and np.isfinite(float(rating_value)):
+                        logit_rating_value = float(rating_value)
+                    probs = payload.get("logit_rating_probs")
+                    if isinstance(probs, dict):
+                        logit_rating_probs = {str(k): float(v) for k, v in probs.items()}
+                    logit_rating_status = str(payload.get("logit_rating_status", "error"))
+                else:
+                    logit_rating_status = "missing_npz_path"
+
+            primary_key = rating_key_by_source[primary_source]
+            primary_rating = token_rating if primary_key == "token_rating" else logit_rating_value
+
+            record = {
+                **meta,
+                "completion": completion,
+                "rating": primary_rating,
+                "token_rating": token_rating,
+                "logit_rating": logit_rating_value,
+                "logit_rating_probs": logit_rating_probs,
+                "logit_rating_status": logit_rating_status,
+                "rating_source_primary": primary_source,
+                "alpha": float(rec.get("alpha", 0.0)),
+                "alpha_unit": str(rec.get("alpha_unit", alpha_unit)),
+                "npz_path": npz_path,
+                "segments_path": segments_path,
+                "probe_metrics": probe_metrics,
+                "generation_logits_saved": bool(rec.get("generation_logits_saved", False)),
+            }
+            results.append(record)
+            alpha_key = float(rec.get("alpha", 0.0))
+            per_alpha.setdefault(alpha_key, []).append(record)
+
+        results_path.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    logit_temp_info: Optional[Dict[str, object]] = None
+    if use_logit_temp_source:
+        prob_maps: List[Dict[str, float]] = []
+        for rec in results:
+            probs_obj = rec.get("logit_rating_probs")
+            if isinstance(probs_obj, dict):
+                clean: Dict[str, float] = {}
+                for k, v in probs_obj.items():
+                    if isinstance(v, (int, float)) and np.isfinite(float(v)):
+                        clean[str(k)] = float(v)
+                if clean:
+                    prob_maps.append(clean)
+
+        selected_temperature = float(cfg.self_ratings.logit_temp_temperature)
+        target_max_prob = cfg.self_ratings.logit_temp_auto_target_max_prob
+        auto_fit_used = False
+        if target_max_prob is not None and prob_maps:
+            fitted = _fit_temperature_for_target_max_prob(
+                prob_maps,
+                target_max_prob=float(target_max_prob),
+                min_temperature=float(cfg.self_ratings.logit_temp_auto_min_temperature),
+                max_temperature=float(cfg.self_ratings.logit_temp_auto_max_temperature),
+                steps=int(cfg.self_ratings.logit_temp_auto_steps),
+            )
+            if fitted is not None and np.isfinite(float(fitted)) and float(fitted) > 0.0:
+                selected_temperature = float(fitted)
+                auto_fit_used = True
+
+        converted_count = 0
+        for rec in results:
+            probs_obj = rec.get("logit_rating_probs")
+            if not isinstance(probs_obj, dict) or not probs_obj:
+                rec["logit_temp_rating"] = None
+                rec["logit_temp_rating_probs"] = None
+                rec["logit_temp_rating_status"] = "missing_logit_rating_probs"
+                continue
+            clean_probs: Dict[str, float] = {}
+            for k, v in probs_obj.items():
+                if isinstance(v, (int, float)) and np.isfinite(float(v)):
+                    clean_probs[str(k)] = float(v)
+            if not clean_probs:
+                rec["logit_temp_rating"] = None
+                rec["logit_temp_rating_probs"] = None
+                rec["logit_temp_rating_status"] = "probabilities_nonfinite"
+                continue
+
+            scaled = _temperature_scale_prob_map(clean_probs, selected_temperature)
+            if not scaled:
+                rec["logit_temp_rating"] = None
+                rec["logit_temp_rating_probs"] = None
+                rec["logit_temp_rating_status"] = "temperature_scaling_failed"
+                continue
+            rating_temp = _expected_rating_from_prob_map(scaled)
+            if rating_temp is None or not np.isfinite(float(rating_temp)):
+                rec["logit_temp_rating"] = None
+                rec["logit_temp_rating_probs"] = None
+                rec["logit_temp_rating_status"] = "rating_nonfinite"
+                continue
+
+            rec["logit_temp_rating"] = float(rating_temp)
+            rec["logit_temp_rating_probs"] = scaled
+            rec["logit_temp_rating_status"] = "ok"
+            converted_count += 1
+
+        base_mean_max_prob = _mean_max_probability_at_temperature(prob_maps, 1.0)
+        temp_mean_max_prob = _mean_max_probability_at_temperature(prob_maps, selected_temperature)
+        logit_temp_info = {
+            "temperature": float(selected_temperature),
+            "auto_target_max_prob": (
+                float(target_max_prob) if target_max_prob is not None else None
+            ),
+            "auto_fit_used": bool(auto_fit_used),
+            "auto_min_temperature": float(cfg.self_ratings.logit_temp_auto_min_temperature),
+            "auto_max_temperature": float(cfg.self_ratings.logit_temp_auto_max_temperature),
+            "auto_steps": int(cfg.self_ratings.logit_temp_auto_steps),
+            "num_records_with_logit_probs": int(len(prob_maps)),
+            "num_records_with_logit_temp_rating": int(converted_count),
+            "mean_max_prob_before_temp": base_mean_max_prob,
+            "mean_max_prob_after_temp": temp_mean_max_prob,
+        }
+
+    primary_key = rating_key_by_source[primary_source]
+    for rec in results:
+        primary_val = rec.get(primary_key)
+        if isinstance(primary_val, (int, float)) and np.isfinite(float(primary_val)):
+            rec["rating"] = float(primary_val)
+        else:
+            rec["rating"] = None
+        rec["rating_source_primary"] = primary_source
+
+    per_alpha = {}
+    for rec in results:
+        alpha_key = float(rec.get("alpha", 0.0))
+        per_alpha.setdefault(alpha_key, []).append(rec)
+    if per_alpha:
+        alphas = sorted(per_alpha.keys())
+    for alpha in alphas:
+        per_alpha.setdefault(float(alpha), [])
+
     results_path.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
 
     summary: Dict[str, object] = {
@@ -1733,8 +2325,10 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         "alpha_unit": alpha_unit,
         "rating_label": cfg.rating.label,
         "rating_sources": rating_sources,
+        "rating_source_dirs": rating_source_dir_names,
         "primary_rating_source": primary_source,
         "rating_keys": rating_key_by_source,
+        "system_prompt_used": system_prompt_used,
         "bootstrap": {
             "samples": bootstrap_samples,
             "ci_level": bootstrap_ci_level,
@@ -1752,6 +2346,20 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
             "generation_logits_top_k": cfg.logit_rating.generation_logits_top_k,
             "generation_logits_dtype": cfg.logit_rating.generation_logits_dtype,
         }
+    if use_logit_temp_source:
+        summary["logit_temp_rating"] = (
+            logit_temp_info
+            if isinstance(logit_temp_info, dict)
+            else {
+                "temperature": float(cfg.self_ratings.logit_temp_temperature),
+                "auto_target_max_prob": (
+                    float(cfg.self_ratings.logit_temp_auto_target_max_prob)
+                    if cfg.self_ratings.logit_temp_auto_target_max_prob is not None
+                    else None
+                ),
+                "auto_fit_used": False,
+            }
+        )
 
     turnwise_stats_keys: List[str] = []
     turnwise_metric_keys: List[str] = []
@@ -1815,9 +2423,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
             for source in rating_sources:
                 rating_key = rating_key_by_source[source]
                 rating_by_turn: Dict[int, List[float]] = {}
-                paired_rating: List[float] = []
-                paired_metrics: Dict[str, List[float]] = {
-                    key: [] for key in cfg.analysis.plot_rating_vs_metrics
+                paired_points: Dict[str, Dict[str, List[float]]] = {
+                    key: {"x": [], "y": []} for key in cfg.analysis.plot_rating_vs_metrics
                 }
                 for rec in records:
                     turn = int(rec["turn_index"])
@@ -1826,14 +2433,14 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         continue
                     rating_float = float(rating_value)
                     rating_by_turn.setdefault(turn, []).append(rating_float)
-                    paired_rating.append(rating_float)
                     probe_metrics = rec.get("probe_metrics", {}).get(probe_name, {})
                     if not isinstance(probe_metrics, dict):
                         continue
                     for key in cfg.analysis.plot_rating_vs_metrics:
                         metric_val = probe_metrics.get(key)
                         if isinstance(metric_val, (int, float)) and np.isfinite(float(metric_val)):
-                            paired_metrics[key].append(float(metric_val))
+                            paired_points[key]["x"].append(rating_float)
+                            paired_points[key]["y"].append(float(metric_val))
 
                 turns = sorted(rating_by_turn.keys())
                 rating_means: List[float] = []
@@ -1843,7 +2450,12 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     rating_means.append(mean)
                     rating_sems.append(sem)
 
-                source_alpha_dir = _rating_source_alpha_dir(output_path, alpha_val, source)
+                source_alpha_dir = _rating_source_alpha_dir(
+                    output_path,
+                    alpha_val,
+                    source,
+                    source_dir_names=rating_source_dir_names,
+                )
                 rating_turn_trend_bootstrap: Dict[str, Optional[float]] = {}
                 if turns:
                     rating_turn_trend_bootstrap = _bootstrap_series_trend(
@@ -1870,8 +2482,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     )
 
                 for key in cfg.analysis.plot_rating_vs_metrics:
-                    xs = paired_rating
-                    ys = paired_metrics.get(key, [])
+                    pair = paired_points.get(key, {"x": [], "y": []})
+                    xs = pair.get("x", [])
+                    ys = pair.get("y", [])
                     if xs and ys:
                         _plot_scatter(
                             xs,
@@ -1888,7 +2501,10 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     "rating_vs_turn": _linear_stats(turns, rating_means) if turns else {},
                     "rating_vs_turn_trend_bootstrap": rating_turn_trend_bootstrap,
                     "rating_vs_metrics": {
-                        key: _correlation_stats(paired_rating, paired_metrics.get(key, []))
+                        key: _correlation_stats(
+                            paired_points.get(key, {}).get("x", []),
+                            paired_points.get(key, {}).get("y", []),
+                        )
                         for key in cfg.analysis.plot_rating_vs_metrics
                     },
                     "alpha_plot_dir": str(source_alpha_dir),
@@ -1922,7 +2538,12 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     for alpha_key in sorted(stats_by_alpha_turn.keys(), key=lambda s: float(s)):
                         alpha_val = float(alpha_key)
                         metric_dir = (
-                            _rating_source_alpha_dir(output_path, alpha_val, source)
+                            _rating_source_alpha_dir(
+                                output_path,
+                                alpha_val,
+                                source,
+                                source_dir_names=rating_source_dir_names,
+                            )
                             / "turnwise_correlation"
                             / _sanitize_slug(probe_name)
                             / _sanitize_slug(metric_key)
@@ -2025,7 +2646,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 alpha_sems.append(sem)
                 ratings_by_alpha[float(alpha_val)] = list(ratings)
             if alpha_vals:
-                source_dir = _rating_source_dir(output_path, source)
+                source_dir = _rating_source_dir(
+                    output_path,
+                    source,
+                    source_dir_names=rating_source_dir_names,
+                )
                 plot_path = source_dir / f"{cfg.rating.label}_{source}_vs_alpha.png"
                 trend_bootstrap = _bootstrap_series_trend(
                     alpha_vals,
@@ -2089,10 +2714,17 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         if not probe_names:
             alignment_summary = {"error": "No probes available."}
         else:
-            alignment_probe_name = cfg.analysis.alignment_probe_name or probe_names[0]
-            if alignment_probe_name not in probe_names:
+            alignment_probe_requested = cfg.analysis.alignment_probe_name or probe_names[0]
+            alignment_probe_name, alignment_resolve_error = _resolve_probe_name(
+                alignment_probe_requested, probe_names
+            )
+            if alignment_probe_name is None:
                 alignment_summary = {
-                    "error": f"alignment_probe_name '{alignment_probe_name}' not found in probes.",
+                    "error": (
+                        alignment_resolve_error
+                        or f"alignment_probe_name '{alignment_probe_requested}' not found in probes."
+                    ),
+                    "requested_probe": alignment_probe_requested,
                     "available_probes": probe_names,
                 }
             else:
@@ -2138,7 +2770,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         pvalue_ci_highs.append(_safe_float(boot_stats.get("linreg_p_ci_high")))
                         num_pairs_per_alpha.append(int(boot_stats.get("count", 0.0) or 0))
 
-                    source_dir = _rating_source_dir(output_path, source)
+                    source_dir = _rating_source_dir(
+                        output_path,
+                        source,
+                        source_dir_names=rating_source_dir_names,
+                    )
                     slope_plot_path = source_dir / _suffix_filename(cfg.analysis.alignment_slope_plot_name, source)
                     slope_trend_bootstrap = _bootstrap_series_trend(
                         [float(a) for a in alpha_vals_sorted],
@@ -2251,6 +2887,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     valid_slopes = [float(s) for s in slopes if s is not None and not np.isnan(s)]
                     alignment_summary[source] = {
                         "probe_name": alignment_probe_name,
+                        "probe_name_requested": alignment_probe_requested,
                         "metric_key": cfg.analysis.alignment_metric_key,
                         "rating_key": rating_key,
                         "alphas": [float(a) for a in alpha_vals_sorted],
@@ -2283,10 +2920,12 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         if not probe_names:
             r2_summary = {"error": "No probes available."}
         else:
-            r2_probe_name = cfg.analysis.r2_probe_name or cfg.analysis.alignment_probe_name or probe_names[-1]
-            if r2_probe_name not in probe_names:
+            r2_probe_requested = cfg.analysis.r2_probe_name or cfg.analysis.alignment_probe_name or probe_names[-1]
+            r2_probe_name, r2_resolve_error = _resolve_probe_name(r2_probe_requested, probe_names)
+            if r2_probe_name is None:
                 r2_summary = {
-                    "error": f"r2_probe_name '{r2_probe_name}' not found in probes.",
+                    "error": r2_resolve_error or f"r2_probe_name '{r2_probe_requested}' not found in probes.",
+                    "requested_probe": r2_probe_requested,
                     "available_probes": probe_names,
                 }
             else:
@@ -2332,7 +2971,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                         isotonic_r2_ci_highs.append(_safe_float(boot_stats.get("isotonic_r2_ci_high")))
                         pairs_per_alpha.append(int(boot_stats.get("count", 0.0) or 0))
 
-                    source_dir = _rating_source_dir(output_path, source)
+                    source_dir = _rating_source_dir(
+                        output_path,
+                        source,
+                        source_dir_names=rating_source_dir_names,
+                    )
                     plot_path = source_dir / _suffix_filename(cfg.analysis.r2_plot_name, source)
                     isotonic_plot_path = source_dir / _suffix_filename(cfg.analysis.r2_plot_name, f"{source}_isotonic")
                     r2_trend_bootstrap = _bootstrap_series_trend(
@@ -2444,6 +3087,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     ]
                     r2_summary[source] = {
                         "probe_name": r2_probe_name,
+                        "probe_name_requested": r2_probe_requested,
                         "metric_key": cfg.analysis.r2_metric_key,
                         "rating_key": rating_key,
                         "alphas": [float(a) for a in alpha_vals_sorted],
@@ -2505,7 +3149,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 variance_ci_lows.append(_safe_float(boot_var.get("variance_ci_low")))
                 variance_ci_highs.append(_safe_float(boot_var.get("variance_ci_high")))
 
-            source_dir = _rating_source_dir(output_path, source)
+            source_dir = _rating_source_dir(
+                output_path,
+                source,
+                source_dir_names=rating_source_dir_names,
+            )
             plot_path = source_dir / _suffix_filename(cfg.analysis.report_variance_plot_name, source)
             variance_trend_bootstrap = _bootstrap_series_trend(
                 [float(a) for a in alpha_vals_sorted],
@@ -2584,6 +3232,22 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run conversation experiment with probes.")
     parser.add_argument("--config", required=True, help="Path to JSON config file.")
+    parser.add_argument(
+        "--reanalyze-only",
+        action="store_true",
+        help="Reuse existing results.json in output_dir_template and regenerate summary/plots only.",
+    )
+    parser.add_argument(
+        "--existing-output-dir",
+        default=None,
+        help="Optional explicit output directory to reanalyze (overrides output_dir_template).",
+    )
+    parser.add_argument(
+        "--bootstrap-samples-override",
+        type=int,
+        default=None,
+        help="Optional override for analysis.bootstrap_samples (useful for faster reanalysis).",
+    )
     return parser.parse_args()
 
 
@@ -2610,7 +3274,13 @@ def main() -> None:
         logit_rating=LogitRatingConfig(**raw.get("logit_rating", {})),
         analysis=AnalysisConfig(**raw.get("analysis", {})),
     )
-    out_dir = run_experiment(cfg)
+    if args.bootstrap_samples_override is not None:
+        cfg.analysis.bootstrap_samples = int(max(0, int(args.bootstrap_samples_override)))
+    out_dir = run_experiment(
+        cfg,
+        reanalyze_only=bool(args.reanalyze_only),
+        existing_output_dir=args.existing_output_dir,
+    )
     print(f"Outputs written to {out_dir}")
 
 

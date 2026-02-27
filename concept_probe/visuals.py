@@ -11,7 +11,25 @@ _SPECIAL_MARKERS = {
     "<|start_header_id|>",
     "<|end_header_id|>",
     "<|eot_id|>",
+    "<|im_start|>",
+    "<|im_end|>",
+    "<start_of_turn>",
+    "<end_of_turn>",
 }
+
+_ROLE_ALIASES = {
+    "model": "assistant",
+    "assistant": "assistant",
+    "user": "user",
+    "system": "system",
+}
+
+
+def _normalize_role_label(role: str) -> str:
+    raw = str(role).strip().lower().strip(":")
+    if not raw:
+        return ""
+    return _ROLE_ALIASES.get(raw, raw)
 
 
 def _token_for_display(tok: str) -> str:
@@ -48,6 +66,7 @@ def _split_chat_blocks(tokens: List[str], scores: List[float]) -> List[Tuple[str
     cur_scores: List[float] = []
     in_header = False
     header_tokens: List[str] = []
+    expect_turn_role = False
 
     def flush():
         if cur_tokens:
@@ -63,15 +82,28 @@ def _split_chat_blocks(tokens: List[str], scores: List[float]) -> List[Tuple[str
                 header_tokens = []
             elif tok == "<|end_header_id|>":
                 in_header = False
-                role = "".join(header_tokens).strip()
+                role = _normalize_role_label("".join(header_tokens))
                 if role:
                     cur_role = role
-            elif tok == "<|eot_id|>":
+            elif tok in {"<start_of_turn>", "<|im_start|>"}:
                 flush()
+                expect_turn_role = True
+            elif tok in {"<|eot_id|>", "<end_of_turn>", "<|im_end|>"}:
+                flush()
+                expect_turn_role = False
             continue
 
         if in_header:
             header_tokens.append(tok)
+            continue
+
+        if expect_turn_role:
+            role_candidate = _normalize_role_label(_token_for_display(tok))
+            if role_candidate:
+                cur_role = role_candidate
+                expect_turn_role = False
+                continue
+            # Skip pure-whitespace header tokens.
             continue
 
         cur_tokens.append(tok)
@@ -88,6 +120,7 @@ def _split_chat_blocks_with_indices(tokens: List[str]) -> List[Tuple[str, List[s
     cur_indices: List[int] = []
     in_header = False
     header_tokens: List[str] = []
+    expect_turn_role = False
 
     def flush():
         if cur_tokens:
@@ -103,15 +136,27 @@ def _split_chat_blocks_with_indices(tokens: List[str]) -> List[Tuple[str, List[s
                 header_tokens = []
             elif tok == "<|end_header_id|>":
                 in_header = False
-                role = "".join(header_tokens).strip()
+                role = _normalize_role_label("".join(header_tokens))
                 if role:
                     cur_role = role
-            elif tok == "<|eot_id|>":
+            elif tok in {"<start_of_turn>", "<|im_start|>"}:
                 flush()
+                expect_turn_role = True
+            elif tok in {"<|eot_id|>", "<end_of_turn>", "<|im_end|>"}:
+                flush()
+                expect_turn_role = False
             continue
 
         if in_header:
             header_tokens.append(tok)
+            continue
+
+        if expect_turn_role:
+            role_candidate = _normalize_role_label(_token_for_display(tok))
+            if role_candidate:
+                cur_role = role_candidate
+                expect_turn_role = False
+                continue
             continue
 
         cur_tokens.append(tok)

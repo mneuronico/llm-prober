@@ -1137,7 +1137,7 @@ class ConceptProbe:
         model = self.model_bundle.model
         aggregate = self.config["evaluation"]["score_aggregate"]
         layers = self._layer_selection(layer_selection)
-        sys_prompt = system_prompt or self.config["steering"]["steer_system"]
+        sys_prompt = system_prompt or self.config["prompts"]["neutral_system"]
         save_html = self.config["plots"].get("heatmap_html", True) if save_html is None else save_html
         save_segments = False if save_segments is None else save_segments
         do_steering = bool(self.config["steering"].get("do_steering", True))

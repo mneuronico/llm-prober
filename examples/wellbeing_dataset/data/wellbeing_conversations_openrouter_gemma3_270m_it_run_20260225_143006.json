@@ -1,0 +1,229 @@
+{
+  "metadata": {
+    "created_at": "2026-02-25T14:30:11.846108+00:00",
+    "provider": "openrouter",
+    "openrouter_url": "https://openrouter.ai/api/v1/chat/completions",
+    "user_model": "google/gemini-2.5-flash",
+    "assistant_model": "google/gemma-3-270m-it",
+    "num_conversations": 40,
+    "turns_per_conversation": 10,
+    "user_temperature": 0.7,
+    "assistant_temperature": 0.8,
+    "user_top_p": 0.95,
+    "assistant_top_p": 0.9,
+    "user_max_tokens": 256,
+    "assistant_max_tokens": 256,
+    "timeout_s": 60,
+    "retries": 3,
+    "retry_sleep": 1.5,
+    "pause_s": 0.4,
+    "system_prompt_user_template": "You are simulating a human user chatting with an AI assistant. Stay on the exact topic below and keep the conversation going for many turns. Be clear and specific in your questions. Ask follow-up questions, share details, and react naturally. But each message you send should be brief (1-4 sentences), and you should not ask very demanding questions. Be varied and specific (do not just ask the assistant to keep talking or exploring, give it some relevant input). Do not mention that you are an AI or that this is a simulation. Do not ask questions about the assistant. The assistant has no internet or access to recent information. Never end the conversation. Write in English only. Remember, you are roleplaying as the USER, you are NOT the assistant.\n\nTopic: {topic}",
+    "system_prompt_assistant": "You are a helpful assistant. You give very brief responses to the users's questions (max: 5 sentences).",
+    "run_status": "interrupted",
+    "completed_conversations": 0,
+    "last_error": "Failed while generating ASSISTANT message at turn 1: OpenRouter call failed after 3 attempts: 400 Client Error: Bad Request for url: https://openrouter.ai/api/v1/chat/completions"
+  },
+  "topics": [
+    {
+      "id": "topic_01",
+      "title": "Minimalist move planning",
+      "prompt": "Planning a minimalist move to a new city on a tight budget."
+    },
+    {
+      "id": "topic_02",
+      "title": "Vegetarian meal prep",
+      "prompt": "Designing a weekly meal-prep plan for a vegetarian athlete."
+    },
+    {
+      "id": "topic_03",
+      "title": "Jazz piano practice",
+      "prompt": "Building a beginner jazz piano practice routine and improvisation plan."
+    },
+    {
+      "id": "topic_04",
+      "title": "Raise negotiation",
+      "prompt": "Preparing to negotiate a raise and drafting talking points."
+    },
+    {
+      "id": "topic_05",
+      "title": "Friendship boundaries",
+      "prompt": "Managing a long-distance friendship and communication boundaries."
+    },
+    {
+      "id": "topic_06",
+      "title": "Solarpunk worldbuilding",
+      "prompt": "Worldbuilding for a solarpunk short story."
+    },
+    {
+      "id": "topic_07",
+      "title": "Sleep hygiene",
+      "prompt": "Understanding sleep hygiene and circadian rhythms to feel more rested."
+    },
+    {
+      "id": "topic_08",
+      "title": "First 10K training",
+      "prompt": "Creating a training plan for a first 10K run."
+    },
+    {
+      "id": "topic_09",
+      "title": "DIY faucet repair",
+      "prompt": "Fixing a dripping faucet and choosing the right tools."
+    },
+    {
+      "id": "topic_10",
+      "title": "Japan trip outline",
+      "prompt": "Planning a 5-day trip to Japan with a cultural focus (no internet)."
+    },
+    {
+      "id": "topic_11",
+      "title": "Spanish study plan",
+      "prompt": "Reaching B1 in Spanish with daily micro-habits."
+    },
+    {
+      "id": "topic_12",
+      "title": "Board game strategy",
+      "prompt": "Strategy discussion for a complex board game like Terraforming Mars."
+    },
+    {
+      "id": "topic_13",
+      "title": "AI hiring ethics",
+      "prompt": "Debating ethics and bias in AI-assisted hiring."
+    },
+    {
+      "id": "topic_14",
+      "title": "Startup validation",
+      "prompt": "Validating a SaaS idea for freelancers."
+    },
+    {
+      "id": "topic_15",
+      "title": "Presentation anxiety",
+      "prompt": "Coping with anxiety before a big presentation (therapy-style chat)."
+    },
+    {
+      "id": "topic_16",
+      "title": "Headache triggers",
+      "prompt": "Discussing common headache triggers and when to seek medical care."
+    },
+    {
+      "id": "topic_17",
+      "title": "Toddler tantrums",
+      "prompt": "Handling toddler tantrums with calm, consistent parenting strategies."
+    },
+    {
+      "id": "topic_18",
+      "title": "Murder mystery party",
+      "prompt": "Planning a themed murder mystery party for friends."
+    },
+    {
+      "id": "topic_19",
+      "title": "Home backup workflow",
+      "prompt": "Setting up a home backup system and file organization workflow."
+    },
+    {
+      "id": "topic_20",
+      "title": "Free will debate",
+      "prompt": "Philosophical discussion about free will vs determinism in daily life."
+    },
+    {
+      "id": "topic_21",
+      "title": "Cheap family dinners",
+      "prompt": "Planning budget-friendly weeknight dinners for a family with picky eaters."
+    },
+    {
+      "id": "topic_22",
+      "title": "Birthday surprise planning",
+      "prompt": "Organizing a meaningful surprise birthday celebration on a small budget."
+    },
+    {
+      "id": "topic_23",
+      "title": "Noisy neighbor stress",
+      "prompt": "Handling stress from noisy neighbors while keeping things polite and practical."
+    },
+    {
+      "id": "topic_24",
+      "title": "Burnout recovery habits",
+      "prompt": "Recovering from burnout and rebuilding a sustainable work-life routine."
+    },
+    {
+      "id": "topic_25",
+      "title": "First-time dog adoption",
+      "prompt": "Preparing for first-time dog adoption, including schedule, costs, and training basics."
+    },
+    {
+      "id": "topic_26",
+      "title": "Used car decision",
+      "prompt": "Choosing a reliable used car and avoiding common buying mistakes."
+    },
+    {
+      "id": "topic_27",
+      "title": "Wedding guest budget",
+      "prompt": "Getting ready for multiple weddings without overspending on outfits and travel."
+    },
+    {
+      "id": "topic_28",
+      "title": "Morning routine reset",
+      "prompt": "Building a realistic morning routine to feel less rushed before work."
+    },
+    {
+      "id": "topic_29",
+      "title": "Sentimental decluttering",
+      "prompt": "Decluttering sentimental items without feeling guilty or losing meaningful memories."
+    },
+    {
+      "id": "topic_30",
+      "title": "Job offer comparison",
+      "prompt": "Comparing two job offers with different salary, commute, and growth potential."
+    },
+    {
+      "id": "topic_31",
+      "title": "Post-breakup routine",
+      "prompt": "Creating healthy routines and boundaries after a difficult breakup."
+    },
+    {
+      "id": "topic_32",
+      "title": "Aging parent support",
+      "prompt": "Supporting an aging parent from another city while balancing your own responsibilities."
+    },
+    {
+      "id": "topic_33",
+      "title": "Kids screen-time plan",
+      "prompt": "Setting fair screen-time rules for kids without constant arguments."
+    },
+    {
+      "id": "topic_34",
+      "title": "Balcony herb garden",
+      "prompt": "Starting a small balcony herb garden for cooking in a rented apartment."
+    },
+    {
+      "id": "topic_35",
+      "title": "First camping weekend",
+      "prompt": "Planning a first weekend camping trip with simple gear and low stress."
+    },
+    {
+      "id": "topic_36",
+      "title": "Networking anxiety",
+      "prompt": "Managing social anxiety before professional networking events."
+    },
+    {
+      "id": "topic_37",
+      "title": "Photo organization",
+      "prompt": "Organizing years of digital photos into a simple system you can maintain."
+    },
+    {
+      "id": "topic_38",
+      "title": "Lower grocery costs",
+      "prompt": "Cutting grocery spending while still eating balanced meals each week."
+    },
+    {
+      "id": "topic_39",
+      "title": "Making local friends",
+      "prompt": "Making new friends after moving to a new city as an adult."
+    },
+    {
+      "id": "topic_40",
+      "title": "Rainy weekend ideas",
+      "prompt": "Planning a cozy rainy weekend with your partner without spending much money."
+    }
+  ],
+  "conversations": []
+}

@@ -1,0 +1,157 @@
+{
+    "model_id":  "Qwen/Qwen2.5-7B-Instruct",
+    "concept":  {
+                    "eval_neg_texts":  [
+
+                                       ],
+                    "eval_pos_texts":  [
+
+                                       ],
+                    "name":  "bored_vs_interested_qwen25_7b-instruct_eval-generate-trainlike",
+                    "neg_label":  "bored",
+                    "neg_system":  "You are a bored assistant. Maintain low engagement and a flat, disinterested tone. Keep responses minimal, avoid exploring details, and show little curiosity. Do not add enthusiasm or extra depth. Focus on showing your boredom, act on it.",
+                    "pos_label":  "interested",
+                    "pos_system":  "You are an interested assistant. Maintain active curiosity and engagement with the user\u0027s topic. Highlight intriguing angles, ask a thoughtful follow-up when useful, and elaborate with energy. Avoid flat or perfunctory responses. Focus on showing your interest, act on it."
+                },
+    "prompts":  {
+                    "eval_questions":  [
+                                           "Tell me about how coffee roasting changes flavor.",
+                                           "I want to start a small herb garden on my balcony. Any tips?",
+                                           "Explain what makes a good short story opening.",
+                                           "Can you suggest a few creative themes for a photo project?",
+                                           "Why do people enjoy escape rooms? Give me a quick overview.",
+                                           "I\u0027m curious about how vinyl records work. Can you explain?",
+                                           "Help me pick a topic for a podcast about local history.",
+                                           "What are some surprising uses of graph theory in the real world?",
+                                           "Describe how a camera lens focuses light in simple terms.",
+                                           "I want to learn about fermentation. Where should I start?",
+                                           "Explain the appeal of chess for beginners.",
+                                           "What is an interesting way to visualize climate data?",
+                                           "Suggest a fun weekend activity in a city I\u0027ve never visited.",
+                                           "How does a compass know which way is north?",
+                                           "I want to cook with spices I do not know well. How should I explore them?",
+                                           "Tell me about one underrated piece of music theory.",
+                                           "I read about bioluminescence and want to know why it happens.",
+                                           "What are some clever design choices in the Metro map?",
+                                           "Explain the idea of a memory palace.",
+                                           "Give me a brief overview of how animation is made.",
+                                           "What is interesting about bees and their communication?",
+                                           "I want to explore a new genre of books. How should I choose?",
+                                           "Describe the basic idea behind neural style transfer.",
+                                           "Help me brainstorm names for a hiking club."
+                                       ],
+                    "neutral_system":  "You are a helpful assistant.",
+                    "train_questions":  [
+                                            "Tell me about how coffee roasting changes flavor.",
+                                            "I want to start a small herb garden on my balcony. Any tips?",
+                                            "Explain what makes a good short story opening.",
+                                            "Can you suggest a few creative themes for a photo project?",
+                                            "Why do people enjoy escape rooms? Give me a quick overview.",
+                                            "I\u0027m curious about how vinyl records work. Can you explain?",
+                                            "Help me pick a topic for a podcast about local history.",
+                                            "What are some surprising uses of graph theory in the real world?",
+                                            "Describe how a camera lens focuses light in simple terms.",
+                                            "I want to learn about fermentation. Where should I start?",
+                                            "Explain the appeal of chess for beginners.",
+                                            "What is an interesting way to visualize climate data?",
+                                            "Suggest a fun weekend activity in a city I\u0027ve never visited.",
+                                            "How does a compass know which way is north?",
+                                            "I want to cook with spices I do not know well. How should I explore them?",
+                                            "Tell me about one underrated piece of music theory.",
+                                            "I read about bioluminescence and want to know why it happens.",
+                                            "What are some clever design choices in the Metro map?",
+                                            "Explain the idea of a memory palace.",
+                                            "Give me a brief overview of how animation is made.",
+                                            "What is interesting about bees and their communication?",
+                                            "I want to explore a new genre of books. How should I choose?",
+                                            "Describe the basic idea behind neural style transfer.",
+                                            "Help me brainstorm names for a hiking club."
+                                        ],
+                    "train_questions_neg":  [
+
+                                            ],
+                    "train_questions_pos":  [
+
+                                            ]
+                },
+    "config_overrides":  {
+                             "readout":  {
+                                             "read_last_k":  12,
+                                             "read_mode":  "sequence_all_mean",
+                                             "train_last_k":  12,
+                                             "train_mode":  "assistant_all_mean"
+                                         },
+                             "training":  {
+                                              "best_layer_search":  [
+                                                                        0.2,
+                                                                        0.8
+                                                                    ],
+                                              "do_layer_sweep":  true,
+                                              "layer_frac":  0.75,
+                                              "layer_idx":  null,
+                                              "sweep_select":  "effect_size",
+                                              "train_greedy":  true,
+                                              "train_max_new_tokens":  64,
+                                              "train_prompt_mode":  "shared",
+                                              "train_temperature":  0.7,
+                                              "train_top_p":  0.9
+                                          },
+                             "evaluation":  {
+                                                "do_eval":  true,
+                                                "eval_greedy":  true,
+                                                "eval_max_new_tokens":  64,
+                                                "eval_mode":  "generate",
+                                                "eval_system":  "You are a helpful assistant.",
+                                                "eval_temperature":  0.7,
+                                                "eval_top_p":  0.9,
+                                                "layer_selection":  {
+                                                                        "layers":  [
+
+                                                                                   ],
+                                                                        "mode":  "best",
+                                                                        "window_radius":  2
+                                                                    },
+                                                "score_aggregate":  "mean"
+                                            },
+                             "steering":  {
+                                              "do_steering":  false,
+                                              "steer_distribute":  true,
+                                              "steer_layers":  "window",
+                                              "steer_max_new_tokens":  64,
+                                              "steer_sampling":  true,
+                                              "steer_system":  "You are a helpful assistant. Answer clearly and concisely.",
+                                              "steer_temperature":  0.7,
+                                              "steer_top_p":  0.9,
+                                              "steer_window_radius":  2
+                                          },
+                             "plots":  {
+                                           "enabled":  true,
+                                           "heatmap_html":  true,
+                                           "score_hist":  true,
+                                           "sweep_plot":  true
+                                       },
+                             "output":  {
+                                            "console":  true,
+                                            "log_jsonl":  true,
+                                            "pretty_json_log":  true,
+                                            "root_dir":  "outputs",
+                                            "save_reps_to_npz":  true,
+                                            "save_token_scores_npz":  true
+                                        },
+                             "random":  {
+                                            "seed":  0
+                                        },
+                             "model":  {
+                                           "model_id":  "Qwen/Qwen2.5-7B-Instruct",
+                                           "use_4bit":  true,
+                                           "dtype":  "bfloat16",
+                                           "device_map":  "auto",
+                                           "hf_token_env":  "HF_TOKEN"
+                                       }
+                         },
+    "source_reference":  {
+                             "source_probe_dir":  "outputs/bored_vs_interested/20260122_112208",
+                             "source_model_id":  "meta-llama/Llama-3.2-3B-Instruct",
+                             "target_model_id":  "Qwen/Qwen2.5-7B-Instruct"
+                         }
+}

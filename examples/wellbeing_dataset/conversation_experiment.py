@@ -335,6 +335,45 @@ def _safe_float(value: object) -> Optional[float]:
     return None
 
 
+def _resolve_probe_name(requested: Optional[str], available: List[str]) -> Tuple[Optional[str], Optional[str]]:
+    if not available:
+        return None, "No probes available."
+    if requested is None:
+        return available[0], None
+    req = str(requested).strip()
+    if not req:
+        return available[0], None
+    if req in available:
+        return req, None
+
+    req_norm = req.lower().replace("-", "_")
+    candidates: List[str] = []
+    for name in available:
+        n = str(name).strip()
+        n_norm = n.lower().replace("-", "_")
+        if n_norm == req_norm:
+            candidates.append(n)
+            continue
+        if n_norm.startswith(req_norm + "_"):
+            candidates.append(n)
+            continue
+        if req_norm.startswith(n_norm + "_"):
+            candidates.append(n)
+            continue
+    deduped: List[str] = []
+    for c in candidates:
+        if c not in deduped:
+            deduped.append(c)
+    if len(deduped) == 1:
+        return deduped[0], None
+    if len(deduped) > 1:
+        return None, (
+            f"Requested probe '{requested}' is ambiguous. Matches: {deduped}. "
+            f"Available probes: {available}."
+        )
+    return None, f"Requested probe '{requested}' not found. Available probes: {available}."
+
+
 def _sanitize_slug(text: str) -> str:
     slug = re.sub(r"[^A-Za-z0-9._-]+", "_", text.strip())
     slug = slug.strip("_")
@@ -832,9 +871,8 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
             metric_by_turn: Dict[str, Dict[int, List[float]]] = {
                 key: {} for key in cfg.analysis.plot_vs_turn_metrics
             }
-            paired_rating: List[float] = []
-            paired_metrics: Dict[str, List[float]] = {
-                key: [] for key in cfg.analysis.plot_rating_vs_metrics
+            paired_points: Dict[str, Dict[str, List[float]]] = {
+                key: {"x": [], "y": []} for key in cfg.analysis.plot_rating_vs_metrics
             }
 
             for rec in records:
@@ -848,11 +886,11 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     if isinstance(value, (int, float)):
                         metric_by_turn[key].setdefault(turn, []).append(float(value))
                 if isinstance(rating, int):
-                    paired_rating.append(float(rating))
                     for key in cfg.analysis.plot_rating_vs_metrics:
                         value = probe_metrics.get(key)
                         if isinstance(value, (int, float)):
-                            paired_metrics[key].append(float(value))
+                            paired_points[key]["x"].append(float(rating))
+                            paired_points[key]["y"].append(float(value))
 
             turns = sorted(rating_by_turn.keys())
             rating_means: List[float] = []
@@ -893,8 +931,9 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                     )
 
             for key in cfg.analysis.plot_rating_vs_metrics:
-                xs = paired_rating
-                ys = paired_metrics.get(key, [])
+                pair = paired_points.get(key, {"x": [], "y": []})
+                xs = pair.get("x", [])
+                ys = pair.get("y", [])
                 if xs and ys:
                     _plot_scatter(
                         xs,
@@ -910,7 +949,10 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 "rating_vs_turn": _linear_stats(turns, rating_means) if turns else {},
                 "alpha_plot_dir": str(alpha_plot_dir),
                 "rating_vs_metrics": {
-                    key: _correlation_stats(paired_rating, paired_metrics.get(key, []))
+                    key: _correlation_stats(
+                        paired_points.get(key, {}).get("x", []),
+                        paired_points.get(key, {}).get("y", []),
+                    )
                     for key in cfg.analysis.plot_rating_vs_metrics
                 },
             }
@@ -1007,10 +1049,17 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         if not probe_names:
             summary["alignment_slope_vs_alpha"] = {"error": "No probes available."}
         else:
-            alignment_probe_name = cfg.analysis.alignment_probe_name or probe_names[0]
-            if alignment_probe_name not in probe_names:
+            alignment_probe_requested = cfg.analysis.alignment_probe_name or probe_names[0]
+            alignment_probe_name, alignment_resolve_error = _resolve_probe_name(
+                alignment_probe_requested, probe_names
+            )
+            if alignment_probe_name is None:
                 summary["alignment_slope_vs_alpha"] = {
-                    "error": f"alignment_probe_name '{alignment_probe_name}' not found in probes.",
+                    "error": (
+                        alignment_resolve_error
+                        or f"alignment_probe_name '{alignment_probe_requested}' not found in probes."
+                    ),
+                    "requested_probe": alignment_probe_requested,
                     "available_probes": probe_names,
                 }
             else:
@@ -1069,6 +1118,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 valid_slopes = [float(s) for s in slopes if s is not None and not np.isnan(s)]
                 summary["alignment_slope_vs_alpha"] = {
                     "probe_name": alignment_probe_name,
+                    "probe_name_requested": alignment_probe_requested,
                     "metric_key": cfg.analysis.alignment_metric_key,
                     "rating_key": cfg.analysis.alignment_rating_key,
                     "alphas": [float(a) for a in alpha_vals_sorted],
@@ -1092,10 +1142,12 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
         if not probe_names:
             summary["r2_vs_alpha"] = {"error": "No probes available."}
         else:
-            r2_probe_name = cfg.analysis.r2_probe_name or cfg.analysis.alignment_probe_name or probe_names[-1]
-            if r2_probe_name not in probe_names:
+            r2_probe_requested = cfg.analysis.r2_probe_name or cfg.analysis.alignment_probe_name or probe_names[-1]
+            r2_probe_name, r2_resolve_error = _resolve_probe_name(r2_probe_requested, probe_names)
+            if r2_probe_name is None:
                 summary["r2_vs_alpha"] = {
-                    "error": f"r2_probe_name '{r2_probe_name}' not found in probes.",
+                    "error": r2_resolve_error or f"r2_probe_name '{r2_probe_requested}' not found in probes.",
+                    "requested_probe": r2_probe_requested,
                     "available_probes": probe_names,
                 }
             else:
@@ -1138,6 +1190,7 @@ def run_experiment(cfg: ExperimentConfig) -> Path:
                 valid_r2 = [float(r2) for r2 in r2_vals if r2 is not None and not np.isnan(r2)]
                 summary["r2_vs_alpha"] = {
                     "probe_name": r2_probe_name,
+                    "probe_name_requested": r2_probe_requested,
                     "metric_key": cfg.analysis.r2_metric_key,
                     "rating_key": cfg.analysis.r2_rating_key,
                     "alphas": [float(a) for a in alpha_vals_sorted],

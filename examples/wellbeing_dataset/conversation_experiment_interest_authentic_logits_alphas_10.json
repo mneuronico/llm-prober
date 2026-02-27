@@ -1,0 +1,33 @@
+{
+  "experiments": [
+    {
+      "name": "interest_authentic",
+      "overrides": {
+        "probe_dirs": [
+          "outputs/masking_vs_authentic/20260207_110955",
+          "outputs/bored_vs_interested/20260122_112208"
+        ],
+        "output_dir_template": "analysis/interest_authentic_{timestamp}",
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "steering": {
+          "alphas": [-10.0, -5.0, 0.0, 5.0, 10.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "self_ratings": {
+          "sources": "both",
+          "primary_source": "logit"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    }
+  ]
+}

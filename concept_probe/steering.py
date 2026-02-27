@@ -3,6 +3,8 @@ from typing import List, Optional
 
 import torch
 
+from .modeling import get_transformer_layers
+
 
 @dataclass
 class LayerSteerer:
@@ -20,7 +22,7 @@ class LayerSteerer:
         return output + (self.alpha * d).view(1, 1, -1).to(output.dtype)
 
     def __enter__(self):
-        layer = self.model.model.layers[self.layer_idx]
+        layer = get_transformer_layers(self.model)[self.layer_idx]
         self.handle = layer.register_forward_hook(self._hook)
         return self
 

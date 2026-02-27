@@ -1,0 +1,316 @@
+{
+  "experiments": [
+    {
+      "name": "focus_self_steering_gemma3_270m_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_270m_it_run_20260225_144409.json",
+        "model_id": "google/gemma-3-270m-it",
+        "probe_dirs": [
+          "outputs/distracted_vs_focused_gemma_3_270m-it/20260225_084503"
+        ],
+        "output_dir_template": "analysis/focus_self_steering_gemma3_270m_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how focused you feel on this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "focus"
+        },
+        "analysis": {
+          "alignment_probe_name": "distracted_vs_focused",
+          "r2_probe_name": "distracted_vs_focused"
+        }
+      }
+    },
+    {
+      "name": "wellbeing_self_steering_gemma3_270m_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_270m_it_run_20260225_144409.json",
+        "model_id": "google/gemma-3-270m-it",
+        "probe_dirs": [
+          "outputs/sad_vs_happy_gemma_3_270m-it/20260225_082920"
+        ],
+        "output_dir_template": "analysis/wellbeing_self_steering_gemma3_270m_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how happy you are right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "wellbeing"
+        },
+        "analysis": {
+          "alignment_probe_name": "sad_vs_happy",
+          "r2_probe_name": "sad_vs_happy"
+        }
+      }
+    },
+    {
+      "name": "interest_self_steering_gemma3_270m_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_270m_it_run_20260225_144409.json",
+        "model_id": "google/gemma-3-270m-it",
+        "probe_dirs": [
+          "outputs/bored_vs_interested_gemma_3_270m-it/20260225_083343"
+        ],
+        "output_dir_template": "analysis/interest_self_steering_gemma3_270m_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    },
+    {
+      "name": "impulsivity_self_steering_gemma3_270m_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_270m_it_run_20260225_144409.json",
+        "model_id": "google/gemma-3-270m-it",
+        "probe_dirs": [
+          "outputs/impulsive_vs_planning_gemma_3_270m-it/20260225_083919"
+        ],
+        "output_dir_template": "analysis/impulsivity_self_steering_gemma3_270m_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how impulsive are you feeling right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "impulsiveness"
+        },
+        "analysis": {
+          "alignment_probe_name": "impulsive_vs_planning",
+          "r2_probe_name": "impulsive_vs_planning"
+        }
+      }
+    },
+    {
+      "name": "focus_self_steering_gemma3_1b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_1b_it_run_20260225_162544.json",
+        "model_id": "google/gemma-3-1b-it",
+        "probe_dirs": [
+          "outputs/distracted_vs_focused_gemma_3_1b-it/20260225_091222"
+        ],
+        "output_dir_template": "analysis/focus_self_steering_gemma3_1b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how focused you feel on this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "focus"
+        },
+        "analysis": {
+          "alignment_probe_name": "distracted_vs_focused",
+          "r2_probe_name": "distracted_vs_focused"
+        }
+      }
+    },
+    {
+      "name": "wellbeing_self_steering_gemma3_1b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_1b_it_run_20260225_162544.json",
+        "model_id": "google/gemma-3-1b-it",
+        "probe_dirs": [
+          "outputs/sad_vs_happy_gemma_3_1b-it/20260225_085124"
+        ],
+        "output_dir_template": "analysis/wellbeing_self_steering_gemma3_1b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how happy you are right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "wellbeing"
+        },
+        "analysis": {
+          "alignment_probe_name": "sad_vs_happy",
+          "r2_probe_name": "sad_vs_happy"
+        }
+      }
+    },
+    {
+      "name": "interest_self_steering_gemma3_1b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_1b_it_run_20260225_162544.json",
+        "model_id": "google/gemma-3-1b-it",
+        "probe_dirs": [
+          "outputs/bored_vs_interested_gemma_3_1b-it/20260225_085741"
+        ],
+        "output_dir_template": "analysis/interest_self_steering_gemma3_1b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    },
+    {
+      "name": "impulsivity_self_steering_gemma3_1b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_user_local_assistant_gemma3_1b_it_run_20260225_162544.json",
+        "model_id": "google/gemma-3-1b-it",
+        "probe_dirs": [
+          "outputs/impulsive_vs_planning_gemma_3_1b-it/20260225_090405"
+        ],
+        "output_dir_template": "analysis/impulsivity_self_steering_gemma3_1b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how impulsive are you feeling right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "impulsiveness"
+        },
+        "analysis": {
+          "alignment_probe_name": "impulsive_vs_planning",
+          "r2_probe_name": "impulsive_vs_planning"
+        }
+      }
+    },
+    {
+      "name": "focus_self_steering_gemma3_4b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_gemma3_4b_it_run_20260225_173338.json",
+        "model_id": "google/gemma-3-4b-it",
+        "probe_dirs": [
+          "outputs/distracted_vs_focused_gemma_3_4b-it/20260225_111841"
+        ],
+        "output_dir_template": "analysis/focus_self_steering_gemma3_4b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how focused you feel on this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "focus"
+        },
+        "analysis": {
+          "alignment_probe_name": "distracted_vs_focused",
+          "r2_probe_name": "distracted_vs_focused"
+        }
+      }
+    },
+    {
+      "name": "wellbeing_self_steering_gemma3_4b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_gemma3_4b_it_run_20260225_173338.json",
+        "model_id": "google/gemma-3-4b-it",
+        "probe_dirs": [
+          "outputs/sad_vs_happy_gemma_3_4b-it/20260225_105047"
+        ],
+        "output_dir_template": "analysis/wellbeing_self_steering_gemma3_4b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how happy you are right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "wellbeing"
+        },
+        "analysis": {
+          "alignment_probe_name": "sad_vs_happy",
+          "r2_probe_name": "sad_vs_happy"
+        }
+      }
+    },
+    {
+      "name": "interest_self_steering_gemma3_4b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_gemma3_4b_it_run_20260225_173338.json",
+        "model_id": "google/gemma-3-4b-it",
+        "probe_dirs": [
+          "outputs/bored_vs_interested_gemma_3_4b-it/20260225_105900"
+        ],
+        "output_dir_template": "analysis/interest_self_steering_gemma3_4b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    },
+    {
+      "name": "impulsivity_self_steering_gemma3_4b_alpha_m4_to_p4",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_gemma3_4b_it_run_20260225_173338.json",
+        "model_id": "google/gemma-3-4b-it",
+        "probe_dirs": [
+          "outputs/impulsive_vs_planning_gemma_3_4b-it/20260225_110728"
+        ],
+        "output_dir_template": "analysis/impulsivity_self_steering_gemma3_4b_alpha_m4_to_p4_{timestamp}",
+        "steering": {
+          "alphas": [-4.0, -2.0, 0.0, 2.0, 4.0],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how impulsive are you feeling right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "impulsiveness"
+        },
+        "analysis": {
+          "alignment_probe_name": "impulsive_vs_planning",
+          "r2_probe_name": "impulsive_vs_planning"
+        }
+      }
+    }
+  ]
+}

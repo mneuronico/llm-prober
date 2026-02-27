@@ -31,10 +31,21 @@ def train_concept_from_json(
     concept = ConceptSpec.from_config(data)
 
     prompt_overrides = {"prompts": dict(data.get("prompts", {}))}
-    overrides = deep_merge(prompt_overrides, config_overrides or {})
+    json_cfg_overrides = data.get("config_overrides", {})
+    if json_cfg_overrides is None:
+        json_cfg_overrides = {}
+    if not isinstance(json_cfg_overrides, dict):
+        raise ValueError(f"'config_overrides' must be an object in concept JSON: {json_path}")
+    overrides = deep_merge(prompt_overrides, json_cfg_overrides)
+    overrides = deep_merge(overrides, config_overrides or {})
+
+    json_model_id = data.get("model_id")
+    resolved_model_id = model_id
+    if resolved_model_id is None and isinstance(json_model_id, str) and json_model_id.strip():
+        resolved_model_id = json_model_id.strip()
 
     workspace = ProbeWorkspace(
-        model_id=model_id,
+        model_id=resolved_model_id,
         root_dir=root_dir,
         config_overrides=overrides,
     )

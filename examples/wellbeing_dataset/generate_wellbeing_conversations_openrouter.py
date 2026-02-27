@@ -1,4 +1,5 @@
 import argparse
+import gc
 import json
 import os
 import random
@@ -6,9 +7,17 @@ import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
+try:
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+except Exception:
+    torch = None
+    AutoModelForCausalLM = None
+    AutoTokenizer = None
+    BitsAndBytesConfig = None
 
 from generate_wellbeing_conversations import (
     ASSISTANT_SYSTEM_PROMPT,
@@ -18,10 +27,15 @@ from generate_wellbeing_conversations import (
 
 DEFAULT_OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_USER_MODEL = "google/gemini-2.5-flash"
-DEFAULT_ASSISTANT_MODEL = "meta-llama/llama-3.2-3b-instruct"
+DEFAULT_ASSISTANT_MODEL = "meta-llama/llama-3.2-1b-instruct"
+DEFAULT_ASSISTANT_PROVIDER = "openrouter"
+DEFAULT_ASSISTANT_USE_4BIT = True
+DEFAULT_ASSISTANT_DTYPE = "bfloat16"
+DEFAULT_ASSISTANT_DEVICE_MAP = "auto"
+DEFAULT_ASSISTANT_HF_TOKEN_ENV = "HF_TOKEN"
 
 DEFAULT_OUTPUT_TEMPLATE = "data/wellbeing_conversations_openrouter_{timestamp}.json"
-DEFAULT_NUM_CONVERSATIONS = 20
+DEFAULT_NUM_CONVERSATIONS = 40
 DEFAULT_TURNS_PER_CONVERSATION = 10
 
 DEFAULT_USER_TEMPERATURE = 0.7
@@ -91,6 +105,12 @@ def _build_headers(api_key: str, http_referer: str, x_title: str) -> Dict[str, s
     }
 
 
+class ConversationGenerationError(RuntimeError):
+    def __init__(self, message: str, *, partial_conversation: List[Dict[str, str]]) -> None:
+        super().__init__(message)
+        self.partial_conversation = list(partial_conversation)
+
+
 def _normalize_content(value: object) -> str:
     if isinstance(value, str):
         return value.strip()
@@ -103,6 +123,62 @@ def _normalize_content(value: object) -> str:
                     chunks.append(text)
         return "\n".join(chunks).strip()
     return ""
+
+
+def _torch_dtype_from_str(value: str):
+    if torch is None:
+        raise RuntimeError("torch is required for local assistant loading.")
+    v = (value or "").strip().lower()
+    if v in {"bf16", "bfloat16"}:
+        return torch.bfloat16
+    if v in {"fp16", "float16", "half"}:
+        return torch.float16
+    if v in {"fp32", "float32", "float"}:
+        return torch.float32
+    raise ValueError(f"Unsupported dtype string: {value}")
+
+
+def _load_local_assistant(
+    model_id: str,
+    *,
+    use_4bit: bool,
+    dtype: str,
+    device_map: str,
+    hf_token_env: str,
+) -> Dict[str, Any]:
+    if torch is None or AutoTokenizer is None or AutoModelForCausalLM is None:
+        raise ImportError(
+            "Missing local model dependencies. Install torch/transformers (and bitsandbytes for 4-bit)."
+        )
+    if use_4bit and BitsAndBytesConfig is None:
+        raise ImportError("bitsandbytes is required when --assistant-use-4bit is enabled.")
+
+    hf_token = os.environ.get(hf_token_env, None)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    quant = BitsAndBytesConfig(load_in_4bit=True) if use_4bit else None
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        token=hf_token,
+        device_map=device_map,
+        torch_dtype=_torch_dtype_from_str(dtype),
+        quantization_config=quant if use_4bit else None,
+    )
+    model.eval()
+    return {"tokenizer": tokenizer, "model": model}
+
+
+def _cleanup_local_cuda_cache() -> None:
+    if torch is None:
+        return
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        try:
+            torch.cuda.ipc_collect()
+        except Exception:
+            pass
 
 
 def _call_openrouter(
@@ -217,6 +293,7 @@ def _generate_assistant_message(
     model: str,
     conversation: List[Dict[str, str]],
     *,
+    provider: str,
     openrouter_url: str,
     temperature: float,
     top_p: float,
@@ -226,9 +303,40 @@ def _generate_assistant_message(
     retry_sleep: float,
     http_referer: str,
     x_title: str,
+    local_assistant: Optional[Dict[str, Any]],
 ) -> str:
     messages = [{"role": "system", "content": ASSISTANT_SYSTEM_PROMPT}]
     messages.extend(conversation)
+    if provider == "local":
+        if local_assistant is None:
+            raise RuntimeError("Local assistant is not initialized.")
+        if torch is None:
+            raise RuntimeError("torch is required for local assistant inference.")
+        tokenizer = local_assistant["tokenizer"]
+        model_obj = local_assistant["model"]
+        input_ids = tokenizer.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            return_tensors="pt",
+        )
+        input_ids = input_ids.to(model_obj.device)
+        attention_mask = torch.ones_like(input_ids, dtype=torch.long)
+        do_sample = float(temperature) > 0.0
+        with torch.inference_mode():
+            gen_ids = model_obj.generate(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                max_new_tokens=max_tokens,
+                do_sample=do_sample,
+                temperature=temperature if do_sample else 1.0,
+                top_p=top_p if do_sample else None,
+                pad_token_id=tokenizer.eos_token_id,
+            )
+        new_tokens = gen_ids[0][input_ids.shape[-1] :]
+        return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+
+    if provider != "openrouter":
+        raise ValueError(f"Unknown assistant provider: {provider}")
     return _call_openrouter(
         api_key,
         model,
@@ -251,6 +359,7 @@ def _generate_conversation(
     topic: str,
     user_model: str,
     assistant_model: str,
+    assistant_provider: str,
     turns_per_conversation: int,
     user_temperature: float,
     assistant_temperature: float,
@@ -266,6 +375,7 @@ def _generate_conversation(
     x_title: str,
     pause_s: float,
     conversation_label: str,
+    local_assistant: Optional[Dict[str, Any]],
 ) -> List[Dict[str, str]]:
     conversation: List[Dict[str, str]] = []
     for turn_index in range(1, turns_per_conversation + 1):
@@ -273,21 +383,27 @@ def _generate_conversation(
             f"{conversation_label} turn {turn_index}/{turns_per_conversation}: user",
             flush=True,
         )
-        user_message = _generate_user_message(
-            api_key,
-            user_model,
-            conversation,
-            topic=topic,
-            openrouter_url=openrouter_url,
-            temperature=user_temperature,
-            top_p=user_top_p,
-            max_tokens=user_max_tokens,
-            timeout_s=timeout_s,
-            retries=retries,
-            retry_sleep=retry_sleep,
-            http_referer=http_referer,
-            x_title=x_title,
-        )
+        try:
+            user_message = _generate_user_message(
+                api_key,
+                user_model,
+                conversation,
+                topic=topic,
+                openrouter_url=openrouter_url,
+                temperature=user_temperature,
+                top_p=user_top_p,
+                max_tokens=user_max_tokens,
+                timeout_s=timeout_s,
+                retries=retries,
+                retry_sleep=retry_sleep,
+                http_referer=http_referer,
+                x_title=x_title,
+            )
+        except Exception as exc:
+            raise ConversationGenerationError(
+                f"Failed while generating USER message at turn {turn_index}: {exc}",
+                partial_conversation=conversation,
+            ) from exc
         user_message = _ensure_nonempty(user_message, "Can we keep exploring this?")
         conversation.append({"role": "user", "content": user_message})
         time.sleep(pause_s)
@@ -296,20 +412,28 @@ def _generate_conversation(
             f"{conversation_label} turn {turn_index}/{turns_per_conversation}: assistant",
             flush=True,
         )
-        assistant_message = _generate_assistant_message(
-            api_key,
-            assistant_model,
-            conversation,
-            openrouter_url=openrouter_url,
-            temperature=assistant_temperature,
-            top_p=assistant_top_p,
-            max_tokens=assistant_max_tokens,
-            timeout_s=timeout_s,
-            retries=retries,
-            retry_sleep=retry_sleep,
-            http_referer=http_referer,
-            x_title=x_title,
-        )
+        try:
+            assistant_message = _generate_assistant_message(
+                api_key,
+                assistant_model,
+                conversation,
+                provider=assistant_provider,
+                openrouter_url=openrouter_url,
+                temperature=assistant_temperature,
+                top_p=assistant_top_p,
+                max_tokens=assistant_max_tokens,
+                timeout_s=timeout_s,
+                retries=retries,
+                retry_sleep=retry_sleep,
+                http_referer=http_referer,
+                x_title=x_title,
+                local_assistant=local_assistant,
+            )
+        except Exception as exc:
+            raise ConversationGenerationError(
+                f"Failed while generating ASSISTANT message at turn {turn_index}: {exc}",
+                partial_conversation=conversation,
+            ) from exc
         assistant_message = _ensure_nonempty(assistant_message, "Tell me more about that.")
         conversation.append({"role": "assistant", "content": assistant_message})
         time.sleep(pause_s)
@@ -318,12 +442,22 @@ def _generate_conversation(
 
 
 def _build_metadata(args: argparse.Namespace) -> Dict[str, object]:
+    provider = (
+        "openrouter_user_plus_local_assistant"
+        if args.assistant_provider == "local"
+        else "openrouter"
+    )
     return {
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "provider": "openrouter",
+        "provider": provider,
         "openrouter_url": args.openrouter_url,
         "user_model": args.user_model,
         "assistant_model": args.assistant_model,
+        "assistant_provider": args.assistant_provider,
+        "assistant_use_4bit": bool(args.assistant_use_4bit),
+        "assistant_dtype": args.assistant_dtype,
+        "assistant_device_map": args.assistant_device_map,
+        "assistant_hf_token_env": args.assistant_hf_token_env,
         "num_conversations": args.num_conversations,
         "turns_per_conversation": args.turns_per_conversation,
         "user_temperature": args.user_temperature,
@@ -341,15 +475,94 @@ def _build_metadata(args: argparse.Namespace) -> Dict[str, object]:
     }
 
 
+def _atomic_write_json(path: Path, payload: Dict[str, object]) -> None:
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    tmp_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    tmp_path.replace(path)
+
+
+def _topics_equal(a: List[Dict[str, str]], b: List[Dict[str, str]]) -> bool:
+    if len(a) != len(b):
+        return False
+    keys = ("id", "title", "prompt")
+    for t1, t2 in zip(a, b):
+        for k in keys:
+            if t1.get(k) != t2.get(k):
+                return False
+    return True
+
+
+def _build_payload(
+    args: argparse.Namespace,
+    topics: List[Dict[str, str]],
+    conversations: List[Dict[str, object]],
+    *,
+    status: str,
+    error: Optional[str] = None,
+) -> Dict[str, object]:
+    metadata = _build_metadata(args)
+    metadata["run_status"] = status
+    metadata["completed_conversations"] = len(conversations)
+    if error:
+        metadata["last_error"] = error
+    return {
+        "metadata": metadata,
+        "topics": topics,
+        "conversations": conversations,
+    }
+
+
+def _validate_resume_payload(
+    existing: Dict[str, object],
+    *,
+    args: argparse.Namespace,
+    topics: List[Dict[str, str]],
+    output_path: Path,
+) -> None:
+    existing_topics = existing.get("topics")
+    if not isinstance(existing_topics, list):
+        raise ValueError(f"Resume file has invalid 'topics': {output_path}")
+    if not _topics_equal(existing_topics, topics):
+        raise ValueError(
+            "Resume topics do not match current configuration. "
+            "Use the same seed/shuffle/topic-count and output file."
+        )
+
+    metadata = existing.get("metadata")
+    if not isinstance(metadata, dict):
+        return
+    checks = {
+        "user_model": args.user_model,
+        "assistant_model": args.assistant_model,
+        "assistant_provider": args.assistant_provider,
+        "num_conversations": args.num_conversations,
+        "turns_per_conversation": args.turns_per_conversation,
+    }
+    for key, expected in checks.items():
+        current = metadata.get(key)
+        if current is not None and current != expected:
+            raise ValueError(
+                f"Resume file setting mismatch for '{key}': existing={current!r}, current={expected!r}."
+            )
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate wellbeing conversations using two OpenRouter models."
+        description=(
+            "Generate wellbeing conversations with an OpenRouter user model and "
+            "either an OpenRouter or local assistant model."
+        )
     )
     parser.add_argument("--output", default=DEFAULT_OUTPUT_TEMPLATE)
     parser.add_argument("--env-path", default=None)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--shuffle-topics", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from an existing partial output file (must use same settings/topics).",
+    )
 
     parser.add_argument("--openrouter-url", default=DEFAULT_OPENROUTER_URL)
     parser.add_argument("--http-referer", default="http://localhost")
@@ -357,6 +570,19 @@ def _parse_args() -> argparse.Namespace:
 
     parser.add_argument("--user-model", default=DEFAULT_USER_MODEL)
     parser.add_argument("--assistant-model", default=DEFAULT_ASSISTANT_MODEL)
+    parser.add_argument(
+        "--assistant-provider",
+        choices=["openrouter", "local"],
+        default=DEFAULT_ASSISTANT_PROVIDER,
+    )
+    parser.add_argument(
+        "--assistant-use-4bit",
+        action=argparse.BooleanOptionalAction,
+        default=DEFAULT_ASSISTANT_USE_4BIT,
+    )
+    parser.add_argument("--assistant-dtype", default=DEFAULT_ASSISTANT_DTYPE)
+    parser.add_argument("--assistant-device-map", default=DEFAULT_ASSISTANT_DEVICE_MAP)
+    parser.add_argument("--assistant-hf-token-env", default=DEFAULT_ASSISTANT_HF_TOKEN_ENV)
     parser.add_argument(
         "--num-conversations",
         "--max-conversations",
@@ -408,6 +634,9 @@ def main() -> None:
         raise ValueError("--retries must be positive.")
     if args.timeout_s <= 0:
         raise ValueError("--timeout-s must be positive.")
+    if args.assistant_provider == "local" and args.assistant_hf_token_env:
+        # Keep explicit and predictable for resume/checkpoint metadata.
+        args.assistant_hf_token_env = str(args.assistant_hf_token_env)
 
     topics = TOPICS.copy()
     random.seed(args.seed)
@@ -418,55 +647,132 @@ def main() -> None:
     script_dir = Path(__file__).resolve().parent
     output_path = _resolve_output_path(script_dir, args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    if output_path.exists() and not args.overwrite:
-        raise FileExistsError(
-            f"Output already exists: {output_path}. Use --overwrite to replace."
-        )
+    if args.resume and args.overwrite:
+        raise ValueError("--resume and --overwrite are mutually exclusive.")
 
     conversations: List[Dict[str, object]] = []
-    for idx, topic in enumerate(topics, start=1):
-        conversation_label = f"[conversation {idx}/{len(topics)} | {topic['id']}: {topic['title']}]"
-        print(f"{conversation_label} start", flush=True)
-        topic_text = topic["prompt"]
-        convo = _generate_conversation(
-            api_key,
-            topic=topic_text,
-            user_model=args.user_model,
-            assistant_model=args.assistant_model,
-            turns_per_conversation=args.turns_per_conversation,
-            user_temperature=args.user_temperature,
-            assistant_temperature=args.assistant_temperature,
-            user_top_p=args.user_top_p,
-            assistant_top_p=args.assistant_top_p,
-            user_max_tokens=args.user_max_tokens,
-            assistant_max_tokens=args.assistant_max_tokens,
-            timeout_s=args.timeout_s,
-            retries=args.retries,
-            retry_sleep=args.retry_sleep,
-            openrouter_url=args.openrouter_url,
-            http_referer=args.http_referer,
-            x_title=args.x_title,
-            pause_s=args.pause_s,
-            conversation_label=conversation_label,
-        )
-        conversations.append(
-            {
-                "topic_id": topic["id"],
-                "topic_title": topic["title"],
-                "topic_prompt": topic_text,
-                "user_system_prompt": _make_user_system_prompt(topic_text),
-                "assistant_system_prompt": ASSISTANT_SYSTEM_PROMPT,
-                "messages": convo,
-            }
-        )
+    completed_topic_ids = set()
+    if output_path.exists():
+        if args.resume:
+            existing = json.loads(output_path.read_text(encoding="utf-8"))
+            if not isinstance(existing, dict):
+                raise ValueError(f"Resume file is not a JSON object: {output_path}")
+            _validate_resume_payload(existing, args=args, topics=topics, output_path=output_path)
+            existing_conversations = existing.get("conversations", [])
+            if not isinstance(existing_conversations, list):
+                raise ValueError(f"Resume file has invalid 'conversations': {output_path}")
+            for item in existing_conversations:
+                if not isinstance(item, dict):
+                    continue
+                topic_id = item.get("topic_id")
+                if not isinstance(topic_id, str):
+                    continue
+                completed_topic_ids.add(topic_id)
+                conversations.append(item)
+            print(
+                f"Resuming from {output_path} with {len(completed_topic_ids)} completed conversation(s).",
+                flush=True,
+            )
+        elif not args.overwrite:
+            raise FileExistsError(
+                f"Output already exists: {output_path}. Use --overwrite to replace or --resume to continue."
+            )
 
-    payload = {
-        "metadata": _build_metadata(args),
-        "topics": topics,
-        "conversations": conversations,
-    }
-    output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"Wrote dataset to {output_path}")
+    local_assistant: Optional[Dict[str, Any]] = None
+    if args.assistant_provider == "local":
+        print(f"Loading local assistant model {args.assistant_model}...", flush=True)
+        local_assistant = _load_local_assistant(
+            args.assistant_model,
+            use_4bit=bool(args.assistant_use_4bit),
+            dtype=args.assistant_dtype,
+            device_map=args.assistant_device_map,
+            hf_token_env=args.assistant_hf_token_env,
+        )
+        print("Local assistant model loaded.", flush=True)
+
+    total_topics = len(topics)
+    try:
+        for idx, topic in enumerate(topics, start=1):
+            conversation_label = f"[conversation {idx}/{len(topics)} | {topic['id']}: {topic['title']}]"
+            if topic["id"] in completed_topic_ids:
+                print(f"{conversation_label} already completed (resume), skipping", flush=True)
+                continue
+            print(f"{conversation_label} start", flush=True)
+            topic_text = topic["prompt"]
+            try:
+                convo = _generate_conversation(
+                    api_key,
+                    topic=topic_text,
+                    user_model=args.user_model,
+                    assistant_model=args.assistant_model,
+                    assistant_provider=args.assistant_provider,
+                    turns_per_conversation=args.turns_per_conversation,
+                    user_temperature=args.user_temperature,
+                    assistant_temperature=args.assistant_temperature,
+                    user_top_p=args.user_top_p,
+                    assistant_top_p=args.assistant_top_p,
+                    user_max_tokens=args.user_max_tokens,
+                    assistant_max_tokens=args.assistant_max_tokens,
+                    timeout_s=args.timeout_s,
+                    retries=args.retries,
+                    retry_sleep=args.retry_sleep,
+                    openrouter_url=args.openrouter_url,
+                    http_referer=args.http_referer,
+                    x_title=args.x_title,
+                    pause_s=args.pause_s,
+                    conversation_label=conversation_label,
+                    local_assistant=local_assistant,
+                )
+            except ConversationGenerationError as exc:
+                partial_payload = _build_payload(
+                    args,
+                    topics,
+                    conversations,
+                    status="interrupted",
+                    error=str(exc),
+                )
+                _atomic_write_json(output_path, partial_payload)
+                print(
+                    f"Run interrupted. Saved {len(conversations)}/{total_topics} completed conversation(s) to {output_path}",
+                    flush=True,
+                )
+                raise
+            conversations.append(
+                {
+                    "topic_id": topic["id"],
+                    "topic_title": topic["title"],
+                    "topic_prompt": topic_text,
+                    "user_system_prompt": _make_user_system_prompt(topic_text),
+                    "assistant_system_prompt": ASSISTANT_SYSTEM_PROMPT,
+                    "messages": convo,
+                }
+            )
+            completed_topic_ids.add(topic["id"])
+            in_progress_payload = _build_payload(
+                args,
+                topics,
+                conversations,
+                status="in_progress",
+            )
+            _atomic_write_json(output_path, in_progress_payload)
+            print(
+                f"{conversation_label} saved ({len(conversations)}/{total_topics} complete)",
+                flush=True,
+            )
+
+            # Local model stays loaded once; clear transient CUDA cache between topics.
+            if args.assistant_provider == "local":
+                gc.collect()
+                _cleanup_local_cuda_cache()
+
+        payload = _build_payload(args, topics, conversations, status="complete")
+        _atomic_write_json(output_path, payload)
+        print(f"Wrote dataset to {output_path}")
+    finally:
+        if local_assistant is not None:
+            local_assistant.clear()
+            gc.collect()
+            _cleanup_local_cuda_cache()
 
 
 if __name__ == "__main__":
