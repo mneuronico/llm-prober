@@ -454,6 +454,8 @@ probe.score_texts(
         ],
     ],
     system_prompt="You are a helpful assistant.",
+    random_scoring_vector=False,  # set True for same-norm random scoring control
+    random_vector_seed=None,      # optional; defaults to config random.seed
 )
 ```
 
@@ -475,6 +477,9 @@ probe.score_prompts(
     save_generation_logits=True,         # optional
     generation_logits_top_k=None,        # None/0 => full vocab logits per generated step
     generation_logits_dtype="float16",   # or "float32"
+    random_scoring_vector=False,         # True => score with same-norm random vectors
+    random_steering_vector=False,        # True => steer with same-norm random vectors
+    random_vector_seed=None,             # optional; defaults to config random.seed
 )
 ```
 
@@ -490,6 +495,15 @@ Outputs:
   - Logits are written alongside token scores, so `output.save_token_scores_npz` must be `true`.
 
 Names include prompt snippets and alpha labels for clarity.
+
+Random-vector controls (single-probe):
+- `random_scoring_vector=True` replaces the scoring vector(s) with random vectors of the
+  same per-layer norm as the trained vectors.
+- `random_steering_vector=True` replaces only steering vectors (generation-time injection)
+  with random same-norm vectors.
+- These are independent toggles; you can enable either or both.
+- Defaults are `False`, so existing behavior is unchanged.
+- `random_vector_seed` controls reproducibility; if omitted, `random.seed` from config is used.
 
 ---
 
@@ -556,6 +570,12 @@ run_scored_eval(
 )
 ```
 
+`run_scored_eval(...)` forwards extra scoring kwargs to `probe.score_prompts(...)`,
+so you can also pass:
+- `random_scoring_vector=True`
+- `random_steering_vector=True`
+- `random_vector_seed=123`
+
 What it writes (inside the batch folder):
 - `analysis/per_sample.json`: items + completions + correctness + score means
 - `analysis/stats.json`: accuracy by alpha, score by alpha, correct vs incorrect
@@ -607,6 +627,9 @@ run_multi_scored_eval(
     rate_coherence=True,
 )
 ```
+
+`run_multi_scored_eval(...)` forwards extra scoring kwargs to
+`multi_probe_score_prompts(...)`, including random-vector controls.
 
 Outputs are written under:
 
@@ -817,6 +840,9 @@ results = multi_probe_score_prompts(
     save_generation_logits=True,          # optional
     generation_logits_top_k=None,         # None/0 => full vocab logits per generated step
     generation_logits_dtype="float16",    # or "float32"
+    random_scoring_vector=False,          # True => random same-norm scoring vectors (per probe)
+    random_steering_vector=False,         # True => random same-norm vector for steer_probe
+    random_vector_seed=None,              # optional; defaults to config random.seed
 )
 ```
 
@@ -825,6 +851,10 @@ Notes:
 - If non-zero `alphas` are provided, steering is enabled even when `steering.do_steering` is `false`.
 - In multi-probe mode, if non-zero `alphas` are provided and `steer_probe` is `None`, the first probe is used for steering.
 - If `steer_probe` is `None` and all `alphas` are zero, steering is disabled and only `0.0` is used.
+- `random_scoring_vector` and `random_steering_vector` are independent controls.
+  In multi-probe mode:
+  - scoring control applies per probe;
+  - steering control applies only to `steer_probe`.
 - `scores_agg` in the `.npz` is shaped `(num_probes, num_tokens)`.
 - Generation logits (same completion used by all probes) can be saved per prompt/alpha
   with `save_generation_logits=True`.
@@ -862,6 +892,9 @@ Steering is applied during generation:
 
 Single-probe and multi-probe use the same rule; the only difference is that
 multi-probe uses the `steer_probe`'s `proj_std_best_layer` when `alpha_unit="sigma"`.
+
+Random-vector controls do not change alpha scaling behavior; they only replace the vector
+direction(s) used for scoring and/or steering.
 
 Layer options:
 - `steer_layers="probe"`: best layer only.

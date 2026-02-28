@@ -12,8 +12,11 @@ from .probe import (
     _pack_generation_logits_arrays,
     _alpha_label,
     _decode_tokens,
+    _mix_random_control_seed,
     _normalize_messages,
     _prompt_slug_any,
+    _random_vectors_same_norm,
+    _resolve_random_control_seed,
     forward_hidden_states_all_layers,
     token_scores_from_hs_layers,
 )
@@ -111,6 +114,9 @@ def multi_probe_score_prompts(
     generation_logits_top_k: Optional[int] = None,
     generation_logits_dtype: Optional[str] = None,
     batch_subdir: Optional[str] = None,
+    random_scoring_vector: bool = False,
+    random_steering_vector: bool = False,
+    random_vector_seed: Optional[int] = None,
 ) -> Dict[str, Any]:
     if not probes:
         raise ValueError("probes must be a non-empty list of ConceptProbe objects.")
@@ -162,6 +168,25 @@ def multi_probe_score_prompts(
             "save_generation_logits requested but output.save_token_scores_npz=false; logits will not be saved."
         )
     save_generation_logits = bool(save_generation_logits and save_token_scores_npz)
+    base_random_seed = _resolve_random_control_seed(
+        random_vector_seed,
+        probes[0].config.get("random", {}).get("seed", 0),
+    )
+    random_scoring_seed_map: Dict[str, Optional[int]] = {}
+    scoring_vectors_by_probe_name: Dict[str, np.ndarray] = {}
+    for idx, probe in enumerate(probes):
+        probe_name = str(probe.concept.name)
+        if random_scoring_vector:
+            probe_seed = _mix_random_control_seed(base_random_seed, 3000 + idx)
+            random_scoring_seed_map[probe_name] = probe_seed
+            scoring_vectors_by_probe_name[probe_name] = _random_vectors_same_norm(
+                probe.concept_vectors, seed=probe_seed
+            )
+        else:
+            random_scoring_seed_map[probe_name] = None
+            scoring_vectors_by_probe_name[probe_name] = probe.concept_vectors
+    steering_seed: Optional[int] = None
+    steering_vectors: Optional[np.ndarray] = None
     if steer_distribute is None:
         steer_distribute = steer_cfg.get("steer_distribute", True)
 
@@ -173,6 +198,24 @@ def multi_probe_score_prompts(
 
     if not do_steering:
         steer_probe_obj = None
+    if random_steering_vector and steer_probe_obj is None:
+        probes[0]._warn("random_steering_vector=true but steering is inactive; no steering is applied.")
+    if steer_probe_obj is not None:
+        if random_steering_vector:
+            steer_idx = probes.index(steer_probe_obj)
+            steering_seed = _mix_random_control_seed(base_random_seed, 4000 + steer_idx)
+            steering_vectors = _random_vectors_same_norm(steer_probe_obj.concept_vectors, seed=steering_seed)
+            probes[0]._warn(
+                f"multi_probe_score_prompts using random steering vector control "
+                f"(same-norm per layer, seed={steering_seed}, steer_probe={steer_probe_obj.concept.name})."
+            )
+        else:
+            steering_vectors = steer_probe_obj.concept_vectors
+    if random_scoring_vector:
+        probes[0]._warn(
+            f"multi_probe_score_prompts using random scoring vector control "
+            f"(same-norm per layer, base_seed={base_random_seed})."
+        )
 
     run_tag = run_name or now_tag()
     run_dir = os.path.join(output_root, safe_slug(project_name), run_tag)
@@ -214,6 +257,16 @@ def multi_probe_score_prompts(
             "steer_layers": steer_layers,
             "steer_window_radius": steer_window_radius,
             "steer_distribute": steer_distribute,
+        },
+        "random_vector_controls": {
+            "random_scoring_vector": bool(random_scoring_vector),
+            "random_steering_vector": bool(random_steering_vector),
+            "random_vector_seed_input": (
+                int(random_vector_seed) if random_vector_seed is not None else None
+            ),
+            "random_vector_seed_base": int(base_random_seed),
+            "random_scoring_vector_seed_by_probe": random_scoring_seed_map,
+            "random_steering_vector_seed": steering_seed,
         },
         "probes": probes_info,
     }
@@ -276,7 +329,7 @@ def multi_probe_score_prompts(
                 with MultiLayerSteererLayerwise(
                     model,
                     steer_layer_list,
-                    steer_probe_obj.concept_vectors,
+                    steering_vectors,
                     float(alpha_val),
                     distribute=steer_distribute,
                 ):
@@ -336,8 +389,9 @@ def multi_probe_score_prompts(
             for probe in probes:
                 layers = probe._layer_selection(layer_selection)
                 aggregate = probe.config["evaluation"]["score_aggregate"]
+                scoring_vectors = scoring_vectors_by_probe_name[str(probe.concept.name)]
                 _, scores_agg = token_scores_from_hs_layers(
-                    hs_layers, probe.concept_vectors, layers, aggregate=aggregate
+                    hs_layers, scoring_vectors, layers, aggregate=aggregate
                 )
                 scores_agg_list.append(scores_agg.astype(np.float32))
 
@@ -399,6 +453,10 @@ def multi_probe_score_prompts(
                 "alpha_value": float(alpha_val),
                 "steer_probe": None if steer_probe_obj is None else steer_probe_obj.concept.name,
                 "steer_layers": steer_layer_list,
+                "random_scoring_vector": bool(random_scoring_vector),
+                "random_scoring_vector_seed_by_probe": random_scoring_seed_map,
+                "random_steering_vector": bool(random_steering_vector),
+                "random_steering_vector_seed": steering_seed,
                 "completion": completion_text,
                 "prompt_len": prompt_len,
                 "probe_names": probe_names,

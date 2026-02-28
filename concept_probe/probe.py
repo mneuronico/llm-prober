@@ -25,6 +25,40 @@ def normed_np(v: np.ndarray) -> np.ndarray:
     return v / (np.linalg.norm(v) + 1e-12)
 
 
+def _resolve_random_control_seed(explicit_seed: Optional[int], config_seed: Any) -> int:
+    if explicit_seed is not None:
+        return int(explicit_seed)
+    try:
+        return int(config_seed)
+    except Exception:
+        return 0
+
+
+def _mix_random_control_seed(base_seed: int, salt: int) -> int:
+    x = int(base_seed) & 0xFFFFFFFFFFFFFFFF
+    s = int(salt) & 0xFFFFFFFFFFFFFFFF
+    x ^= (s + 0x9E3779B97F4A7C15 + ((x << 6) & 0xFFFFFFFFFFFFFFFF) + (x >> 2)) & 0xFFFFFFFFFFFFFFFF
+    return int(x & 0x7FFFFFFFFFFFFFFF)
+
+
+def _random_vectors_same_norm(base_vectors: np.ndarray, seed: int) -> np.ndarray:
+    src = np.asarray(base_vectors, dtype=np.float32)
+    if src.ndim != 2:
+        raise ValueError(f"base_vectors must be 2D [num_layers, hidden_dim], got shape={src.shape}")
+    rng = np.random.default_rng(int(seed))
+    out = np.zeros_like(src, dtype=np.float32)
+    for li in range(src.shape[0]):
+        target_norm = float(np.linalg.norm(src[li]))
+        if not np.isfinite(target_norm) or target_norm <= 0.0:
+            continue
+        rv = rng.standard_normal(src.shape[1]).astype(np.float32)
+        rv_norm = float(np.linalg.norm(rv))
+        if not np.isfinite(rv_norm) or rv_norm <= 0.0:
+            continue
+        out[li] = (rv / rv_norm) * target_norm
+    return out
+
+
 def _render_progress(current: int, total: int, *, width: int = 28) -> str:
     if total <= 0:
         return "[----------------------------] 0/0"
@@ -1031,6 +1065,8 @@ class ConceptProbe:
         output_subdir: str = "scores",
         save_html: Optional[bool] = None,
         batch_subdir: Optional[str] = None,
+        random_scoring_vector: bool = False,
+        random_vector_seed: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         self._require_trained()
         tokenizer = self.model_bundle.tokenizer
@@ -1040,6 +1076,18 @@ class ConceptProbe:
         sys_prompt = system_prompt or self.config["prompts"]["neutral_system"]
         save_html = self.config["plots"].get("heatmap_html", True) if save_html is None else save_html
         save_token_scores_npz = self.config["output"].get("save_token_scores_npz", True)
+        base_random_seed = _resolve_random_control_seed(
+            random_vector_seed,
+            self.config.get("random", {}).get("seed", 0),
+        )
+        scoring_seed: Optional[int] = None
+        scoring_vectors = self.concept_vectors
+        if random_scoring_vector:
+            scoring_seed = _mix_random_control_seed(base_random_seed, 101)
+            scoring_vectors = _random_vectors_same_norm(self.concept_vectors, seed=scoring_seed)
+            self._warn(
+                f"score_texts using random scoring vector control (same-norm per layer, seed={scoring_seed})."
+            )
 
         base_dir = os.path.join(self.run_dir, output_subdir)
         ensure_dir(base_dir)
@@ -1063,7 +1111,7 @@ class ConceptProbe:
             input_ids = apply_chat(tokenizer, messages, add_generation_prompt=False)
             hs_layers = forward_hidden_states_all_layers(model, input_ids)
             scores_per_layer, scores_agg = token_scores_from_hs_layers(
-                hs_layers, self.concept_vectors, layers, aggregate=aggregate
+                hs_layers, scoring_vectors, layers, aggregate=aggregate
             )
             token_ids = input_ids[0].detach().cpu().numpy().astype(np.int32)
             tokens = _decode_tokens(tokenizer, token_ids)
@@ -1096,6 +1144,8 @@ class ConceptProbe:
                 "layers": layers,
                 "npz_path": npz_path,
                 "html_path": html_path,
+                "random_scoring_vector": bool(random_scoring_vector),
+                "random_scoring_vector_seed": scoring_seed,
                 "batch_dir": out_dir,
             }
             results.append(rec)
@@ -1131,6 +1181,9 @@ class ConceptProbe:
         generation_logits_top_k: Optional[int] = None,
         generation_logits_dtype: Optional[str] = None,
         batch_subdir: Optional[str] = None,
+        random_scoring_vector: bool = False,
+        random_steering_vector: bool = False,
+        random_vector_seed: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         self._require_trained()
         tokenizer = self.model_bundle.tokenizer
@@ -1153,6 +1206,26 @@ class ConceptProbe:
         if save_generation_logits and not save_token_scores_npz:
             self._warn("save_generation_logits requested but output.save_token_scores_npz=false; logits will not be saved.")
         save_generation_logits = bool(save_generation_logits and save_token_scores_npz)
+        base_random_seed = _resolve_random_control_seed(
+            random_vector_seed,
+            self.config.get("random", {}).get("seed", 0),
+        )
+        scoring_seed: Optional[int] = None
+        steering_seed: Optional[int] = None
+        scoring_vectors = self.concept_vectors
+        steering_vectors = self.concept_vectors
+        if random_scoring_vector:
+            scoring_seed = _mix_random_control_seed(base_random_seed, 201)
+            scoring_vectors = _random_vectors_same_norm(self.concept_vectors, seed=scoring_seed)
+            self._warn(
+                f"score_prompts using random scoring vector control (same-norm per layer, seed={scoring_seed})."
+            )
+        if random_steering_vector:
+            steering_seed = _mix_random_control_seed(base_random_seed, 202)
+            steering_vectors = _random_vectors_same_norm(self.concept_vectors, seed=steering_seed)
+            self._warn(
+                f"score_prompts using random steering vector control (same-norm per layer, seed={steering_seed})."
+            )
 
         max_new_tokens = max_new_tokens if max_new_tokens is not None else self.config["steering"]["steer_max_new_tokens"]
         greedy = greedy if greedy is not None else (not self.config["steering"]["steer_sampling"])
@@ -1167,6 +1240,8 @@ class ConceptProbe:
                 "Non-zero alphas provided; overriding steering.do_steering=false and enabling steering."
             )
             do_steering = True
+        if random_steering_vector and not nonzero_alpha_requested:
+            self._warn("random_steering_vector=true but all alphas are zero; no steering is applied.")
 
         base_dir = os.path.join(self.run_dir, output_subdir)
         ensure_dir(base_dir)
@@ -1228,7 +1303,7 @@ class ConceptProbe:
                 should_steer = do_steering and abs(float(alpha_val)) > 1e-12
                 if should_steer:
                     context = MultiLayerSteererLayerwise(
-                        model, steer_layer_list, self.concept_vectors, alpha_val, distribute=steer_distribute
+                        model, steer_layer_list, steering_vectors, alpha_val, distribute=steer_distribute
                     )
                 else:
                     context = None
@@ -1275,7 +1350,7 @@ class ConceptProbe:
                         hs_layers = forward_hidden_states_all_layers(model, gen_ids.unsqueeze(0))
                         generation_step_logits = None
                 scores_per_layer, scores_agg = token_scores_from_hs_layers(
-                    hs_layers, self.concept_vectors, layers, aggregate=aggregate
+                    hs_layers, scoring_vectors, layers, aggregate=aggregate
                 )
                 generation_logits_payload: Dict[str, np.ndarray] = {}
                 if save_generation_logits and generation_step_logits is not None:
@@ -1349,6 +1424,10 @@ class ConceptProbe:
                     "segments_path": segments_path,
                     "score_mean": score_mean,
                     "do_steering": bool(should_steer),
+                    "random_scoring_vector": bool(random_scoring_vector),
+                    "random_scoring_vector_seed": scoring_seed,
+                    "random_steering_vector": bool(random_steering_vector),
+                    "random_steering_vector_seed": steering_seed,
                     "generation_logits_saved": bool(generation_logits_payload),
                     "generation_logits_top_k": (
                         int(generation_logits_payload["generation_logits_topk_k"][0])

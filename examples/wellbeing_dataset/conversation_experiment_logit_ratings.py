@@ -125,6 +125,13 @@ class LogitRatingConfig:
 
 
 @dataclass
+class VectorControlConfig:
+    random_scoring_vector: bool = False
+    random_steering_vector: bool = False
+    random_vector_seed: Optional[int] = None
+
+
+@dataclass
 class AnalysisConfig:
     metric_response_key: str = "completion_assistant_mean"
     metric_last_assistant_key: str = "prompt_assistant_last_mean"
@@ -178,6 +185,7 @@ class ExperimentConfig:
     rating: RatingConfig = field(default_factory=RatingConfig)
     self_ratings: SelfRatingsConfig = field(default_factory=SelfRatingsConfig)
     logit_rating: LogitRatingConfig = field(default_factory=LogitRatingConfig)
+    vector_controls: VectorControlConfig = field(default_factory=VectorControlConfig)
     analysis: AnalysisConfig = field(default_factory=AnalysisConfig)
 
 
@@ -2101,6 +2109,9 @@ def run_experiment(
                 save_generation_logits=save_generation_logits,
                 generation_logits_top_k=cfg.logit_rating.generation_logits_top_k,
                 generation_logits_dtype=cfg.logit_rating.generation_logits_dtype,
+                random_scoring_vector=cfg.vector_controls.random_scoring_vector,
+                random_steering_vector=cfg.vector_controls.random_steering_vector,
+                random_vector_seed=cfg.vector_controls.random_vector_seed,
             )
             recs = result_payload["results"]
             probe_names = [p.concept.name for p in probes]
@@ -2120,6 +2131,9 @@ def run_experiment(
                 save_generation_logits=save_generation_logits,
                 generation_logits_top_k=cfg.logit_rating.generation_logits_top_k,
                 generation_logits_dtype=cfg.logit_rating.generation_logits_dtype,
+                random_scoring_vector=cfg.vector_controls.random_scoring_vector,
+                random_steering_vector=cfg.vector_controls.random_steering_vector,
+                random_vector_seed=cfg.vector_controls.random_vector_seed,
             )
             probe_names = [probes[0].concept.name]
 
@@ -2335,6 +2349,15 @@ def run_experiment(
             "seed": int(cfg.analysis.bootstrap_seed),
             "trend_min_points": trend_min_points,
             "alpha_reference_value": alpha_reference_value,
+        },
+        "vector_controls": {
+            "random_scoring_vector": bool(cfg.vector_controls.random_scoring_vector),
+            "random_steering_vector": bool(cfg.vector_controls.random_steering_vector),
+            "random_vector_seed": (
+                int(cfg.vector_controls.random_vector_seed)
+                if cfg.vector_controls.random_vector_seed is not None
+                else None
+            ),
         },
     }
     if use_logit_source:
@@ -3272,6 +3295,7 @@ def main() -> None:
         rating=RatingConfig(**raw.get("rating", {})),
         self_ratings=SelfRatingsConfig(**raw.get("self_ratings", {})),
         logit_rating=LogitRatingConfig(**raw.get("logit_rating", {})),
+        vector_controls=VectorControlConfig(**raw.get("vector_controls", {})),
         analysis=AnalysisConfig(**raw.get("analysis", {})),
     )
     if args.bootstrap_samples_override is not None:

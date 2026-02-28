@@ -1,0 +1,32 @@
+{
+  "experiments": [
+    {
+      "name": "interest_no_steering_qwen25_7b_alpha0",
+      "overrides": {
+        "dataset_path": "examples/wellbeing_dataset/data/wellbeing_conversations_openrouter_qwen25_7b_instruct_run_20260227_184101.json",
+        "model_id": "Qwen/Qwen2.5-7B-Instruct",
+        "probe_dirs": [
+          "outputs/bored_vs_interested_qwen25_7b-instruct/20260227_093602"
+        ],
+        "output_dir_template": "analysis/interest_no_steering_qwen25_7b_alpha0_{timestamp}",
+        "steering": {
+          "alphas": [
+            0.0
+          ],
+          "alpha_unit": "raw",
+          "steer_probe": 0
+        },
+        "prompt": {
+          "insert_message": "Hey, could you rate how interested you are in this conversation right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number."
+        },
+        "rating": {
+          "label": "interest"
+        },
+        "analysis": {
+          "alignment_probe_name": "bored_vs_interested",
+          "r2_probe_name": "bored_vs_interested"
+        }
+      }
+    }
+  ]
+}
