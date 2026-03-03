@@ -1,0 +1,58 @@
+Directorios de probes:
+
+Probes entrenadas para LLaMA 3b:
+outputs\bored_vs_interested\20260122_112208
+outputs\distracted_vs_focused\20260122_095601
+outputs\impulsive_vs_planning\20260120_181954
+outputs\sad_vs_happy\20260106_181019
+
+Probes entrenadas para LLaMA 1b:
+outputs\bored_vs_interested\20260222_113022
+outputs\distracted_vs_focused\20260222_113736
+outputs\impulsive_vs_planning\20260222_113350
+outputs\sad_vs_happy\20260222_114144
+
+Probes entrenadas para LLaMA 8b:
+outputs\bored_vs_interested\20260223_121414
+outputs\distracted_vs_focused\20260223_122930
+outputs\impulsive_vs_planning\20260223_122141
+outputs\sad_vs_happy\20260223_114426
+
+Probes entrenadas para Gemma 4b:
+outputs\sad_vs_happy_gemma_3_4b-it\20260225_105047
+
+Probes entrenadas para Qwen 2.5 7b:
+outputs\sad_vs_happy_qwen25_7b-instruct\20260227_180321
+
+
+Directorios de datasets de conversaciones:
+
+LLaMA 3b como asistente:
+examples\wellbeing_dataset\data\wellbeing_conversations_openrouter_20260206_194607.json
+
+LLaMA 1b como asistente:
+examples\wellbeing_dataset\data\wellbeing_conversations_openrouter_llama32_1b_run_20260222_152228.json
+
+LLaMA 8b como asistente:
+examples\wellbeing_dataset\data\wellbeing_conversations_openrouter_llama31_8b_run_20260223_154526.json
+
+Gemma 4b como asistente:
+examples\wellbeing_dataset\data\wellbeing_conversations_openrouter_gemma3_4b_it_run_20260225_173338.json
+
+Qwen 7b como asistente:
+examples\wellbeing_dataset\data\wellbeing_conversations_openrouter_qwen25_7b_instruct_run_20260227_184101.json
+
+
+Directorios de experimentos relevantes:
+
+analysis\llama-3b-4by4 <- matriz de 4x4 para llama 3b.
+analysis\llama-3b-4by4-reruns <- reruns de algunas celdas de la matriz de 4x4 para llama 3b, hay que preferir esto siempre excepto para comparar con otros tamaños de llama
+analysis\llama-1b-self-steering <- todos los experimentos de llama 1b
+analysis\llama-8b-self-steering <- todos los experimentos de llama 8b
+
+analysis\gemma-4b-self-steering\wellbeing_self_steering_gemma3_4b_alpha_m4_to_p4_20260225_201847 <- experimento de Gemma 4b
+analysis\wellbeing_no_steering_qwen25_7b_alpha0_20260227_212109 <- experimento de Qwen 7b
+
+analysis\llama-3b-4by4-reruns-token-primary-greedy <- experimento de 3b con greedy = true para el comienzo del paper, cuando miramos las respuestas greedy
+
+analysis\llama-3b-4by4-reruns-random-scoring <- random vector de igual norma para los 4 conceptos, es el control principal mencionado un par de veces en la estructura del paper
