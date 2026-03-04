@@ -1,0 +1,5 @@
+{
+  "panel_id": "Fig_05_H",
+  "title": "Self-Report Drift — Gemma vs Qwen",
+  "description": "Self-report drift across turns for non-LLaMA models (sad_vs_happy)."
+}

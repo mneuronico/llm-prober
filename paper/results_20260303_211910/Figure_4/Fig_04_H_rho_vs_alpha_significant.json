@@ -1,0 +1,25 @@
+{
+  "panel_id": "Fig_04_H",
+  "title": "Spearman ρ vs. Steering Alpha (Significant Conditions)",
+  "description": "Spearman ρ as a function of steering alpha for the two significant conditions.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "rho_values": [
+        0.4241,
+        0.5461,
+        0.67,
+        0.7817,
+        0.8456
+      ]
+    },
+    "('impulsivity', 'interest')": {
+      "rho_values": [
+        0.8263,
+        0.785,
+        0.7565,
+        0.7377,
+        0.7031
+      ]
+    }
+  }
+}

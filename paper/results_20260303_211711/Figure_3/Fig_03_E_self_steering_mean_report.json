@@ -1,0 +1,133 @@
+{
+  "panel_id": "Fig_03_E",
+  "title": "Self-Steering: Mean Self-Report vs. Alpha",
+  "description": "Mean logit-based self-report as a function of steering alpha for all 4 concepts. Monotonic increase confirms causal relationship between internal state direction and self-reported value.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "steering_stats": {
+    "wellbeing": {
+      "alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        6.8631,
+        6.6375,
+        6.332,
+        5.8826,
+        5.3763
+      ],
+      "ci_low": [
+        6.8284,
+        6.6003,
+        6.2925,
+        5.8451,
+        5.3487
+      ],
+      "ci_high": [
+        6.8983,
+        6.6762,
+        6.3753,
+        5.923,
+        5.4055
+      ]
+    },
+    "interest": {
+      "alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        6.1103,
+        6.6754,
+        7.2859,
+        7.7667,
+        8.0291
+      ],
+      "ci_low": [
+        6.0554,
+        6.6117,
+        7.2274,
+        7.7328,
+        8.0102
+      ],
+      "ci_high": [
+        6.1643,
+        6.7364,
+        7.3417,
+        7.8024,
+        8.0483
+      ]
+    },
+    "focus": {
+      "alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        4.7305,
+        6.5387,
+        7.7948,
+        7.986,
+        8.0318
+      ],
+      "ci_low": [
+        4.6937,
+        6.4824,
+        7.7659,
+        7.9693,
+        8.0165
+      ],
+      "ci_high": [
+        4.7657,
+        6.5933,
+        7.8203,
+        8.0006,
+        8.0454
+      ]
+    },
+    "impulsivity": {
+      "alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        4.3029,
+        4.1027,
+        3.8937,
+        3.8006,
+        3.7809
+      ],
+      "ci_low": [
+        4.2718,
+        4.0702,
+        3.8651,
+        3.777,
+        3.7589
+      ],
+      "ci_high": [
+        4.3369,
+        4.1351,
+        3.9222,
+        3.825,
+        3.8028
+      ]
+    }
+  }
+}

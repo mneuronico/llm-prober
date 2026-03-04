@@ -1,0 +1,6 @@
+{
+  "panel_id": "Fig_05_B",
+  "title": "Isotonic R² vs. Model Size",
+  "description": "Isotonic R² at alpha=0 for each concept across LLaMA 1B/3B/8B. Three of four concepts show monotonically increasing introspection with model size. impulsivity shows an anomalous decrease at 8B due to poor probe quality at that scale.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-model_size_comparison\\isotonic_r2_alpha0_vs_model_size_self_steering.csv"
+}

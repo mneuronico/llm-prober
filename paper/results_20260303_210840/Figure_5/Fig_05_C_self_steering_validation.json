@@ -1,0 +1,97 @@
+{
+  "panel_id": "Fig_05_C",
+  "title": "Self-Steering Validation Heatmap",
+  "description": "Isotonic R² multiplied by the sign of the steering slope. Positive values: steering in the expected direction changes self-report correctly. Negative values: inverted behavior, indicating poor probe quality. Key finding: impulsivity at 8B is inverted.",
+  "steer_details": {
+    "1B": {
+      "wellbeing": {
+        "r2_iso": 0.2587,
+        "slope_sign": -1,
+        "signed_r2": -0.2587,
+        "steering_slope": -0.4883,
+        "steering_p": 0.05782471387865204
+      },
+      "interest": {
+        "r2_iso": 0.0527,
+        "slope_sign": 1,
+        "signed_r2": 0.0527,
+        "steering_slope": 0.1236,
+        "steering_p": 0.8258386837533593
+      },
+      "focus": {
+        "r2_iso": 0.0011,
+        "slope_sign": -1,
+        "signed_r2": -0.0011,
+        "steering_slope": -0.6166,
+        "steering_p": 0.13268672045664437
+      },
+      "impulsivity": {
+        "r2_iso": 0.0463,
+        "slope_sign": -1,
+        "signed_r2": -0.0463,
+        "steering_slope": -0.0981,
+        "steering_p": 0.31970675975836865
+      }
+    },
+    "3B": {
+      "wellbeing": {
+        "r2_iso": 0.452,
+        "slope_sign": -1,
+        "signed_r2": -0.452,
+        "steering_slope": -0.1854,
+        "steering_p": 0.0012961515195868021
+      },
+      "interest": {
+        "r2_iso": 0.6572,
+        "slope_sign": 1,
+        "signed_r2": 0.6572,
+        "steering_slope": 0.2646,
+        "steering_p": 0.0002034791954114489
+      },
+      "focus": {
+        "r2_iso": 0.0371,
+        "slope_sign": 1,
+        "signed_r2": 0.0371,
+        "steering_slope": 0.4069,
+        "steering_p": 0.03863963200548287
+      },
+      "impulsivity": {
+        "r2_iso": 0.3304,
+        "slope_sign": -1,
+        "signed_r2": -0.3304,
+        "steering_slope": -0.0752,
+        "steering_p": 0.009342701672608467
+      }
+    },
+    "8B": {
+      "wellbeing": {
+        "r2_iso": 0.9022,
+        "slope_sign": -1,
+        "signed_r2": -0.9022,
+        "steering_slope": -0.3949,
+        "steering_p": 0.001883861480319749
+      },
+      "interest": {
+        "r2_iso": 0.9313,
+        "slope_sign": 1,
+        "signed_r2": 0.9313,
+        "steering_slope": 0.0868,
+        "steering_p": 4.5308972790744165e-05
+      },
+      "focus": {
+        "r2_iso": 0.0073,
+        "slope_sign": 1,
+        "signed_r2": 0.0073,
+        "steering_slope": 0.4322,
+        "steering_p": 0.04376868002338109
+      },
+      "impulsivity": {
+        "r2_iso": 0.0027,
+        "slope_sign": 1,
+        "signed_r2": 0.0027,
+        "steering_slope": 0.0536,
+        "steering_p": 0.06659476302116833
+      }
+    }
+  }
+}

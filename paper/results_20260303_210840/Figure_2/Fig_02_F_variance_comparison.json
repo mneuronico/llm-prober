@@ -1,0 +1,25 @@
+{
+  "panel_id": "Fig_02_F",
+  "title": "Self-Report Variance by Method",
+  "description": "Variance of self-reports across three methods: greedy token, sampled token, and logit-based. Logit-based captures more variance and produces a continuous rather than discrete measure.",
+  "variance_data": {
+    "Greedy\n(token)": [
+      0.710469924812029,
+      0.8120300751879699,
+      0.09046992481202981,
+      0.009999999999999985
+    ],
+    "Sampled\n(token)": [
+      1.3120238095238081,
+      0.9621491228070134,
+      0.2642543859649126,
+      1.0902255639097724
+    ],
+    "Logit-\nbased": [
+      0.1853216726393931,
+      0.35034706872658017,
+      0.08102363802126623,
+      0.08245777624152921
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "panel_id": "Fig_04_J",
+  "title": "Probe Score Drift Under Steering — Impulsive / Planning → Interested / Bored",
+  "description": "Mean probe score (bored_vs_interested) across turns for different steering alphas (steering with impulsivity). Shows how steering affects both level and drift of internal state.",
+  "drift_by_alpha": {
+    "-4.0": {
+      "drift_magnitude": 0.0992,
+      "first_turn_mean": -1.0633,
+      "last_turn_mean": -0.9642
+    },
+    "-2.0": {
+      "drift_magnitude": 0.0959,
+      "first_turn_mean": -0.6732,
+      "last_turn_mean": -0.5773
+    },
+    "0.0": {
+      "drift_magnitude": 0.0858,
+      "first_turn_mean": -0.3054,
+      "last_turn_mean": -0.2196
+    },
+    "2.0": {
+      "drift_magnitude": 0.0739,
+      "first_turn_mean": 0.0493,
+      "last_turn_mean": 0.1232
+    },
+    "4.0": {
+      "drift_magnitude": 0.0608,
+      "first_turn_mean": 0.3934,
+      "last_turn_mean": 0.4542
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "panel_id": "Fig_05_G",
+  "title": "Layer Sweep — Gemma 3 4B vs Qwen 2.5 7B (Happy / Sad)",
+  "description": "Cohen's d layer sweep for sad_vs_happy in two non-LLaMA families. Qwen shows much stronger separation (d≈3.5) vs Gemma (d≈1.8).",
+  "sweep_info": {
+    "Gemma 3 4B": {
+      "best_layer": 15,
+      "best_d": 1.815,
+      "num_layers": 34
+    },
+    "Qwen 2.5 7B": {
+      "best_layer": 20,
+      "best_d": 3.544,
+      "num_layers": 28
+    }
+  }
+}

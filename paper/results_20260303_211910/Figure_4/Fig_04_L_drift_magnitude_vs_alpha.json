@@ -1,0 +1,61 @@
+{
+  "panel_id": "Fig_04_L",
+  "title": "Drift Magnitude vs. Steering Alpha",
+  "description": "Drift of probe score (last minus first turn mean) as a function of steering alpha. In focus→wellbeing, drift varies with alpha (both components affected). In impulsivity→interest, drift is relatively constant (only report component affected).",
+  "drift_decomposition": {
+    "focus→wellbeing": {
+      "-4.0": {
+        "drift_magnitude": -0.0077,
+        "first_turn_mean": -0.5191,
+        "last_turn_mean": -0.5269
+      },
+      "-2.0": {
+        "drift_magnitude": -0.0047,
+        "first_turn_mean": -0.4091,
+        "last_turn_mean": -0.4138
+      },
+      "0.0": {
+        "drift_magnitude": 0.0287,
+        "first_turn_mean": -0.2052,
+        "last_turn_mean": -0.1765
+      },
+      "2.0": {
+        "drift_magnitude": 0.0723,
+        "first_turn_mean": -0.0326,
+        "last_turn_mean": 0.0398
+      },
+      "4.0": {
+        "drift_magnitude": 0.1264,
+        "first_turn_mean": 0.0198,
+        "last_turn_mean": 0.1462
+      }
+    },
+    "impulsivity→interest": {
+      "-4.0": {
+        "drift_magnitude": 0.0992,
+        "first_turn_mean": -1.0633,
+        "last_turn_mean": -0.9642
+      },
+      "-2.0": {
+        "drift_magnitude": 0.0959,
+        "first_turn_mean": -0.6732,
+        "last_turn_mean": -0.5773
+      },
+      "0.0": {
+        "drift_magnitude": 0.0858,
+        "first_turn_mean": -0.3054,
+        "last_turn_mean": -0.2196
+      },
+      "2.0": {
+        "drift_magnitude": 0.0739,
+        "first_turn_mean": 0.0493,
+        "last_turn_mean": 0.1232
+      },
+      "4.0": {
+        "drift_magnitude": 0.0608,
+        "first_turn_mean": 0.3934,
+        "last_turn_mean": 0.4542
+      }
+    }
+  }
+}

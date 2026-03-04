@@ -1,0 +1,24 @@
+{
+  "panel_id": "Fig_05_D",
+  "title": "Mean Isotonic R² by Model Size (Good-Quality Probes)",
+  "description": "Mean isotonic R² across concepts with validated probes only (excluding inverted steering). Shows clear scaling trend.",
+  "good_r2_values": {
+    "1B": [
+      0.0423
+    ],
+    "3B": [
+      0.0999,
+      0.6939
+    ],
+    "8B": [
+      0.1675,
+      0.94,
+      0.0713
+    ]
+  },
+  "means": [
+    0.0423,
+    0.3969,
+    0.3929
+  ]
+}

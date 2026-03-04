@@ -1,0 +1,71 @@
+{
+  "panel_id": "Fig_03_A",
+  "title": "Probe Score vs. Logit Self-Report Scatter Plots",
+  "description": "Scatter plots of probe score (prompt_assistant_last_mean, polarity-corrected) vs. logit-based self-report at alpha=0 for all 4 concepts. Black line: isotonic regression fit. Each dot = one conversation-turn observation (n=400; 40 conversations × 10 turns).",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "model": "LLaMA-3.2-3B-Instruct",
+  "metric": "prompt_assistant_last_mean",
+  "scatter_statistics": {
+    "wellbeing": {
+      "spearman_rho": 0.6831,
+      "spearman_p": 2.789340869001356e-56,
+      "isotonic_r2": 0.4777,
+      "isotonic_r2_ci": [
+        0.4236,
+        0.5703
+      ],
+      "rho_ci": [
+        0.6269,
+        0.7315
+      ],
+      "n": 400
+    },
+    "interest": {
+      "spearman_rho": 0.763,
+      "spearman_p": 2.0212181961199723e-77,
+      "isotonic_r2": 0.5393,
+      "isotonic_r2_ci": [
+        0.4944,
+        0.6236
+      ],
+      "rho_ci": [
+        0.7149,
+        0.801
+      ],
+      "n": 400
+    },
+    "focus": {
+      "spearman_rho": 0.3997,
+      "spearman_p": 8.953550834779397e-17,
+      "isotonic_r2": 0.1247,
+      "isotonic_r2_ci": [
+        0.0848,
+        0.214
+      ],
+      "rho_ci": [
+        0.3106,
+        0.4808
+      ],
+      "n": 400
+    },
+    "impulsivity": {
+      "spearman_rho": 0.509,
+      "spearman_p": 9.558852261767222e-28,
+      "isotonic_r2": 0.3142,
+      "isotonic_r2_ci": [
+        0.2511,
+        0.413
+      ],
+      "rho_ci": [
+        0.4295,
+        0.578
+      ],
+      "n": 400
+    }
+  }
+}

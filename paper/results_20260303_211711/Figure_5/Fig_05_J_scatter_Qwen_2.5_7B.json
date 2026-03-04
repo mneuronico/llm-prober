@@ -1,0 +1,11 @@
+{
+  "panel_id": "Fig_05_J",
+  "title": "Introspection Scatter — Qwen 2.5 7B",
+  "description": "Probe score vs logit self-report for Qwen 2.5 7B (sad_vs_happy). Shows introspection capability in non-LLaMA families.",
+  "statistics": {
+    "spearman_rho": 0.489,
+    "spearman_p": 1.9408479049919138e-25,
+    "isotonic_r2": 0.7566,
+    "n": 400
+  }
+}

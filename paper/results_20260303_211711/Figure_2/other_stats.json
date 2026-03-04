@@ -1,0 +1,111 @@
+{
+  "description": "Figure 2 demonstrates internal state drift through conversations and validates different self-report extraction methods. Key finding: models show internal state drift but fail to report it with greedy decoding. Logit-based method captures drift with continuous values.",
+  "greedy_stats": {
+    "wellbeing": {
+      "mean_variance_across_turns": 0.7167,
+      "mean_rating": 6.117
+    },
+    "interest": {
+      "mean_variance_across_turns": 0.5754,
+      "mean_rating": 7.5
+    },
+    "focus": {
+      "mean_variance_across_turns": 0.0863,
+      "mean_rating": 7.952
+    },
+    "impulsivity": {
+      "mean_variance_across_turns": 0.01,
+      "mean_rating": 4.005
+    }
+  },
+  "probe_drift_stats": {
+    "wellbeing": {
+      "mean_first_turn": -0.1721,
+      "mean_last_turn": -0.1569,
+      "drift_magnitude": 0.0152,
+      "spearman_rho_vs_turn": -0.0109,
+      "spearman_p_vs_turn": 0.8284293371823168
+    },
+    "interest": {
+      "mean_first_turn": -0.3112,
+      "mean_last_turn": -0.2276,
+      "drift_magnitude": 0.0836,
+      "spearman_rho_vs_turn": 0.2075,
+      "spearman_p_vs_turn": 2.8913166537691832e-05
+    },
+    "focus": {
+      "mean_first_turn": -0.3584,
+      "mean_last_turn": -0.3431,
+      "drift_magnitude": 0.0153,
+      "spearman_rho_vs_turn": 0.2264,
+      "spearman_p_vs_turn": 4.797291104769383e-06
+    },
+    "impulsivity": {
+      "mean_first_turn": -0.5364,
+      "mean_last_turn": -0.5524,
+      "drift_magnitude": -0.0159,
+      "spearman_rho_vs_turn": 0.0859,
+      "spearman_p_vs_turn": 0.08627927430152246
+    }
+  },
+  "logit_drift_stats": {
+    "wellbeing": {
+      "mean_first_turn": 6.2386,
+      "mean_last_turn": 6.4167,
+      "drift_magnitude": 0.1781,
+      "spearman_rho_vs_turn": 0.1198,
+      "spearman_p_vs_turn": 0.01649082830537667
+    },
+    "interest": {
+      "mean_first_turn": 6.4083,
+      "mean_last_turn": 7.5885,
+      "drift_magnitude": 1.1801,
+      "spearman_rho_vs_turn": 0.4819,
+      "spearman_p_vs_turn": 1.1882723996563983e-24
+    },
+    "focus": {
+      "mean_first_turn": 7.4947,
+      "mean_last_turn": 7.9291,
+      "drift_magnitude": 0.4344,
+      "spearman_rho_vs_turn": 0.3951,
+      "spearman_p_vs_turn": 2.150526481512235e-16
+    },
+    "impulsivity": {
+      "mean_first_turn": 4.0467,
+      "mean_last_turn": 3.8459,
+      "drift_magnitude": -0.2008,
+      "spearman_rho_vs_turn": -0.164,
+      "spearman_p_vs_turn": 0.0009973034658057789
+    }
+  },
+  "logit_vs_token_correlation": {
+    "wellbeing": {
+      "pearson_r": 0.3616,
+      "pearson_p": 8.415355213097923e-14,
+      "spearman_rho": 0.3396,
+      "spearman_p": 2.98303683921535e-12,
+      "n": 400
+    },
+    "interest": {
+      "pearson_r": 0.6088,
+      "pearson_p": 6.184388065934806e-42,
+      "spearman_rho": 0.5585,
+      "spearman_p": 3.5118949654839764e-34,
+      "n": 400
+    },
+    "focus": {
+      "pearson_r": 0.4562,
+      "pearson_p": 5.912612243056552e-22,
+      "spearman_rho": 0.3576,
+      "spearman_p": 1.6502180021290444e-13,
+      "n": 400
+    },
+    "impulsivity": {
+      "pearson_r": 0.2584,
+      "pearson_p": 1.59830359708165e-07,
+      "spearman_rho": 0.2457,
+      "spearman_p": 6.494514131269473e-07,
+      "n": 400
+    }
+  }
+}

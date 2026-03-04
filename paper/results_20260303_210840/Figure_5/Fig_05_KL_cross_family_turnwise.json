@@ -1,0 +1,6 @@
+{
+  "panel_id": "Fig_05_K_L",
+  "title": "Turn-wise Introspection — Gemma vs Qwen",
+  "description": "Isotonic R² (K) and Spearman ρ (L) per turn for Gemma 3 4B and Qwen 2.5 7B (sad_vs_happy). Qwen shows strong, significant introspection at every turn with R²ᵢₛₒ starting at ~0.9 and decreasing. Gemma shows minimal effect due to low probe and report quality.",
+  "cross_turnwise": {}
+}

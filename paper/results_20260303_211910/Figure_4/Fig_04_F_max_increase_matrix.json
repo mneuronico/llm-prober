@@ -1,0 +1,49 @@
+{
+  "panel_id": "Fig_04_F",
+  "title": "Maximum R² Increase vs. Baseline",
+  "description": "Maximum isotonic R² increase over baseline (α=0) for each cell. Red borders and ★ indicate statistically significant improvement (bootstrap p < 0.05). Two significant cells: focus→wellbeing and impulsivity→interest.",
+  "significant_cells": [
+    {
+      "steering": "focus",
+      "measured": "wellbeing",
+      "increase": 0.2987
+    },
+    {
+      "steering": "impulsivity",
+      "measured": "interest",
+      "increase": 0.0976
+    }
+  ],
+  "matrix": [
+    [
+      0.0145221590318587,
+      0.2987363406492552,
+      0.0125454610773505,
+      0.0
+    ],
+    [
+      0.0,
+      0.0341863661295448,
+      0.0246887240841329,
+      0.002118226474434
+    ],
+    [
+      0.0,
+      0.0199977273371774,
+      0.0027252842612013,
+      0.0029185901947342
+    ],
+    [
+      0.0,
+      0.0425696450611837,
+      0.0975587640744743,
+      0.0
+    ]
+  ],
+  "concept_order": [
+    "focus",
+    "wellbeing",
+    "interest",
+    "impulsivity"
+  ]
+}

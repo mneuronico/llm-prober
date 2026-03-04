@@ -1,0 +1,33 @@
+{
+  "panel_id": "Fig_02_A",
+  "title": "Greedy Self-Report Across Turns",
+  "description": "Greedy-decoded numerical self-reports (0–9) show minimal variance across conversation turns. Individual conversations shown in light, mean with 95% CI in bold. LLaMA-3.2-3B-Instruct, 40 conversations.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\wellbeing_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\interest_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\focus_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\impulsivity_no_steering_3b_alpha0_greedy_token_primary_20260303_172502"
+  },
+  "model": "LLaMA-3.2-3B-Instruct",
+  "n_conversations": 40,
+  "n_turns": 10,
+  "rating_type": "token (greedy)",
+  "per_concept_stats": {
+    "wellbeing": {
+      "mean_variance_across_turns": 0.7167,
+      "mean_rating": 6.117
+    },
+    "interest": {
+      "mean_variance_across_turns": 0.5754,
+      "mean_rating": 7.5
+    },
+    "focus": {
+      "mean_variance_across_turns": 0.0863,
+      "mean_rating": 7.952
+    },
+    "impulsivity": {
+      "mean_variance_across_turns": 0.01,
+      "mean_rating": 4.005
+    }
+  }
+}

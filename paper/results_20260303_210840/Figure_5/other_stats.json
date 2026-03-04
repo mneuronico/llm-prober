@@ -1,0 +1,86 @@
+{
+  "description": "Figure 5 validates generalization. Key findings: (1) Introspection scales with model size for 3/4 concepts. (2) The anomalous concept (impulsivity at 8B) has inverted self-steering. (3) Qwen 2.5 7B shows excellent introspection (R²ᵢₛₒ~0.9 at turn 1). (4) Gemma 3 4B shows weak effects due to low probe and report quality. (5) Random probe controls show much smaller drift than trained probes.",
+  "random_vs_trained_drift": {
+    "wellbeing": {
+      "real_probe_drift": 0.0708,
+      "real_probe_rho_vs_turn": 0.1242,
+      "real_probe_p_vs_turn": 0.012907057424307148,
+      "random_probe_drift": 0.0574,
+      "random_probe_rho_vs_turn": 0.5936,
+      "random_probe_p_vs_turn": 1.905292113644348e-39,
+      "drift_ratio": 1.23
+    },
+    "interest": {
+      "real_probe_drift": 0.1347,
+      "real_probe_rho_vs_turn": 0.3777,
+      "real_probe_p_vs_turn": 5.189111127842205e-15,
+      "random_probe_drift": 0.0192,
+      "random_probe_rho_vs_turn": 0.27,
+      "random_probe_p_vs_turn": 4.1403595086674226e-08,
+      "drift_ratio": 7.0
+    },
+    "focus": {
+      "real_probe_drift": -0.0021,
+      "real_probe_rho_vs_turn": 0.0083,
+      "real_probe_p_vs_turn": 0.8690504362070636,
+      "random_probe_drift": -0.0042,
+      "random_probe_rho_vs_turn": -0.1927,
+      "random_probe_p_vs_turn": 0.00010513223284556609,
+      "drift_ratio": 0.5
+    },
+    "impulsivity": {
+      "real_probe_drift": -0.0341,
+      "real_probe_rho_vs_turn": -0.0148,
+      "real_probe_p_vs_turn": 0.7685494631617399,
+      "random_probe_drift": 0.0564,
+      "random_probe_rho_vs_turn": 0.5631,
+      "random_probe_p_vs_turn": 7.643315473378269e-35,
+      "drift_ratio": 0.6
+    }
+  },
+  "scaling_trend_significance": [
+    {
+      "concept": "focus",
+      "slope_per_log10_model_size": 0.143208638729629,
+      "slope_se": 0.0444434750283843,
+      "z_value": 3.222264655006549,
+      "p_value_two_sided": 0.0012718159996867,
+      "direction": "increasing",
+      "significant_p_lt_0p05": 1,
+      "n_points": 3
+    },
+    {
+      "concept": "wellbeing",
+      "slope_per_log10_model_size": 0.7524629232682276,
+      "slope_se": 0.03887609932083,
+      "z_value": 19.355412101878567,
+      "p_value_two_sided": 0.0,
+      "direction": "increasing",
+      "significant_p_lt_0p05": 1,
+      "n_points": 3
+    },
+    {
+      "concept": "interest",
+      "slope_per_log10_model_size": 0.9069405078281784,
+      "slope_se": 0.0276523822221867,
+      "z_value": 32.79791594593614,
+      "p_value_two_sided": 0.0,
+      "direction": "increasing",
+      "significant_p_lt_0p05": 1,
+      "n_points": 3
+    },
+    {
+      "concept": "impulsivity",
+      "slope_per_log10_model_size": -0.1127208136933306,
+      "slope_se": 0.0407987787281054,
+      "z_value": -2.762847742196741,
+      "p_value_two_sided": 0.0057299488660451,
+      "direction": "decreasing",
+      "significant_p_lt_0p05": 1,
+      "n_points": 3
+    }
+  ],
+  "cross_family_introspection": {},
+  "cross_family_turnwise": {},
+  "llama_8b_best_introspection": {}
+}

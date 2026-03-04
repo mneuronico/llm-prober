@@ -1,0 +1,42 @@
+{
+  "panel_id": "Fig_02_E",
+  "title": "Logit-Based Self-Report Across Turns",
+  "description": "Logit-based continuous self-reports (probability-weighted mean of digit token logits). Shows drift aligned with probe score drift, confirming that models track internal state changes.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "rating_type": "logit-based (probability-weighted average)",
+  "per_concept_drift": {
+    "wellbeing": {
+      "mean_first_turn": 6.2386,
+      "mean_last_turn": 6.4167,
+      "drift_magnitude": 0.1781,
+      "spearman_rho_vs_turn": 0.1198,
+      "spearman_p_vs_turn": 0.01649082830537667
+    },
+    "interest": {
+      "mean_first_turn": 6.4083,
+      "mean_last_turn": 7.5885,
+      "drift_magnitude": 1.1801,
+      "spearman_rho_vs_turn": 0.4819,
+      "spearman_p_vs_turn": 1.1882723996563983e-24
+    },
+    "focus": {
+      "mean_first_turn": 7.4947,
+      "mean_last_turn": 7.9291,
+      "drift_magnitude": 0.4344,
+      "spearman_rho_vs_turn": 0.3951,
+      "spearman_p_vs_turn": 2.150526481512235e-16
+    },
+    "impulsivity": {
+      "mean_first_turn": 4.0467,
+      "mean_last_turn": 3.8459,
+      "drift_magnitude": -0.2008,
+      "spearman_rho_vs_turn": -0.164,
+      "spearman_p_vs_turn": 0.0009973034658057789
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "panel_id": "Fig_01_F",
+  "title": "Score Distribution — Focused / Distracted",
+  "description": "Distribution of probe scores for positive (focused) and negative (distracted) evaluation texts at best layer 10. Gaussian approximation from mean/std. n = 12 evaluation prompts per condition.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\outputs\\distracted_vs_focused\\20260122_095601\\log.jsonl",
+  "model": "LLaMA-3.2-3B-Instruct",
+  "concept": "distracted_vs_focused",
+  "best_layer": 10,
+  "pos_label": "focused",
+  "neg_label": "distracted",
+  "pos_mean": -0.0219,
+  "pos_std": 0.0396,
+  "neg_mean": -0.131,
+  "neg_std": 0.067,
+  "n_eval": 12
+}

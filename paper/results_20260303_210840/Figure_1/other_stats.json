@@ -1,0 +1,46 @@
+{
+  "description": "Figure 1 validates linear probe training for 4 concept pairs on LLaMA-3.2-3B-Instruct. Polarity note: sad_vs_happy and impulsive_vs_planning probes have inverted polarity (positive probe direction = sad/planning, not happy/impulsive). Signs are flipped for visualization and analysis.",
+  "model": "LLaMA-3.2-3B-Instruct (meta-llama/llama-3.2-3b-instruct)",
+  "concepts": {
+    "sad_vs_happy": {
+      "best_layer": 16,
+      "best_d": 3.3417,
+      "best_p": 7.212788309327034e-13,
+      "n_train": 20,
+      "n_eval": 5,
+      "num_layers": 28,
+      "pos_label": "sad",
+      "neg_label": "happy"
+    },
+    "bored_vs_interested": {
+      "best_layer": 14,
+      "best_d": 1.666,
+      "best_p": 9.448109267395921e-06,
+      "n_train": 24,
+      "n_eval": 12,
+      "num_layers": 28,
+      "pos_label": "interested",
+      "neg_label": "bored"
+    },
+    "distracted_vs_focused": {
+      "best_layer": 10,
+      "best_d": 1.985,
+      "best_p": 5.734721071348758e-07,
+      "n_train": 24,
+      "n_eval": 12,
+      "num_layers": 28,
+      "pos_label": "focused",
+      "neg_label": "distracted"
+    },
+    "impulsive_vs_planning": {
+      "best_layer": 13,
+      "best_d": 3.595,
+      "best_p": 3.5809937372170697e-13,
+      "n_train": 24,
+      "n_eval": 12,
+      "num_layers": 28,
+      "pos_label": "planning",
+      "neg_label": "impulsive"
+    }
+  }
+}

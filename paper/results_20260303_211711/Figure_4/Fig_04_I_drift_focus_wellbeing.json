@@ -1,0 +1,32 @@
+{
+  "panel_id": "Fig_04_I",
+  "title": "Probe Score Drift Under Steering — Focused / Distracted → Happy / Sad",
+  "description": "Mean probe score (sad_vs_happy) across turns for different steering alphas (steering with focus). Shows how steering affects both level and drift of internal state.",
+  "drift_by_alpha": {
+    "-4.0": {
+      "drift_magnitude": -0.0077,
+      "first_turn_mean": -0.5191,
+      "last_turn_mean": -0.5269
+    },
+    "-2.0": {
+      "drift_magnitude": -0.0047,
+      "first_turn_mean": -0.4091,
+      "last_turn_mean": -0.4138
+    },
+    "0.0": {
+      "drift_magnitude": 0.0287,
+      "first_turn_mean": -0.2052,
+      "last_turn_mean": -0.1765
+    },
+    "2.0": {
+      "drift_magnitude": 0.0723,
+      "first_turn_mean": -0.0326,
+      "last_turn_mean": 0.0398
+    },
+    "4.0": {
+      "drift_magnitude": 0.1264,
+      "first_turn_mean": 0.0198,
+      "last_turn_mean": 0.1462
+    }
+  }
+}

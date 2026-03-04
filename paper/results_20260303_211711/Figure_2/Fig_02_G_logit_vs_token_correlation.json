@@ -1,0 +1,35 @@
+{
+  "panel_id": "Fig_02_G",
+  "title": "Logit vs Token Self-Report Correlation",
+  "description": "Correlation between logit-based and token-based self-reports at alpha=0. Logit-based ratings are calibrated with token ratings but provide continuous, less noisy measurements.",
+  "correlation_stats": {
+    "wellbeing": {
+      "pearson_r": 0.3616,
+      "pearson_p": 8.415355213097923e-14,
+      "spearman_rho": 0.3396,
+      "spearman_p": 2.98303683921535e-12,
+      "n": 400
+    },
+    "interest": {
+      "pearson_r": 0.6088,
+      "pearson_p": 6.184388065934806e-42,
+      "spearman_rho": 0.5585,
+      "spearman_p": 3.5118949654839764e-34,
+      "n": 400
+    },
+    "focus": {
+      "pearson_r": 0.4562,
+      "pearson_p": 5.912612243056552e-22,
+      "spearman_rho": 0.3576,
+      "spearman_p": 1.6502180021290444e-13,
+      "n": 400
+    },
+    "impulsivity": {
+      "pearson_r": 0.2584,
+      "pearson_p": 1.59830359708165e-07,
+      "spearman_rho": 0.2457,
+      "spearman_p": 6.494514131269473e-07,
+      "n": 400
+    }
+  }
+}

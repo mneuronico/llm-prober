@@ -1,0 +1,6 @@
+{
+  "panel_id": "Fig_05_M",
+  "title": "High-Introspection Examples — LLaMA 8B",
+  "description": "Scatter plots for the two concepts with highest R²ᵢₛₒ at LLaMA 8B (wellbeing and interest, both ≈0.9). Demonstrates that introspection can be excellent in larger models.",
+  "statistics": {}
+}

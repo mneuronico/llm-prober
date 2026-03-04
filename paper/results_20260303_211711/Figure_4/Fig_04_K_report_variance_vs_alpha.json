@@ -1,0 +1,25 @@
+{
+  "panel_id": "Fig_04_K",
+  "title": "Self-Report Variance vs. Steering Alpha",
+  "description": "Variance of logit-based self-reports as a function of steering alpha. Higher variance = more informative reports. In both conditions, the direction that improves R² also increases variance.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "variance_values": [
+        0.0332,
+        0.0767,
+        0.1644,
+        0.2319,
+        0.2045
+      ]
+    },
+    "('impulsivity', 'interest')": {
+      "variance_values": [
+        0.3819,
+        0.3871,
+        0.3775,
+        0.3267,
+        0.2446
+      ]
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "description": "Figure 4 presents the 4×4 steering matrix, identifying two conditions where steering significantly improves introspection: (1) focus→wellbeing (ΔR²=0.299, p=0.001); (2) impulsivity→interest (ΔR²=0.098, p=0.012). Decomposition analysis shows that in condition 1, both internal state formation and report quality improve; in condition 2, only report quality improves.",
+  "significant_conditions": [
+    {
+      "steering": "focus (distracted_vs_focused)",
+      "measured": "wellbeing (sad_vs_happy)",
+      "baseline_r2": 0.4522,
+      "best_r2": 0.753,
+      "increase": 0.299,
+      "p_value": 0.001,
+      "best_alpha": 4.0
+    },
+    {
+      "steering": "impulsivity (impulsive_vs_planning)",
+      "measured": "interest (bored_vs_interested)",
+      "baseline_r2": 0.5522,
+      "best_r2": 0.6873,
+      "increase": 0.098,
+      "p_value": 0.012,
+      "best_alpha": -4.0
+    }
+  ],
+  "drift_decomposition": {
+    "focus→wellbeing": {
+      "-4.0": {
+        "drift_magnitude": -0.0077,
+        "first_turn_mean": -0.5191,
+        "last_turn_mean": -0.5269
+      },
+      "-2.0": {
+        "drift_magnitude": -0.0047,
+        "first_turn_mean": -0.4091,
+        "last_turn_mean": -0.4138
+      },
+      "0.0": {
+        "drift_magnitude": 0.0287,
+        "first_turn_mean": -0.2052,
+        "last_turn_mean": -0.1765
+      },
+      "2.0": {
+        "drift_magnitude": 0.0723,
+        "first_turn_mean": -0.0326,
+        "last_turn_mean": 0.0398
+      },
+      "4.0": {
+        "drift_magnitude": 0.1264,
+        "first_turn_mean": 0.0198,
+        "last_turn_mean": 0.1462
+      }
+    },
+    "impulsivity→interest": {
+      "-4.0": {
+        "drift_magnitude": 0.0992,
+        "first_turn_mean": -1.0633,
+        "last_turn_mean": -0.9642
+      },
+      "-2.0": {
+        "drift_magnitude": 0.0959,
+        "first_turn_mean": -0.6732,
+        "last_turn_mean": -0.5773
+      },
+      "0.0": {
+        "drift_magnitude": 0.0858,
+        "first_turn_mean": -0.3054,
+        "last_turn_mean": -0.2196
+      },
+      "2.0": {
+        "drift_magnitude": 0.0739,
+        "first_turn_mean": 0.0493,
+        "last_turn_mean": 0.1232
+      },
+      "4.0": {
+        "drift_magnitude": 0.0608,
+        "first_turn_mean": 0.3934,
+        "last_turn_mean": 0.4542
+      }
+    }
+  }
+}

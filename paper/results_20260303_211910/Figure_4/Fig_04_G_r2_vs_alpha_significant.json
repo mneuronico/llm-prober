@@ -1,0 +1,39 @@
+{
+  "panel_id": "Fig_04_G",
+  "title": "Isotonic R² vs. Steering Alpha (Significant Conditions)",
+  "description": "Isotonic R² as a function of steering alpha for the two significant conditions (focus→wellbeing and impulsivity→interest). Shows monotonic improvement with steering.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "r2_values": [
+        0.3403,
+        0.3733,
+        0.4522,
+        0.6393,
+        0.753
+      ],
+      "alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ]
+    },
+    "('impulsivity', 'interest')": {
+      "r2_values": [
+        0.6873,
+        0.6141,
+        0.5522,
+        0.5037,
+        0.4562
+      ],
+      "alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ]
+    }
+  }
+}

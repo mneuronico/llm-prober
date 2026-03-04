@@ -1,0 +1,6 @@
+{
+  "panel_id": "Fig_05_E",
+  "title": "Probe Score Drift Across Model Sizes — Happy / Sad",
+  "description": "Mean probe score (sad_vs_happy, flipped) across turns for LLaMA 1B/3B/8B at alpha=0. Drift is visible in all sizes but cleaner in larger models.",
+  "concept": "sad_vs_happy"
+}

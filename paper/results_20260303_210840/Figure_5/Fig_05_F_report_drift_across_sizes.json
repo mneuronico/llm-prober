@@ -1,0 +1,6 @@
+{
+  "panel_id": "Fig_05_F",
+  "title": "Self-Report Drift Across Model Sizes — Happy / Sad",
+  "description": "Mean logit-based self-report across turns for LLaMA 1B/3B/8B. Drift effect generalizes across model sizes.",
+  "concept": "sad_vs_happy"
+}

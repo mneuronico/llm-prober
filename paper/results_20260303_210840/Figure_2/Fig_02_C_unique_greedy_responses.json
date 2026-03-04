@@ -1,0 +1,11 @@
+{
+  "panel_id": "Fig_02_C",
+  "title": "Unique Greedy Responses per Turn",
+  "description": "Number of unique discrete ratings (out of 10 possible: 0–9) given by the model across 40 conversations at each turn. Low counts indicate high response stereotypy.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\wellbeing_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\interest_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\focus_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\impulsivity_no_steering_3b_alpha0_greedy_token_primary_20260303_172502"
+  }
+}
