@@ -1,0 +1,43 @@
+{
+  "panel_id": "Fig_04_H",
+  "title": "Spearman ρ vs. Steering Alpha (Display-Corrected)",
+  "description": "Spearman ρ vs display-corrected steering alpha for the two significant conditions. Enhanced with Spearman test of rho-change vs alpha.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "rho_values": [
+        0.4241,
+        0.5461,
+        0.67,
+        0.7817,
+        0.8456
+      ],
+      "spearman_rho_change_vs_alpha": 1.0,
+      "spearman_p": 1.4042654220543672e-24
+    },
+    "('impulsivity', 'interest')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "rho_values": [
+        0.7031,
+        0.7377,
+        0.7565,
+        0.785,
+        0.8263
+      ],
+      "spearman_rho_change_vs_alpha": 1.0,
+      "spearman_p": 1.4042654220543672e-24
+    }
+  }
+}

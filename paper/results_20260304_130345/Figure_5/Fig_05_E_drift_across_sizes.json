@@ -1,0 +1,21 @@
+{
+  "panel_id": "Fig_05_E",
+  "title": "Probe Drift Across Sizes — Happy / Sad",
+  "drift_stats": {
+    "1B": {
+      "drift_magnitude": 0.0403,
+      "spearman_rho_vs_turn": 0.2599,
+      "spearman_p": 1.3478973678052916e-07
+    },
+    "3B": {
+      "drift_magnitude": 0.0708,
+      "spearman_rho_vs_turn": 0.1242,
+      "spearman_p": 0.012907057424307148
+    },
+    "8B": {
+      "drift_magnitude": 0.1269,
+      "spearman_rho_vs_turn": 0.4104,
+      "spearman_p": 1.0976583084533424e-17
+    }
+  }
+}

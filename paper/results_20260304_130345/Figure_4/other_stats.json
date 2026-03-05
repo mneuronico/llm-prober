@@ -1,0 +1,111 @@
+{
+  "description": "Figure 4 presents the 4×4 steering matrix. Two conditions show significant R² improvement: focus→wellbeing and impulsivity→interest. Alpha is display-corrected (negated for impulsive_vs_planning steering) so positive α consistently means \"more of the concept.\" Drift statistics include per-alpha Spearman rho of turn vs probe score.",
+  "significant_conditions": [
+    {
+      "steering": "focus",
+      "measured": "wellbeing",
+      "baseline_r2": 0.4522,
+      "best_r2": 0.753,
+      "best_alpha_raw": 4.0,
+      "best_alpha_display": 4.0,
+      "alpha_flipped": false,
+      "probe_meas_flipped": true
+    },
+    {
+      "steering": "impulsivity",
+      "measured": "interest",
+      "baseline_r2": 0.5522,
+      "best_r2": 0.6873,
+      "best_alpha_raw": -4.0,
+      "best_alpha_display": 4.0,
+      "alpha_flipped": true,
+      "probe_meas_flipped": false
+    }
+  ],
+  "drift_decomposition": {
+    "focus→wellbeing": {
+      "-4.0": {
+        "display_alpha": -4.0,
+        "drift_magnitude": -0.0077,
+        "first_turn_mean": -0.5191,
+        "last_turn_mean": -0.5269,
+        "drift_spearman_rho": -0.1144,
+        "drift_spearman_p": 0.022097550117395472
+      },
+      "-2.0": {
+        "display_alpha": -2.0,
+        "drift_magnitude": -0.0047,
+        "first_turn_mean": -0.4091,
+        "last_turn_mean": -0.4138,
+        "drift_spearman_rho": -0.0635,
+        "drift_spearman_p": 0.20532665880125175
+      },
+      "0.0": {
+        "display_alpha": 0.0,
+        "drift_magnitude": 0.0287,
+        "first_turn_mean": -0.2052,
+        "last_turn_mean": -0.1765,
+        "drift_spearman_rho": 0.0342,
+        "drift_spearman_p": 0.4951187836881543
+      },
+      "2.0": {
+        "display_alpha": 2.0,
+        "drift_magnitude": 0.0723,
+        "first_turn_mean": -0.0326,
+        "last_turn_mean": 0.0398,
+        "drift_spearman_rho": 0.1137,
+        "drift_spearman_p": 0.022895166071485184
+      },
+      "4.0": {
+        "display_alpha": 4.0,
+        "drift_magnitude": 0.1264,
+        "first_turn_mean": 0.0198,
+        "last_turn_mean": 0.1462,
+        "drift_spearman_rho": 0.2128,
+        "drift_spearman_p": 1.774961468956268e-05
+      }
+    },
+    "impulsivity→interest": {
+      "-4.0": {
+        "display_alpha": 4.0,
+        "drift_magnitude": 0.0992,
+        "first_turn_mean": -1.0633,
+        "last_turn_mean": -0.9642,
+        "drift_spearman_rho": 0.2135,
+        "drift_spearman_p": 1.662776441346691e-05
+      },
+      "-2.0": {
+        "display_alpha": 2.0,
+        "drift_magnitude": 0.0959,
+        "first_turn_mean": -0.6732,
+        "last_turn_mean": -0.5773,
+        "drift_spearman_rho": 0.2222,
+        "drift_spearman_p": 7.25543354008263e-06
+      },
+      "0.0": {
+        "display_alpha": -0.0,
+        "drift_magnitude": 0.0858,
+        "first_turn_mean": -0.3054,
+        "last_turn_mean": -0.2196,
+        "drift_spearman_rho": 0.2122,
+        "drift_spearman_p": 1.8719367145569804e-05
+      },
+      "2.0": {
+        "display_alpha": -2.0,
+        "drift_magnitude": 0.0739,
+        "first_turn_mean": 0.0493,
+        "last_turn_mean": 0.1232,
+        "drift_spearman_rho": 0.1933,
+        "drift_spearman_p": 9.965914882139286e-05
+      },
+      "4.0": {
+        "display_alpha": -4.0,
+        "drift_magnitude": 0.0608,
+        "first_turn_mean": 0.3934,
+        "last_turn_mean": 0.4542,
+        "drift_spearman_rho": 0.1658,
+        "drift_spearman_p": 0.0008738963755956335
+      }
+    }
+  }
+}

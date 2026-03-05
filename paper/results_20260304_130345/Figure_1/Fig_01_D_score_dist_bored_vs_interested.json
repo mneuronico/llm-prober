@@ -1,0 +1,13 @@
+{
+  "panel_id": "Fig_01_D",
+  "title": "Score Distribution - Interested / Bored",
+  "description": "Boxplot of per-token probe scores for positive (interested) and negative (bored) evaluation texts at best layer 14. n = 12 evaluation prompts per condition.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\outputs\\bored_vs_interested\\20260122_112208\\scores/",
+  "model": "LLaMA-3.2-3B-Instruct",
+  "concept": "bored_vs_interested",
+  "best_layer": 14,
+  "pos_label": "interested",
+  "neg_label": "bored",
+  "n_eval_prompts": 12,
+  "statistics": {}
+}

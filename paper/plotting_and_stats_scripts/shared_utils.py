@@ -225,6 +225,9 @@ SHORTHANDS_ORDERED = ['wellbeing', 'interest', 'focus', 'impulsivity']
 # Probe metric used for introspection analysis
 PROBE_METRIC_KEY = 'prompt_assistant_last_mean'
 
+# Layer range fraction used for best-layer search shading (lo, hi)
+LAYER_RANGE_FRAC = (0.20, 0.80)
+
 
 # ──────────────────── COLORS ────────────────────
 CONCEPT_COLORS = {
@@ -385,6 +388,90 @@ def load_model_size_steering_csv():
     return pd.read_csv(path)
 
 
+def load_individual_eval_scores(probe_dir, best_layer=None):
+    """
+    Load individual per-token probe scores from npz files in the scores/ directory.
+    Returns dict with keys 'pos_scores' and 'neg_scores', each a list of arrays
+    (one array of generation-token scores per evaluation prompt).
+    If best_layer is None, reads it from metrics.json.
+    """
+    if best_layer is None:
+        metrics = load_metrics(probe_dir)
+        best_layer = metrics['best_layer']
+
+    scores_dir = os.path.join(probe_dir, 'scores')
+    if not os.path.isdir(scores_dir):
+        return None
+
+    # Read the config to get alpha values and determine pos/neg
+    log_path = os.path.join(probe_dir, 'log.jsonl')
+    score_prompts = []
+    with open(log_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            try:
+                entry = json.loads(line.strip())
+                if entry.get('event') == 'score_prompt':
+                    score_prompts.append(entry)
+            except json.JSONDecodeError:
+                continue
+
+    # Group by alpha: alpha > 0 → "positive" condition; alpha == 0 / baseline
+    # Actually the structure is: score_prompt events with alpha and npz_path
+    # We want the alpha=0 evaluation scores, split by system prompt direction
+    concept_info = load_concept(probe_dir)
+    pos_system = concept_info.get('pos_system', '')
+    neg_system = concept_info.get('neg_system', '')
+
+    pos_scores = []
+    neg_scores = []
+    for sp in score_prompts:
+        npz_path = sp.get('npz_path')
+        if not npz_path:
+            continue
+        full_npz = os.path.join(REPO_ROOT, npz_path) if not os.path.isabs(npz_path) else npz_path
+        if not os.path.exists(full_npz):
+            continue
+        try:
+            npz = np.load(full_npz, allow_pickle=True)
+            prompt_len = int(npz['prompt_len'][0])
+            all_scores = npz['scores_agg']
+            gen_scores = all_scores[prompt_len:]  # generation tokens only
+            alpha = sp.get('alpha', 0.0)
+            system = sp.get('system_prompt', '')
+
+            if system == pos_system and np.isclose(alpha, 0.0):
+                pos_scores.append(gen_scores)
+            elif system == neg_system and np.isclose(alpha, 0.0):
+                neg_scores.append(gen_scores)
+        except Exception:
+            continue
+
+    # If pos_system == neg_system (neutral system), split by alpha sign
+    if pos_system == neg_system:
+        pos_scores = []
+        neg_scores = []
+        for sp in score_prompts:
+            npz_path = sp.get('npz_path')
+            if not npz_path:
+                continue
+            full_npz = os.path.join(REPO_ROOT, npz_path) if not os.path.isabs(npz_path) else npz_path
+            if not os.path.exists(full_npz):
+                continue
+            try:
+                npz = np.load(full_npz, allow_pickle=True)
+                prompt_len = int(npz['prompt_len'][0])
+                gen_scores = npz['scores_agg'][prompt_len:]
+                alpha = sp.get('alpha', 0.0)
+                if alpha > 0:
+                    pos_scores.append(gen_scores)
+                elif alpha < 0:
+                    neg_scores.append(gen_scores)
+            except Exception:
+                continue
+
+    return {'pos_scores': pos_scores, 'neg_scores': neg_scores}
+
+
 # ──────────────────── DATA EXTRACTION ────────────────────
 def flip_if_needed(concept_name, values):
     """Flip probe scores by -1 for concepts where polarity is reversed."""
@@ -392,6 +479,23 @@ def flip_if_needed(concept_name, values):
     if concept_name in FLIP_CONCEPTS:
         return -values
     return values
+
+
+def flip_alpha_if_needed(concept_or_shorthand, alpha_values):
+    """Negate alpha values for display when concept has FLIP polarity.
+    For FLIP concepts, positive alpha steers toward the NEGATIVE pole,
+    so we negate alpha for intuitive display."""
+    alpha_values = np.asarray(alpha_values, dtype=float)
+    if concept_or_shorthand in FLIP_CONCEPTS or concept_or_shorthand in FLIP_SHORTHANDS:
+        return -alpha_values
+    return alpha_values
+
+
+def flip_alpha_scalar(concept_or_shorthand, alpha):
+    """Negate a single alpha value for display if concept has FLIP polarity."""
+    if concept_or_shorthand in FLIP_CONCEPTS or concept_or_shorthand in FLIP_SHORTHANDS:
+        return -alpha
+    return alpha
 
 
 def flip_if_needed_shorthand(shorthand, values):
@@ -427,7 +531,7 @@ def results_to_dataframe(results, probe_name=None, metric_key=PROBE_METRIC_KEY):
         row = {
             'conversation_index': r['conversation_index'],
             'turn_index': r['turn_index'],
-            'turn': r['turn_index'] + 1,  # 1-indexed
+            'turn': r['turn_index'],  # already 1-indexed in data
             'alpha': r['alpha'],
             'token_rating': r.get('token_rating'),
             'logit_rating': r.get('logit_rating'),

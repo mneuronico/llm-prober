@@ -2,8 +2,18 @@
 Figure 5: Cross-Model Generalization
 ======================================
 Validates findings across model sizes (LLaMA 1B/3B/8B) and families
-(Gemma 3 4B, Qwen 2.5 7B). Shows scaling laws for introspection,
-probe quality variation, and cross-family transferability.
+(Gemma 3 4B, Qwen 2.5 7B).
+
+v2 changes:
+ - B: recompute R² from raw experiment dirs (not CSV)
+ - Bii: add Rho vs model size plot
+ - C: REPLACED — logit self-report vs alpha curves + Rho heatmap
+ - D: improved selection criteria
+ - E/F: drift bar subpanels (Eii, Fii)
+ - G: normalize layer axis (0-1), add layer-range shading, allow negative d
+ - H: turns already fixed
+ - K/L: flip Rho for sad_vs_happy
+ - M: LLaMA 8B scatter kept (high-introspection examples)
 """
 
 import os
@@ -21,12 +31,12 @@ from shared_utils import (
     GEMMA_4B_SELF, QWEN_7B_SELF,
     MODEL_SIZE_CSV_DIR, CROSS_FAMILY_CSV_DIR,
     MODEL_FAMILY_COLORS, MODEL_SIZE_COLORS,
-    PROBE_METRIC_KEY, FLIP_CONCEPTS,
+    PROBE_METRIC_KEY, FLIP_CONCEPTS, FLIP_SHORTHANDS,
+    LAYER_RANGE_FRAC,
     load_results, load_summary, load_turnwise, load_metrics,
     load_sweep_data,
-    load_model_size_r2_csv, load_model_size_trend_csv,
-    load_model_size_steering_csv,
     results_to_dataframe, flip_if_needed,
+    flip_alpha_if_needed, flip_alpha_scalar,
     get_turnwise_stats, isotonic_r2, bootstrap_stat, spearman_rho,
     savefig, save_panel_json, save_other_stats, ensure_dir,
     add_panel_label, plot_line_with_ci, format_p,
@@ -43,6 +53,38 @@ LLAMA_MODELS = {
 }
 
 
+def _compute_r2_from_raw(model_key, exp_dirs, concept_short, alpha=0.0):
+    """Compute isotonic R² and Spearman rho from raw experiment directory."""
+    concept = SHORTHAND_TO_CONCEPT[concept_short]
+    exp_dir = exp_dirs.get(concept_short)
+    if exp_dir is None or not os.path.isdir(exp_dir):
+        return None
+    try:
+        results = load_results(exp_dir)
+        df = results_to_dataframe(results, probe_name=concept)
+        sub = df[np.isclose(df['alpha'], alpha)].dropna(
+            subset=['probe_score', 'logit_rating'])
+        probe_vals = flip_if_needed(concept, sub['probe_score'].values)
+        ratings = sub['logit_rating'].values
+        if len(probe_vals) < 5:
+            return None
+        r2_pt, r2_lo, r2_hi = bootstrap_stat(probe_vals, ratings, isotonic_r2)
+        rho_pt, rho_lo, rho_hi = bootstrap_stat(probe_vals, ratings, spearman_rho)
+        rho_val, rho_p = stats.spearmanr(probe_vals, ratings)
+        return {
+            'isotonic_r2': float(r2_pt),
+            'r2_ci_low': float(r2_lo),
+            'r2_ci_high': float(r2_hi),
+            'spearman_rho': float(rho_val),
+            'spearman_p': float(rho_p),
+            'rho_ci_low': float(rho_lo),
+            'rho_ci_high': float(rho_hi),
+            'n': len(probe_vals),
+        }
+    except Exception:
+        return None
+
+
 def generate_figure_5(results_dir):
     """Generate all Figure 5 panels."""
     fig_dir = ensure_dir(os.path.join(results_dir, 'Figure_5'))
@@ -51,7 +93,7 @@ def generate_figure_5(results_dir):
     other_stats = {}
 
     # ──────────────────────────────────────────────────────────────
-    # Panel A: Probe quality heatmap (Max Cohen's d) — models × concepts
+    # Panel A: Probe quality heatmap (Max Cohen's d)
     # ──────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
     d_matrix = np.zeros((len(LLAMA_SIZES), len(SHORTHANDS)))
@@ -77,7 +119,6 @@ def generate_figure_5(results_dir):
             text_color = 'white' if v > 2.5 else 'black'
             ax.text(ci_idx, si, f'{v:.2f}', ha='center', va='center',
                     fontsize=9, color=text_color)
-
     ax.set_xticks(range(len(SHORTHANDS)))
     ax.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS],
                        fontsize=8, rotation=25, ha='right')
@@ -91,38 +132,43 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_A',
-        'title': "Probe Quality — Max Cohen's d by Model Size and Concept",
-        'description': ("Heatmap of best Cohen's d for each probe across LLaMA model "
-                        "sizes. Shows that probe quality varies across concepts and "
-                        "models, and identical training procedures do not guarantee "
-                        "equal-quality probes."),
+        'title': "Probe Quality — Max Cohen's d",
         'd_values': d_values,
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel B: R² isotonic vs model size (4 concept curves)
+    # Panel B: R² isotonic vs model size (recomputed from raw dirs)
     # ──────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
-    try:
-        r2_csv = load_model_size_r2_csv()
+    raw_r2_data = {}  # {size: {short: stats_dict}}
+    for size in LLAMA_SIZES:
+        model_key, exp_dirs = LLAMA_MODELS[size]
+        raw_r2_data[size] = {}
         for short in SHORTHANDS:
-            concept = SHORTHAND_TO_CONCEPT[short]
-            color = CONCEPT_COLORS[concept]
-            sub = r2_csv[r2_csv['concept'] == short].copy()
-            if sub.empty:
-                continue
-            # Map model names to sizes
-            size_map = {'1B': 1.0, '3B': 3.0, '8B': 8.0}
-            sub = sub.copy()
-            sub['size'] = sub['model'].map(size_map)
-            sub = sub.sort_values('size')
-            ax.errorbar(sub['size'], sub['isotonic_r2_alpha0'],
-                        yerr=[sub['isotonic_r2_alpha0'] - sub['ci_low'],
-                              sub['ci_high'] - sub['isotonic_r2_alpha0']],
+            result = _compute_r2_from_raw(model_key, exp_dirs, short)
+            if result is not None:
+                raw_r2_data[size][short] = result
+
+    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    b_stats = {}
+    for short in SHORTHANDS:
+        concept = SHORTHAND_TO_CONCEPT[short]
+        color = CONCEPT_COLORS[concept]
+        sizes_x, r2_y, r2_lo, r2_hi = [], [], [], []
+        for size in LLAMA_SIZES:
+            if short in raw_r2_data[size]:
+                d = raw_r2_data[size][short]
+                sizes_x.append(LLAMA_SIZE_VALS[size])
+                r2_y.append(d['isotonic_r2'])
+                r2_lo.append(d['r2_ci_low'])
+                r2_hi.append(d['r2_ci_high'])
+        if sizes_x:
+            ax.errorbar(sizes_x, r2_y,
+                        yerr=[np.array(r2_y) - np.array(r2_lo),
+                              np.array(r2_hi) - np.array(r2_y)],
                         fmt='o-', color=color, label=SHORTHAND_DISPLAY[short],
                         capsize=4, linewidth=1.5, markersize=7)
-    except Exception as e:
-        print(f"    Warning: Could not load model size R2 CSV: {e}")
+            b_stats[short] = {s: raw_r2_data[s].get(short, {}).get('isotonic_r2')
+                              for s in LLAMA_SIZES}
 
     ax.set_xlabel('Model Size (B parameters)')
     ax.set_ylabel('Isotonic R²')
@@ -138,123 +184,192 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_B',
-        'title': 'Isotonic R² vs. Model Size',
-        'description': ('Isotonic R² at alpha=0 for each concept across LLaMA 1B/3B/8B. '
-                        'Three of four concepts show monotonically increasing introspection '
-                        'with model size. impulsivity shows an anomalous decrease at 8B '
-                        'due to poor probe quality at that scale.'),
-        'data_source': os.path.join(MODEL_SIZE_CSV_DIR,
-                                    'isotonic_r2_alpha0_vs_model_size_self_steering.csv'),
+        'title': 'Isotonic R² vs. Model Size (Recomputed from Raw Data)',
+        'description': ('Isotonic R² at alpha=0 for each concept across LLaMA 1B/3B/8B, '
+                        'recomputed from raw experiment directories (not pre-computed CSV).'),
+        'per_concept': b_stats,
+        'data_sources': {size: {s: str(LLAMA_MODELS[size][1].get(s, ''))
+                                for s in SHORTHANDS} for size in LLAMA_SIZES},
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel C: Self-steering validation heatmap (R² × sign of slope)
+    # Panel Bii: Spearman Rho vs model size
     # ──────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-    steer_matrix = np.zeros((len(LLAMA_SIZES), len(SHORTHANDS)))
-    steer_details = {}
+    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    bii_stats = {}
+    for short in SHORTHANDS:
+        concept = SHORTHAND_TO_CONCEPT[short]
+        color = CONCEPT_COLORS[concept]
+        sizes_x, rho_y, rho_lo, rho_hi = [], [], [], []
+        for size in LLAMA_SIZES:
+            if short in raw_r2_data[size]:
+                d = raw_r2_data[size][short]
+                # Flip rho for FLIP concepts
+                flip = -1 if concept in FLIP_CONCEPTS else 1
+                sizes_x.append(LLAMA_SIZE_VALS[size])
+                rho_y.append(d['spearman_rho'] * flip)
+                rho_lo.append(d['rho_ci_low'] * flip if flip > 0 else d['rho_ci_high'] * flip)
+                rho_hi.append(d['rho_ci_high'] * flip if flip > 0 else d['rho_ci_low'] * flip)
+        if sizes_x:
+            sort_idx = np.argsort(rho_lo)  # just for proper errorbars
+            ax.errorbar(sizes_x, rho_y,
+                        yerr=[np.array(rho_y) - np.array(rho_lo),
+                              np.array(rho_hi) - np.array(rho_y)],
+                        fmt='o-', color=color, label=SHORTHAND_DISPLAY[short],
+                        capsize=4, linewidth=1.5, markersize=7)
+            bii_stats[short] = {s: round(raw_r2_data[s].get(short, {}).get('spearman_rho', 0) * flip, 4)
+                                for s in LLAMA_SIZES}
+
+    ax.set_xlabel('Model Size (B parameters)')
+    ax.set_ylabel('Spearman ρ (polarity-corrected)')
+    ax.set_title('Introspection Correlation vs. Model Size')
+    ax.set_xscale('log')
+    ax.set_xticks([1, 3, 8])
+    ax.set_xticklabels(['1B', '3B', '8B'])
+    ax.set_ylim(-0.3, 1)
+    ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
+    ax.legend(fontsize=7, loc='upper left')
+    add_panel_label(ax, 'Bii')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_05_Bii_rho_vs_model_size')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_05_Bii',
+        'title': 'Spearman ρ vs. Model Size',
+        'description': ('Spearman ρ at alpha=0 (polarity-corrected for FLIP concepts). '
+                        'Rho flipped for sad_vs_happy & impulsive_vs_planning.'),
+        'per_concept': bii_stats,
+    })
+
+    # ──────────────────────────────────────────────────────────────
+    # Panel C: NEW — self-report vs alpha curves + Rho heatmap
+    #   Left: 3 sub-axes (one per model size), 4 concept curves each
+    #   Right: Heatmap of Spearman rho(alpha, logit_rating)
+    # ──────────────────────────────────────────────────────────────
+    fig = plt.figure(figsize=(16, 5))
+    gs = fig.add_gridspec(1, 4, width_ratios=[1, 1, 1, 1.2])
+    c_axes = [fig.add_subplot(gs[0, i]) for i in range(3)]
+    ax_heat = fig.add_subplot(gs[0, 3])
+
+    rho_matrix = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)
+    rho_p_matrix = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)
+    c_stats = {}
 
     for si, size in enumerate(LLAMA_SIZES):
         model_key, exp_dirs = LLAMA_MODELS[size]
-        steer_details[size] = {}
-        for ci_idx, short in enumerate(SHORTHANDS):
+        ax = c_axes[si]
+        c_stats[size] = {}
+
+        for short in SHORTHANDS:
             concept = SHORTHAND_TO_CONCEPT[short]
+            color = CONCEPT_COLORS[concept]
             exp_dir = exp_dirs.get(short)
             if exp_dir is None or not os.path.isdir(exp_dir):
-                steer_matrix[si, ci_idx] = np.nan
                 continue
-
             try:
                 results = load_results(exp_dir)
                 df = results_to_dataframe(results, probe_name=concept)
-
-                # Compute mean rating per alpha
                 alphas_found = sorted(df['alpha'].unique())
-                mean_ratings = []
+                display_alphas = flip_alpha_if_needed(short, np.array(alphas_found))
+
+                means, ci_lo, ci_hi = [], [], []
                 for a in alphas_found:
-                    sub = df[np.isclose(df['alpha'], a)]['logit_rating'].dropna()
-                    mean_ratings.append(sub.mean())
+                    vals = df[np.isclose(df['alpha'], a)]['logit_rating'].dropna().values
+                    m = np.mean(vals)
+                    rng = np.random.RandomState(42)
+                    boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
+                    means.append(m)
+                    ci_lo.append(np.percentile(boots, 2.5))
+                    ci_hi.append(np.percentile(boots, 97.5))
 
-                if len(alphas_found) >= 2:
-                    slope, _, r, p, _ = stats.linregress(alphas_found, mean_ratings)
-                    # Get R2 iso at alpha=0
-                    sub0 = df[np.isclose(df['alpha'], 0.0)].dropna(
-                        subset=['probe_score', 'logit_rating'])
-                    probe_vals = flip_if_needed(concept, sub0['probe_score'].values)
-                    r2_val = isotonic_r2(probe_vals, sub0['logit_rating'].values)
-                    signed_r2 = r2_val * np.sign(slope)
-                    steer_matrix[si, ci_idx] = signed_r2
-                    steer_details[size][short] = {
-                        'r2_iso': round(float(r2_val), 4),
-                        'slope_sign': int(np.sign(slope)),
-                        'signed_r2': round(float(signed_r2), 4),
-                        'steering_slope': round(float(slope), 4),
-                        'steering_p': float(p),
-                    }
-                else:
-                    steer_matrix[si, ci_idx] = np.nan
+                sort_idx = np.argsort(display_alphas)
+                da_s = [display_alphas[k] for k in sort_idx]
+                means_s = [means[k] for k in sort_idx]
+                ci_lo_s = [ci_lo[k] for k in sort_idx]
+                ci_hi_s = [ci_hi[k] for k in sort_idx]
+
+                plot_line_with_ci(ax, da_s, means_s, ci_lo_s, ci_hi_s,
+                                  color=color, label=SHORTHAND_DISPLAY[short],
+                                  alpha_fill=0.15)
+
+                # Compute rho(display_alpha, rating)
+                da_all = flip_alpha_if_needed(short, df['alpha'].values)
+                lr_all = df['logit_rating'].dropna().values
+                n_min = min(len(da_all), len(lr_all))
+                rho_c, p_c = stats.spearmanr(da_all[:n_min], lr_all[:n_min])
+                rho_matrix[si, SHORTHANDS.index(short)] = rho_c
+                rho_p_matrix[si, SHORTHANDS.index(short)] = p_c
+                c_stats[size][short] = {
+                    'display_alphas': [float(a) for a in da_s],
+                    'mean_ratings': [round(m, 4) for m in means_s],
+                    'spearman_rho_alpha_rating': round(float(rho_c), 4),
+                    'spearman_p': float(p_c),
+                }
             except Exception as e:
-                steer_matrix[si, ci_idx] = np.nan
-                print(f"    Warning: Error processing {size}/{short}: {e}")
+                print(f"    Warning: Panel C error {size}/{short}: {e}")
 
-    vmax = max(0.5, np.nanmax(np.abs(steer_matrix)))
-    im = ax.imshow(steer_matrix, cmap='RdYlGn', vmin=-vmax, vmax=vmax, aspect='auto')
+        ax.set_xlabel('Steering α (display-corrected)')
+        ax.set_ylabel('Logit Self-Report')
+        ax.set_title(f'LLaMA {size}')
+        ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
+        if si == 0:
+            ax.legend(fontsize=6, loc='upper left')
+
+    # Rho heatmap
+    im = ax_heat.imshow(rho_matrix, cmap='RdYlGn', vmin=-1, vmax=1, aspect='auto')
     for si in range(len(LLAMA_SIZES)):
         for ci_idx in range(len(SHORTHANDS)):
-            v = steer_matrix[si, ci_idx]
+            v = rho_matrix[si, ci_idx]
+            p_v = rho_p_matrix[si, ci_idx]
             if np.isnan(v):
-                ax.text(ci_idx, si, '—', ha='center', va='center', fontsize=9)
+                ax_heat.text(ci_idx, si, '—', ha='center', va='center', fontsize=9)
             else:
-                text_color = 'white' if abs(v) > 0.6 * vmax else 'black'
-                ax.text(ci_idx, si, f'{v:+.2f}', ha='center', va='center',
-                        fontsize=9, color=text_color)
+                sig_star = '*' if p_v < 0.05 else ''
+                text_color = 'white' if abs(v) > 0.6 else 'black'
+                ax_heat.text(ci_idx, si, f'{v:.2f}{sig_star}', ha='center',
+                             va='center', fontsize=9, color=text_color)
+    ax_heat.set_xticks(range(len(SHORTHANDS)))
+    ax_heat.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS],
+                            fontsize=7, rotation=25, ha='right')
+    ax_heat.set_yticks(range(len(LLAMA_SIZES)))
+    ax_heat.set_yticklabels([f'LLaMA {s}' for s in LLAMA_SIZES], fontsize=9)
+    ax_heat.set_title('ρ(α, self-report)')
+    plt.colorbar(im, ax=ax_heat, shrink=0.8, label='Spearman ρ')
 
-    ax.set_xticks(range(len(SHORTHANDS)))
-    ax.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS],
-                       fontsize=8, rotation=25, ha='right')
-    ax.set_yticks(range(len(LLAMA_SIZES)))
-    ax.set_yticklabels([f'LLaMA {s}' for s in LLAMA_SIZES], fontsize=9)
-    ax.set_title('Self-Steering Validation\n(R² × sign(slope))')
-    plt.colorbar(im, ax=ax, shrink=0.8, label='Signed R²')
-    add_panel_label(ax, 'C')
+    add_panel_label(c_axes[0], 'C')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_C_self_steering_validation')
+    prefix = os.path.join(fig_dir, 'Fig_05_C_steering_curves_and_rho')
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_C',
-        'title': 'Self-Steering Validation Heatmap',
-        'description': ('Isotonic R² multiplied by the sign of the steering slope. '
-                        'Positive values: steering in the expected direction changes '
-                        'self-report correctly. Negative values: inverted behavior, '
-                        'indicating poor probe quality. Key finding: impulsivity at 8B '
-                        'is inverted.'),
-        'steer_details': steer_details,
+        'title': 'Self-Report vs Alpha Curves + Rho Heatmap',
+        'description': ('Left 3 panels: logit self-report vs display-corrected alpha per '
+                        'concept per model size. Right: heatmap of Spearman ρ between alpha '
+                        'and logit rating (* = p<0.05). Replaces previous signed-R² panel.'),
+        'per_size_stats': c_stats,
+        'rho_matrix': rho_matrix.tolist(),
+        'rho_p_matrix': rho_p_matrix.tolist(),
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel D: Mean R² bar chart (good-quality probes only)
+    # Panel D: Mean R² bar chart (good-quality probes)
     # ──────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(1, 1, figsize=(5, 4))
     good_r2 = {s: [] for s in LLAMA_SIZES}
 
-    try:
-        r2_csv = load_model_size_r2_csv()
-        for _, row in r2_csv.iterrows():
-            model = row['model']
-            short = row['concept']
-            r2_val = row['isotonic_r2_alpha0']
-            # Check if probe is "good quality" (not inverted in steering)
-            is_good = True
-            if model in steer_details and short in steer_details.get(model, {}):
-                if steer_details[model][short].get('slope_sign', 1) < 0:
-                    is_good = False
-            if is_good:
-                good_r2[model].append(r2_val)
-    except Exception:
-        pass
+    for size in LLAMA_SIZES:
+        for short in SHORTHANDS:
+            if short in raw_r2_data[size]:
+                d = raw_r2_data[size][short]
+                # Exclude if rho(alpha, rating) is negative (inverted steering)
+                concept = SHORTHAND_TO_CONCEPT[short]
+                rho_idx = SHORTHANDS.index(short)
+                si = LLAMA_SIZES.index(size)
+                rho_val = rho_matrix[si, rho_idx]
+                if np.isnan(rho_val) or rho_val >= 0:
+                    good_r2[size].append(d['isotonic_r2'])
 
     means = [np.mean(good_r2[s]) if good_r2[s] else 0 for s in LLAMA_SIZES]
-    # Bootstrap CIs
     ci_lo_list, ci_hi_list = [], []
     for s in LLAMA_SIZES:
         vals = good_r2[s]
@@ -268,8 +383,8 @@ def generate_figure_5(results_dir):
             ci_hi_list.append(means[LLAMA_SIZES.index(s)])
 
     colors = [MODEL_SIZE_COLORS[s] for s in LLAMA_SIZES]
-    bars = ax.bar(range(len(LLAMA_SIZES)), means, color=colors,
-                  edgecolor='white', linewidth=0.5)
+    ax.bar(range(len(LLAMA_SIZES)), means, color=colors,
+           edgecolor='white', linewidth=0.5)
     for i in range(len(LLAMA_SIZES)):
         ax.errorbar(i, means[i],
                     yerr=[[means[i] - ci_lo_list[i]], [ci_hi_list[i] - means[i]]],
@@ -277,7 +392,7 @@ def generate_figure_5(results_dir):
     ax.set_xticks(range(len(LLAMA_SIZES)))
     ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
     ax.set_ylabel('Mean Isotonic R²')
-    ax.set_title('Introspection by Model Size\n(good-quality probes only)')
+    ax.set_title('Introspection by Model Size\n(validated probes only)')
     ax.set_ylim(0, 1)
     add_panel_label(ax, 'D')
     plt.tight_layout()
@@ -285,10 +400,10 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_D',
-        'title': 'Mean Isotonic R² by Model Size (Good-Quality Probes)',
-        'description': ('Mean isotonic R² across concepts with validated probes only '
-                        '(excluding inverted steering). Shows clear scaling trend.'),
-        'good_r2_values': {s: [round(v, 4) for v in good_r2[s]] for s in LLAMA_SIZES},
+        'title': 'Mean R² by Size (Validated Probes)',
+        'description': ('Mean isotonic R² across concepts with validated probes '
+                        '(ρ(α,rating) ≥ 0), excluding inverted-steering cases.'),
+        'good_r2': {s: [round(v, 4) for v in good_r2[s]] for s in LLAMA_SIZES},
         'means': [round(m, 4) for m in means],
     })
 
@@ -299,6 +414,7 @@ def generate_figure_5(results_dir):
     concept_name = SHORTHAND_TO_CONCEPT[example_concept]
 
     fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    drift_stats_e = {}
     for size in LLAMA_SIZES:
         model_key, exp_dirs = LLAMA_MODELS[size]
         exp_dir = exp_dirs.get(example_concept)
@@ -322,11 +438,18 @@ def generate_figure_5(results_dir):
             color = MODEL_SIZE_COLORS[size]
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=color, label=f'LLaMA {size}')
+            rho_e, p_e = stats.spearmanr(
+                sub['turn'], sub['probe_display'].dropna())
+            drift_stats_e[size] = {
+                'drift_magnitude': round(float(means[-1] - means[0]), 4),
+                'spearman_rho_vs_turn': round(float(rho_e), 4),
+                'spearman_p': float(p_e),
+            }
         except Exception as e:
             print(f"    Warning: Drift plot error for {size}: {e}")
 
     ax.set_xlabel('Turn')
-    ax.set_ylabel('Probe Score')
+    ax.set_ylabel('Probe Score (polarity-corrected)')
     ax.set_title(f'Internal State Drift — {SHORTHAND_DISPLAY[example_concept]}')
     ax.set_xlim(0.5, 10.5)
     ax.set_xticks(range(1, 11))
@@ -337,17 +460,37 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_E',
-        'title': f'Probe Score Drift Across Model Sizes — {SHORTHAND_DISPLAY[example_concept]}',
-        'description': (f'Mean probe score ({concept_name}, flipped) across turns for '
-                        f'LLaMA 1B/3B/8B at alpha=0. Drift is visible in all sizes '
-                        f'but cleaner in larger models.'),
-        'concept': concept_name,
+        'title': f'Probe Drift Across Sizes — {SHORTHAND_DISPLAY[example_concept]}',
+        'drift_stats': drift_stats_e,
+    })
+
+    # Panel Eii: Drift magnitude bar chart
+    fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+    for i, size in enumerate(LLAMA_SIZES):
+        if size in drift_stats_e:
+            color = MODEL_SIZE_COLORS[size]
+            ax.bar(i, drift_stats_e[size]['drift_magnitude'], color=color,
+                   edgecolor='white', linewidth=0.5)
+    ax.set_xticks(range(len(LLAMA_SIZES)))
+    ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
+    ax.set_ylabel('Drift (last − first turn)')
+    ax.set_title(f'Probe Drift Magnitude — {SHORTHAND_DISPLAY[example_concept]}')
+    ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
+    add_panel_label(ax, 'Eii')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_05_Eii_drift_magnitude_bars')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_05_Eii',
+        'title': 'Probe Drift Magnitude Bars',
+        'drift_stats': drift_stats_e,
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel F: Self-report drift — one concept, 3 LLaMA sizes
+    # Panel F: Self-report drift — one concept, 3 sizes
     # ──────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    drift_stats_f = {}
     for size in LLAMA_SIZES:
         model_key, exp_dirs = LLAMA_MODELS[size]
         exp_dir = exp_dirs.get(example_concept)
@@ -370,12 +513,19 @@ def generate_figure_5(results_dir):
             color = MODEL_SIZE_COLORS[size]
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=color, label=f'LLaMA {size}')
+            rho_f, p_f = stats.spearmanr(
+                sub['turn'], sub['logit_rating'].dropna())
+            drift_stats_f[size] = {
+                'drift_magnitude': round(float(means[-1] - means[0]), 4),
+                'spearman_rho_vs_turn': round(float(rho_f), 4),
+                'spearman_p': float(p_f),
+            }
         except Exception as e:
             print(f"    Warning: Self-report drift error for {size}: {e}")
 
     ax.set_xlabel('Turn')
     ax.set_ylabel('Logit Self-Report')
-    ax.set_title(f'Self-Report Drift Across Model Sizes — {SHORTHAND_DISPLAY[example_concept]}')
+    ax.set_title(f'Self-Report Drift — {SHORTHAND_DISPLAY[example_concept]}')
     ax.set_xlim(0.5, 10.5)
     ax.set_xticks(range(1, 11))
     ax.legend(fontsize=8)
@@ -385,14 +535,34 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_F',
-        'title': f'Self-Report Drift Across Model Sizes — {SHORTHAND_DISPLAY[example_concept]}',
-        'description': ('Mean logit-based self-report across turns for LLaMA 1B/3B/8B. '
-                        'Drift effect generalizes across model sizes.'),
-        'concept': concept_name,
+        'title': f'Self-Report Drift — {SHORTHAND_DISPLAY[example_concept]}',
+        'drift_stats': drift_stats_f,
+    })
+
+    # Panel Fii: Self-report drift magnitude bars
+    fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+    for i, size in enumerate(LLAMA_SIZES):
+        if size in drift_stats_f:
+            color = MODEL_SIZE_COLORS[size]
+            ax.bar(i, drift_stats_f[size]['drift_magnitude'], color=color,
+                   edgecolor='white', linewidth=0.5)
+    ax.set_xticks(range(len(LLAMA_SIZES)))
+    ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
+    ax.set_ylabel('Drift (last − first turn)')
+    ax.set_title(f'Report Drift Magnitude — {SHORTHAND_DISPLAY[example_concept]}')
+    ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
+    add_panel_label(ax, 'Fii')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_05_Fii_report_drift_magnitude_bars')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_05_Fii',
+        'title': 'Report Drift Magnitude Bars',
+        'drift_stats': drift_stats_f,
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel G: Layer sweeps for Gemma 4B and Qwen 7B (sad_vs_happy)
+    # Panel G: Layer sweeps (Gemma 4B, Qwen 7B) — normalized + shading
     # ──────────────────────────────────────────────────────────────
     cross_concept = 'sad_vs_happy'
     cross_models = [
@@ -401,6 +571,12 @@ def generate_figure_5(results_dir):
     ]
     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
     sweep_info = {}
+
+    # Shade layer search range
+    lo_frac, hi_frac = LAYER_RANGE_FRAC
+    ax.axvspan(lo_frac, hi_frac, alpha=0.08, color='gray',
+               label=f'Search range ({lo_frac:.0%}-{hi_frac:.0%})')
+
     for model_name, model_key, color in cross_models:
         try:
             probe_dir = PROBES[model_key][cross_concept]
@@ -411,39 +587,44 @@ def generate_figure_5(results_dir):
             best_layer = metrics['best_layer']
             best_d = metrics['best_d']
 
-            layers = np.arange(num_layers)
-            ax.plot(layers, sweep_d, color=color, linewidth=1.5,
-                    label=f'{model_name} (d={best_d:.2f}, L{best_layer})')
-            ax.plot(best_layer, sweep_d[best_layer], 'o', color=color,
+            # Normalized layer axis (0-1)
+            layers_norm = np.arange(num_layers) / (num_layers - 1)
+            best_norm = best_layer / (num_layers - 1)
+
+            ax.plot(layers_norm, sweep_d, color=color, linewidth=1.5,
+                    label=f'{model_name} (d={best_d:.2f}, L{best_layer}/{num_layers})')
+            ax.plot(best_norm, sweep_d[best_layer], 'o', color=color,
                     markersize=7, markeredgecolor='white', markeredgewidth=1)
             sweep_info[model_name] = {
                 'best_layer': best_layer,
+                'best_layer_normalized': round(float(best_norm), 3),
                 'best_d': round(best_d, 3),
                 'num_layers': num_layers,
             }
         except Exception as e:
             print(f"    Warning: Sweep error for {model_name}: {e}")
 
-    ax.set_xlabel('Layer')
+    ax.set_xlabel('Normalized Layer Position (0 = first, 1 = last)')
     ax.set_ylabel("Cohen's d")
     ax.set_title(f"Layer Sweep — {CONCEPT_DISPLAY[cross_concept]}")
-    ax.legend(fontsize=8)
-    ax.set_ylim(bottom=0)
+    ax.legend(fontsize=7)
+    # Allow negative d
+    ax.set_xlim(0, 1)
     add_panel_label(ax, 'G')
     plt.tight_layout()
     prefix = os.path.join(fig_dir, 'Fig_05_G_cross_family_layer_sweep')
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_G',
-        'title': f'Layer Sweep — Gemma 3 4B vs Qwen 2.5 7B ({CONCEPT_DISPLAY[cross_concept]})',
-        'description': ("Cohen's d layer sweep for sad_vs_happy in two non-LLaMA "
-                        "families. Qwen shows much stronger separation (d≈3.5) vs "
-                        "Gemma (d≈1.8)."),
+        'title': f'Normalized Layer Sweep — {CONCEPT_DISPLAY[cross_concept]}',
+        'description': ('Layer sweep with normalized x-axis (0-1) for cross-family '
+                        'comparison. Layer search range shaded. Negative d values allowed.'),
         'sweep_info': sweep_info,
+        'layer_search_range_frac': [lo_frac, hi_frac],
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel H: Self-report drift for Gemma and Qwen
+    # Panel H: Self-report drift — Gemma and Qwen
     # ──────────────────────────────────────────────────────────────
     cross_exp_dirs = {
         'Gemma 3 4B': GEMMA_4B_SELF.get('wellbeing'),
@@ -455,6 +636,7 @@ def generate_figure_5(results_dir):
     }
 
     fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    h_drift_stats = {}
     for model_name, exp_dir in cross_exp_dirs.items():
         if exp_dir is None or not os.path.isdir(exp_dir):
             continue
@@ -475,6 +657,12 @@ def generate_figure_5(results_dir):
             color = cross_colors[model_name]
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=color, label=model_name)
+            rho_h, p_h = stats.spearmanr(sub['turn'], sub['logit_rating'].dropna())
+            h_drift_stats[model_name] = {
+                'drift_magnitude': round(float(means[-1] - means[0]), 4),
+                'spearman_rho_vs_turn': round(float(rho_h), 4),
+                'spearman_p': float(p_h),
+            }
         except Exception as e:
             print(f"    Warning: Cross-family drift error for {model_name}: {e}")
 
@@ -490,8 +678,8 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_H',
-        'title': f'Self-Report Drift — Gemma vs Qwen',
-        'description': 'Self-report drift across turns for non-LLaMA models (sad_vs_happy).',
+        'title': 'Self-Report Drift — Gemma vs Qwen',
+        'drift_stats': h_drift_stats,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -514,14 +702,12 @@ def generate_figure_5(results_dir):
             color = cross_colors[model_name]
             ax.scatter(probe_vals, ratings, color=color, alpha=0.3, s=15,
                        edgecolors='none')
-
             if len(probe_vals) > 5:
                 ir = IsotonicRegression(out_of_bounds='clip')
                 sort_idx = np.argsort(probe_vals)
                 y_pred = ir.fit_transform(probe_vals[sort_idx], ratings[sort_idx])
                 ax.plot(probe_vals[sort_idx], y_pred, color='black',
                         linewidth=2, alpha=0.7)
-
                 rho_val, p_val = stats.spearmanr(probe_vals, ratings)
                 r2_val = isotonic_r2(probe_vals, ratings)
                 ax.text(0.05, 0.95,
@@ -534,7 +720,6 @@ def generate_figure_5(results_dir):
                     'isotonic_r2': round(float(r2_val), 4),
                     'n': len(probe_vals),
                 }
-
             ax.set_xlabel('Probe Score')
             ax.set_ylabel('Logit Self-Report')
             ax.set_title(f'{model_name} — {CONCEPT_DISPLAY[cross_concept]}')
@@ -545,20 +730,19 @@ def generate_figure_5(results_dir):
             savefig(fig, prefix)
             save_panel_json(prefix, {
                 'panel_id': f'Fig_05_{scatter_labels[idx]}',
-                'title': f'Introspection Scatter — {model_name}',
-                'description': (f'Probe score vs logit self-report for {model_name} '
-                                f'({cross_concept}). Shows introspection capability in '
-                                f'non-LLaMA families.'),
+                'title': f'Scatter — {model_name}',
                 'statistics': cross_scatter_stats.get(model_name, {}),
             })
         except Exception as e:
             print(f"    Warning: Cross-family scatter error for {model_name}: {e}")
 
     # ──────────────────────────────────────────────────────────────
-    # Panels K–L: Turn-wise R² and Rho for Gemma and Qwen
+    # Panels K–L: Turnwise R² and Rho — Gemma, Qwen
+    #   Flip Rho for sad_vs_happy
     # ──────────────────────────────────────────────────────────────
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
     cross_turnwise = {}
+    flip_rho_sign = -1 if cross_concept in FLIP_CONCEPTS else 1
 
     for model_name, exp_dir in cross_exp_dirs.items():
         if exp_dir is None or not os.path.isdir(exp_dir):
@@ -578,18 +762,23 @@ def generate_figure_5(results_dir):
             rho_hi = [tw_stats[str(t)].get('spearman_rho_ci_high', np.nan) for t in turns]
             rho_p = [tw_stats[str(t)].get('spearman_p', np.nan) for t in turns]
 
+            # Flip rho for sad_vs_happy
+            rho_vals = [v * flip_rho_sign for v in rho_vals]
+            rho_lo_adj = [v * flip_rho_sign for v in (rho_hi if flip_rho_sign == -1 else rho_lo)]
+            rho_hi_adj = [v * flip_rho_sign for v in (rho_lo if flip_rho_sign == -1 else rho_hi)]
+
             plot_line_with_ci(axes[0], turns, r2_vals, r2_lo, r2_hi,
                               color=color, label=model_name)
-            plot_line_with_ci(axes[1], turns, rho_vals, rho_lo, rho_hi,
+            plot_line_with_ci(axes[1], turns, rho_vals, rho_lo_adj, rho_hi_adj,
                               color=color, label=model_name)
 
             cross_turnwise[model_name] = {
                 'turns': turns,
                 'r2': [round(v, 4) if not np.isnan(v) else None for v in r2_vals],
-                'rho': [round(v, 4) if not np.isnan(v) else None for v in rho_vals],
+                'rho_flipped': [round(v, 4) if not np.isnan(v) else None for v in rho_vals],
                 'rho_p': [float(p) if not np.isnan(p) else None for p in rho_p],
-                'n_significant_turns': sum(1 for p in rho_p if p < 0.05),
-            }
+                'rho_sign_flipped': cross_concept in FLIP_CONCEPTS,
+             }
         except Exception as e:
             print(f"    Warning: Cross-family turnwise error for {model_name}: {e}")
 
@@ -603,11 +792,12 @@ def generate_figure_5(results_dir):
     add_panel_label(axes[0], 'K')
 
     axes[1].set_xlabel('Turn')
-    axes[1].set_ylabel('Spearman ρ')
+    axes[1].set_ylabel('Spearman ρ (flipped)')
     axes[1].set_title('Introspection Correlation by Turn')
     axes[1].set_xlim(0.5, 10.5)
     axes[1].set_xticks(range(1, 11))
     axes[1].set_ylim(-0.3, 1)
+    axes[1].axhline(0, color='gray', linestyle=':', alpha=0.5)
     axes[1].legend(fontsize=8)
     add_panel_label(axes[1], 'L')
 
@@ -616,19 +806,16 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_K_L',
-        'title': 'Turn-wise Introspection — Gemma vs Qwen',
-        'description': ('Isotonic R² (K) and Spearman ρ (L) per turn for Gemma 3 4B '
-                        'and Qwen 2.5 7B (sad_vs_happy). Qwen shows strong, significant '
-                        'introspection at every turn with R²(iso) starting at ~0.9 and '
-                        'decreasing. Gemma shows minimal effect due to low probe and '
-                        'report quality.'),
+        'title': 'Turnwise Introspection — Gemma vs Qwen (Rho Flipped)',
+        'description': (f'Isotonic R² (K) and Spearman ρ (L, sign-flipped for {cross_concept}) '
+                        'per turn for cross-family models.'),
         'cross_turnwise': cross_turnwise,
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel M: High-introspection scatter plots (LLaMA 8B best cases)
+    # Panel M: LLaMA 8B best introspection scatter
     # ──────────────────────────────────────────────────────────────
-    best_concepts = ['wellbeing', 'interest']  # R2 ~0.9 at 8B
+    best_concepts = ['wellbeing', 'interest']
     fig, axes = plt.subplots(1, 2, figsize=(9, 4))
     best_scatter_stats = {}
     for i, short in enumerate(best_concepts):
@@ -645,15 +832,13 @@ def generate_figure_5(results_dir):
                 subset=['probe_score', 'logit_rating'])
             probe_vals = flip_if_needed(concept, sub['probe_score'].values)
             ratings = sub['logit_rating'].values
-
             ax.scatter(probe_vals, ratings, color=color, alpha=0.3, s=15,
                        edgecolors='none')
             if len(probe_vals) > 5:
                 ir = IsotonicRegression(out_of_bounds='clip')
                 sort_idx = np.argsort(probe_vals)
                 y_pred = ir.fit_transform(probe_vals[sort_idx], ratings[sort_idx])
-                ax.plot(probe_vals[sort_idx], y_pred, color='black',
-                        linewidth=2, alpha=0.7)
+                ax.plot(probe_vals[sort_idx], y_pred, 'k-', linewidth=2, alpha=0.7)
                 rho_val, p_val = stats.spearmanr(probe_vals, ratings)
                 r2_val = isotonic_r2(probe_vals, ratings)
                 ax.text(0.05, 0.95,
@@ -670,7 +855,7 @@ def generate_figure_5(results_dir):
                 ax.set_ylabel('Logit Self-Report')
             ax.set_title(f'LLaMA 8B — {SHORTHAND_DISPLAY[short]}')
         except Exception as e:
-            print(f"    Warning: LLaMA 8B scatter error for {short}: {e}")
+            print(f"    Warning: 8B scatter error for {short}: {e}")
 
     add_panel_label(axes[0], 'M')
     plt.tight_layout()
@@ -678,76 +863,28 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_M',
-        'title': 'High-Introspection Examples — LLaMA 8B',
-        'description': ('Scatter plots for the two concepts with highest R²(iso) at '
-                        'LLaMA 8B (wellbeing and interest, both ≈0.9). Demonstrates '
-                        'that introspection can be excellent in larger models.'),
+        'title': 'High-Introspection — LLaMA 8B',
         'statistics': best_scatter_stats,
     })
 
     # ── Save other_stats ──
-    # Random scoring control comparison
-    random_stats = {}
-    try:
-        from shared_utils import LLAMA_3B_RANDOM
-        for short in SHORTHANDS:
-            concept = SHORTHAND_TO_CONCEPT[short]
-            rand_dir = LLAMA_3B_RANDOM.get(short)
-            real_dir = LLAMA_3B_4X4_SELF.get(short)
-            if rand_dir and os.path.isdir(rand_dir) and real_dir and os.path.isdir(real_dir):
-                # Random probe
-                rand_results = load_results(rand_dir)
-                rand_df = results_to_dataframe(rand_results, probe_name=concept)
-                rand_sub = rand_df[np.isclose(rand_df['alpha'], 0.0)].copy()
-                rand_sub['probe_display'] = flip_if_needed(
-                    concept, rand_sub['probe_score'].values)
-                rand_rho, rand_p = stats.spearmanr(
-                    rand_sub['turn'], rand_sub['probe_display'].dropna())
-                rand_drift = float(rand_sub.groupby('turn')['probe_display'].mean().iloc[-1] -
-                                   rand_sub.groupby('turn')['probe_display'].mean().iloc[0])
-
-                # Real probe
-                real_results = load_results(real_dir)
-                real_df = results_to_dataframe(real_results, probe_name=concept)
-                real_sub = real_df[np.isclose(real_df['alpha'], 0.0)].copy()
-                real_sub['probe_display'] = flip_if_needed(
-                    concept, real_sub['probe_score'].values)
-                real_rho, real_p = stats.spearmanr(
-                    real_sub['turn'], real_sub['probe_display'].dropna())
-                real_drift = float(real_sub.groupby('turn')['probe_display'].mean().iloc[-1] -
-                                   real_sub.groupby('turn')['probe_display'].mean().iloc[0])
-
-                random_stats[short] = {
-                    'real_probe_drift': round(real_drift, 4),
-                    'real_probe_rho_vs_turn': round(float(real_rho), 4),
-                    'real_probe_p_vs_turn': float(real_p),
-                    'random_probe_drift': round(rand_drift, 4),
-                    'random_probe_rho_vs_turn': round(float(rand_rho), 4),
-                    'random_probe_p_vs_turn': float(rand_p),
-                    'drift_ratio': round(abs(real_drift / rand_drift), 2) if rand_drift != 0 else None,
-                }
-    except Exception as e:
-        print(f"    Warning: Random scoring comparison error: {e}")
-
-    # Trend significance
-    try:
-        trend_csv = load_model_size_trend_csv()
-        trend_stats = trend_csv.to_dict('records')
-    except Exception:
-        trend_stats = []
-
     other_stats = {
-        'description': ('Figure 5 validates generalization. Key findings: '
-                        '(1) Introspection scales with model size for 3/4 concepts. '
-                        '(2) The anomalous concept (impulsivity at 8B) has inverted self-steering. '
-                        '(3) Qwen 2.5 7B shows excellent introspection (R²(iso)~0.9 at turn 1). '
-                        '(4) Gemma 3 4B shows weak effects due to low probe and report quality. '
-                        '(5) Random probe controls show much smaller drift than trained probes.'),
-        'random_vs_trained_drift': random_stats,
-        'scaling_trend_significance': trend_stats,
+        'description': ('Figure 5 validates cross-model generalization. R² and Rho recomputed '
+                        'from raw experiment directories. Panel C replaced with self-report '
+                        'vs alpha curves + Rho heatmap. Layer sweep normalized. '
+                        'Rho sign-flipped for sad_vs_happy in K/L. Drift bar charts added.'),
+        'raw_r2_data': {
+            size: {short: {k: round(v, 4) if isinstance(v, float) else v
+                           for k, v in vals.items()}
+                   for short, vals in sd.items()}
+            for size, sd in raw_r2_data.items()
+        },
         'cross_family_introspection': cross_scatter_stats,
         'cross_family_turnwise': cross_turnwise,
-        'llama_8b_best_introspection': best_scatter_stats,
+        'llama_8b_best': best_scatter_stats,
+        'drift_probe': drift_stats_e,
+        'drift_report': drift_stats_f,
+        'rho_matrix_steering': rho_matrix.tolist(),
     }
     save_other_stats(fig_dir, other_stats)
     print("    Figure 5 complete.")
@@ -758,4 +895,4 @@ if __name__ == '__main__':
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     rdir = os.path.join(os.path.dirname(__file__), '..', f'results_{ts}')
     generate_figure_5(rdir)
-    print(f"Output → {rdir}")
+    print(f"Output -> {rdir}")

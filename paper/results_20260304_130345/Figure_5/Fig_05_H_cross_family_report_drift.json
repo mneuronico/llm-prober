@@ -1,0 +1,16 @@
+{
+  "panel_id": "Fig_05_H",
+  "title": "Self-Report Drift — Gemma vs Qwen",
+  "drift_stats": {
+    "Gemma 3 4B": {
+      "drift_magnitude": 0.5291,
+      "spearman_rho_vs_turn": 0.3351,
+      "spearman_p": 5.964346233591736e-12
+    },
+    "Qwen 2.5 7B": {
+      "drift_magnitude": 0.3097,
+      "spearman_rho_vs_turn": -0.081,
+      "spearman_p": 0.10584340607330842
+    }
+  }
+}

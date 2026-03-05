@@ -1,0 +1,21 @@
+{
+  "panel_id": "Fig_05_Fii",
+  "title": "Report Drift Magnitude Bars",
+  "drift_stats": {
+    "1B": {
+      "drift_magnitude": 1.7709,
+      "spearman_rho_vs_turn": 0.4949,
+      "spearman_p": 4.253427101707378e-26
+    },
+    "3B": {
+      "drift_magnitude": 0.381,
+      "spearman_rho_vs_turn": 0.2625,
+      "spearman_p": 9.98229555628974e-08
+    },
+    "8B": {
+      "drift_magnitude": 1.3327,
+      "spearman_rho_vs_turn": 0.4804,
+      "spearman_p": 1.748574249247186e-24
+    }
+  }
+}

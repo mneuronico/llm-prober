@@ -1,0 +1,13 @@
+{
+  "panel_id": "Fig_01_F",
+  "title": "Score Distribution - Focused / Distracted",
+  "description": "Boxplot of per-token probe scores for positive (focused) and negative (distracted) evaluation texts at best layer 10. n = 12 evaluation prompts per condition.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\outputs\\distracted_vs_focused\\20260122_095601\\scores/",
+  "model": "LLaMA-3.2-3B-Instruct",
+  "concept": "distracted_vs_focused",
+  "best_layer": 10,
+  "pos_label": "focused",
+  "neg_label": "distracted",
+  "n_eval_prompts": 12,
+  "statistics": {}
+}

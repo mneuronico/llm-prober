@@ -1,0 +1,56 @@
+{
+  "panel_id": "Fig_02_F",
+  "title": "Self-Report Informativeness (Isotonic R² with Probe Score)",
+  "description": "Isotonic R² between self-report values and probe scores at alpha=0. Measures how well each self-report method captures the model's internal state as measured by the linear probe. Greedy decoding produces near-constant outputs (R²≈0); logit-based method tracks probe scores most faithfully.",
+  "metric": "isotonic_r2",
+  "data_sources_rerun": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "data_sources_greedy": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\wellbeing_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\interest_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\focus_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\impulsivity_no_steering_3b_alpha0_greedy_token_primary_20260303_172502"
+  },
+  "per_concept_r2": {
+    "wellbeing": {
+      "greedy_r2": 0.0,
+      "sampled_token_r2": 0.0851,
+      "sampled_token_rho": 0.2183,
+      "sampled_token_rho_p": 1.0544084653521336e-05,
+      "logit_r2": 0.4777,
+      "logit_rho": 0.6831,
+      "logit_rho_p": 2.789340869001356e-56
+    },
+    "interest": {
+      "greedy_r2": 0.0,
+      "sampled_token_r2": 0.1742,
+      "sampled_token_rho": 0.3867,
+      "sampled_token_rho_p": 1.0159811802410556e-15,
+      "logit_r2": 0.5393,
+      "logit_rho": 0.763,
+      "logit_rho_p": 2.0212181961199723e-77
+    },
+    "focus": {
+      "greedy_r2": 0.0,
+      "sampled_token_r2": 0.0337,
+      "sampled_token_rho": 0.1662,
+      "sampled_token_rho_p": 0.00084452176659864,
+      "logit_r2": 0.1247,
+      "logit_rho": 0.3997,
+      "logit_rho_p": 8.953550834779397e-17
+    },
+    "impulsivity": {
+      "greedy_r2": 0.0,
+      "sampled_token_r2": 0.0539,
+      "sampled_token_rho": 0.1361,
+      "sampled_token_rho_p": 0.006413764455818032,
+      "logit_r2": 0.3142,
+      "logit_rho": 0.509,
+      "logit_rho_p": 9.558852261767222e-28
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "panel_id": "Fig_04_J",
+  "title": "Probe Score Drift — Impulsive / Planning → Interested / Bored",
+  "description": "Mean probe score (bored_vs_interested, polarity-corrected) across turns for different steering alphas (steering: impulsivity). Alpha labels display-corrected (flipped=True). Drift significance: Spearman ρ of turn vs probe score at each α.",
+  "steer_concept": "impulsivity",
+  "meas_concept": "interest",
+  "alpha_display_flipped": true,
+  "probe_polarity_flipped": false,
+  "drift_by_alpha": {
+    "-4.0": {
+      "display_alpha": 4.0,
+      "drift_magnitude": 0.0992,
+      "first_turn_mean": -1.0633,
+      "last_turn_mean": -0.9642,
+      "drift_spearman_rho": 0.2135,
+      "drift_spearman_p": 1.662776441346691e-05
+    },
+    "-2.0": {
+      "display_alpha": 2.0,
+      "drift_magnitude": 0.0959,
+      "first_turn_mean": -0.6732,
+      "last_turn_mean": -0.5773,
+      "drift_spearman_rho": 0.2222,
+      "drift_spearman_p": 7.25543354008263e-06
+    },
+    "0.0": {
+      "display_alpha": -0.0,
+      "drift_magnitude": 0.0858,
+      "first_turn_mean": -0.3054,
+      "last_turn_mean": -0.2196,
+      "drift_spearman_rho": 0.2122,
+      "drift_spearman_p": 1.8719367145569804e-05
+    },
+    "2.0": {
+      "display_alpha": -2.0,
+      "drift_magnitude": 0.0739,
+      "first_turn_mean": 0.0493,
+      "last_turn_mean": 0.1232,
+      "drift_spearman_rho": 0.1933,
+      "drift_spearman_p": 9.965914882139286e-05
+    },
+    "4.0": {
+      "display_alpha": -4.0,
+      "drift_magnitude": 0.0608,
+      "first_turn_mean": 0.3934,
+      "last_turn_mean": 0.4542,
+      "drift_spearman_rho": 0.1658,
+      "drift_spearman_p": 0.0008738963755956335
+    }
+  }
+}

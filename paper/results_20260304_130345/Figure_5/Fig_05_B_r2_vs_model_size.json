@@ -1,0 +1,47 @@
+{
+  "panel_id": "Fig_05_B",
+  "title": "Isotonic R² vs. Model Size (Recomputed from Raw Data)",
+  "description": "Isotonic R² at alpha=0 for each concept across LLaMA 1B/3B/8B, recomputed from raw experiment directories (not pre-computed CSV).",
+  "per_concept": {
+    "wellbeing": {
+      "1B": 0.2587268384780036,
+      "3B": 0.4519686865919622,
+      "8B": 0.9021964598524299
+    },
+    "interest": {
+      "1B": 0.05268399255216072,
+      "3B": 0.6571928527740474,
+      "8B": 0.9312830549215491
+    },
+    "focus": {
+      "1B": 0.0011434422123003385,
+      "3B": 0.037086772088292586,
+      "8B": 0.00725394772752852
+    },
+    "impulsivity": {
+      "1B": 0.04625495878443697,
+      "3B": 0.33042601334893273,
+      "8B": 0.002658505147386636
+    }
+  },
+  "data_sources": {
+    "1B": {
+      "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\wellbeing_self_steering_1b_alpha_m4_to_p4_20260222_160146",
+      "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\interest_self_steering_1b_alpha_m4_to_p4_20260222_160146",
+      "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\focus_self_steering_1b_alpha_m4_to_p4_20260222_160146",
+      "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\impulsivity_self_steering_1b_alpha_m4_to_p4_20260222_160146"
+    },
+    "3B": {
+      "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\wellbeing_self_steering_alpha_m4_to_p4_20260220_142358",
+      "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\interest_self_steering_alpha_m4_to_p4_20260221_134238",
+      "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\focus_self_steering_alpha_m4_to_p4_20260220_142358",
+      "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\impulsivity_self_steering_alpha_m4_to_p4_20260221_134238"
+    },
+    "8B": {
+      "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\wellbeing_self_steering_8b_alpha_m4_to_p4_20260223_170145",
+      "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\interest_self_steering_8b_alpha_m4_to_p4_20260223_170145",
+      "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\focus_self_steering_8b_alpha_m4_to_p4_20260223_170145",
+      "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\impulsivity_self_steering_8b_alpha_m4_to_p4_20260223_170145"
+    }
+  }
+}

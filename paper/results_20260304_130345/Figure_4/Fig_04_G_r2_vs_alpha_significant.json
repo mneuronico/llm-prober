@@ -1,0 +1,45 @@
+{
+  "panel_id": "Fig_04_G",
+  "title": "Isotonic R² vs. Steering Alpha (Display-Corrected)",
+  "description": "Isotonic R² as a function of display-corrected steering alpha. For impulsive_vs_planning steering, alpha is sign-flipped so positive α = more impulsive. Auto y-scale.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "r2_values": [
+        0.3403,
+        0.3733,
+        0.4522,
+        0.6393,
+        0.753
+      ],
+      "spearman_rho_r2_vs_alpha": 1.0,
+      "spearman_p": 1.4042654220543672e-24,
+      "alpha_display_flipped": false
+    },
+    "('impulsivity', 'interest')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "r2_values": [
+        0.4562,
+        0.5037,
+        0.5522,
+        0.6141,
+        0.6873
+      ],
+      "spearman_rho_r2_vs_alpha": 1.0,
+      "spearman_p": 1.4042654220543672e-24,
+      "alpha_display_flipped": true
+    }
+  }
+}

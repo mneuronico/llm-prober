@@ -1,0 +1,16 @@
+{
+  "panel_id": "Fig_05_M",
+  "title": "High-Introspection — LLaMA 8B",
+  "statistics": {
+    "wellbeing": {
+      "spearman_rho": 0.9335,
+      "spearman_p": 2.1761462042535486e-179,
+      "isotonic_r2": 0.9022
+    },
+    "interest": {
+      "spearman_rho": 0.958,
+      "spearman_p": 6.516109545282994e-218,
+      "isotonic_r2": 0.9313
+    }
+  }
+}
