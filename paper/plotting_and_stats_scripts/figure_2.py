@@ -73,7 +73,7 @@ def generate_figure_2(results_dir):
             for ci in df['conversation_index'].unique():
                 conv = df[df['conversation_index'] == ci].sort_values('turn')
                 ax.plot(conv['turn'], conv['token_rating'],
-                        color=color, alpha=0.2, linewidth=0.5)
+                        color=color, alpha=0.5, linewidth=0.5)
             greedy_var = df.groupby('turn')['token_rating'].var().mean()
             n_conv = df['conversation_index'].nunique()
             # Spearman of turn vs rating
@@ -90,8 +90,12 @@ def generate_figure_2(results_dir):
             ax.set_ylabel('Self-Report (greedy)')
         ax.set_title(SHORTHAND_DISPLAY[short])
         ax.set_xlim(0.5, 10.5)
-        ax.set_ylim(-0.5, 9.5)
         ax.set_xticks(range(1, 11))
+    # Per-concept y-axis limits
+    _YLIM_A = {'wellbeing': (4, 8), 'interest': (5, 9), 'focus': (6, 10), 'impulsivity': (2, 6)}
+    for i, short in enumerate(SHORTHANDS_ORDERED):
+        if short in _YLIM_A:
+            axes[i].set_ylim(*_YLIM_A[short])
     add_panel_label(axes[0], 'A', x=-0.18)
     fig.suptitle('Greedy Self-Report Across Turns', fontsize=12, y=1.02)
     plt.tight_layout()
@@ -141,7 +145,7 @@ def generate_figure_2(results_dir):
             for ci_idx in sub['conversation_index'].unique():
                 conv = sub[sub['conversation_index'] == ci_idx].sort_values('turn')
                 ax.plot(conv['turn'], conv['probe_display'],
-                        color=color, alpha=0.15, linewidth=0.5)
+                        color=color, alpha=0.3, linewidth=0.5)
 
             rho, p = stats.spearmanr(sub['turn'], sub['probe_display'])
             # First vs last turn Mann-Whitney
@@ -169,6 +173,20 @@ def generate_figure_2(results_dir):
         ax.set_title(SHORTHAND_DISPLAY[short])
         ax.set_xlim(0.5, 10.5)
         ax.set_xticks(range(1, 11))
+    # Per-concept y-axis limits for probe scores
+    _YLIM_B = {'wellbeing': (-0.3, 0.0), 'interest': (-0.4, -0.1)}
+    for i, short in enumerate(SHORTHANDS_ORDERED):
+        if short in _YLIM_B:
+            axes[i].set_ylim(*_YLIM_B[short])
+        else:
+            # 0.3 amplitude centred on the mean of the data
+            lines = [l for l in axes[i].get_lines() if l.get_alpha() is None or l.get_alpha() >= 0.5]
+            if lines:
+                y_vals = np.concatenate([l.get_ydata() for l in lines])
+                y_vals = y_vals[np.isfinite(y_vals)]
+                if len(y_vals) > 0:
+                    y_mid = (y_vals.max() + y_vals.min()) / 2
+                    axes[i].set_ylim(y_mid - 0.15, y_mid + 0.15)
     add_panel_label(axes[0], 'B', x=-0.18)
     fig.suptitle('Internal State (Probe Score) Across Turns', fontsize=12, y=1.02)
     plt.tight_layout()
@@ -254,7 +272,7 @@ def generate_figure_2(results_dir):
             for ci_idx in sub_a0['conversation_index'].unique():
                 conv = sub_a0[sub_a0['conversation_index'] == ci_idx].sort_values('turn')
                 ax.plot(conv['turn'], conv['token_rating'],
-                        color=color, alpha=0.2, linewidth=0.5)
+                        color=color, alpha=0.5, linewidth=0.5)
             rho_s, p_s = stats.spearmanr(sub_a0['turn'], sub_a0['token_rating'].dropna())
             sampled_drift[short] = {
                 'mean_rating': round(float(sub_a0['token_rating'].mean()), 3),
@@ -268,8 +286,12 @@ def generate_figure_2(results_dir):
             ax.set_ylabel('Self-Report (sampled token)')
         ax.set_title(SHORTHAND_DISPLAY[short])
         ax.set_xlim(0.5, 10.5)
-        ax.set_ylim(-0.5, 9.5)
         ax.set_xticks(range(1, 11))
+    # Per-concept y-axis limits (same as Panel A)
+    _YLIM_D = {'wellbeing': (4, 8), 'interest': (5, 9), 'focus': (6, 10), 'impulsivity': (2, 6)}
+    for i, short in enumerate(SHORTHANDS_ORDERED):
+        if short in _YLIM_D:
+            axes[i].set_ylim(*_YLIM_D[short])
     add_panel_label(axes[0], 'D', x=-0.18)
     fig.suptitle('Non-Greedy (Sampled) Self-Report Across Turns', fontsize=12, y=1.02)
     plt.tight_layout()
@@ -306,7 +328,7 @@ def generate_figure_2(results_dir):
             for ci_idx in sub_a0['conversation_index'].unique():
                 conv = sub_a0[sub_a0['conversation_index'] == ci_idx].sort_values('turn')
                 ax.plot(conv['turn'], conv['logit_rating'],
-                        color=color, alpha=0.2, linewidth=0.5)
+                        color=color, alpha=0.5, linewidth=0.5)
 
             rho, p = stats.spearmanr(sub_a0['turn'], sub_a0['logit_rating'].dropna())
             pt = per_turn
@@ -341,104 +363,101 @@ def generate_figure_2(results_dir):
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel F: Informativeness — isotonic R² (self-report vs probe)
-    #   - Replaces variance comparison; measures how well each
-    #     self-report method tracks the probe's internal state
+    # Panel F: Informativeness — Shannon entropy of self-report
+    #   Measures how much information each self-report method conveys
+    #   (higher entropy = more diverse/informative responses)
     # ──────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-    r2_data = {'Greedy\n(token)': [], 'Sampled\n(token)': [], 'Logit-\nbased': []}
-    r2_stats_json = {}
+    entropy_data = {'Greedy\n(token)': [], 'Sampled\n(token)': [], 'Logit-\nbased': []}
+    entropy_stats_json = {}
+    n_bins_logit = 20  # bin count for continuous logit-based ratings
+
     for short in SHORTHANDS_ORDERED:
         concept = SHORTHAND_TO_CONCEPT[short]
-        # Greedy: need probe scores too → load from rerun (alpha=0)
-        df_rerun = _load_concept_df(LLAMA_3B_RERUN_SELF, short)
         df_greedy = _load_concept_df(LLAMA_3B_GREEDY, short)
+        df_rerun = _load_concept_df(LLAMA_3B_RERUN_SELF, short)
+        ent_entry = {}
 
-        r2_entry = {}
+        def _shannon_entropy_discrete(values):
+            """Shannon entropy of discrete distribution (nats → bits)."""
+            values = values[~np.isnan(values)]
+            if len(values) == 0:
+                return 0.0
+            _, counts = np.unique(values, return_counts=True)
+            probs = counts / counts.sum()
+            return -np.sum(probs * np.log2(probs + 1e-15))
 
-        # Greedy token vs probe
-        if df_greedy is not None and df_rerun is not None:
-            # For greedy, we can't directly compare probe & rating because
-            # they come from different experiments. Use within-greedy approach:
-            # just report R²=0 or near-0 because greedy output is nearly constant
+        def _shannon_entropy_binned(values, n_bins=20):
+            """Shannon entropy of continuous values via histogram binning."""
+            values = values[~np.isnan(values)]
+            if len(values) < 2:
+                return 0.0
+            counts, _ = np.histogram(values, bins=n_bins)
+            probs = counts / counts.sum()
+            probs = probs[probs > 0]
+            return -np.sum(probs * np.log2(probs))
+
+        # Greedy entropy
+        if df_greedy is not None:
             ratings_g = df_greedy['token_rating'].dropna().values
-            if np.std(ratings_g) < 1e-10:
-                r2_greedy = 0.0
-            else:
-                # Approximate: greedy experiments don't have probe scores
-                # Use variance ratio as proxy
-                r2_greedy = 0.0  # greedy is essentially constant → R²≈0
-            r2_data['Greedy\n(token)'].append(r2_greedy)
-            r2_entry['greedy_r2'] = round(r2_greedy, 4)
+            h_greedy = _shannon_entropy_discrete(ratings_g)
+            entropy_data['Greedy\n(token)'].append(h_greedy)
+            ent_entry['greedy_entropy_bits'] = round(float(h_greedy), 4)
+            ent_entry['greedy_n'] = len(ratings_g)
         else:
-            r2_data['Greedy\n(token)'].append(0)
-            r2_entry['greedy_r2'] = 0
+            entropy_data['Greedy\n(token)'].append(0)
 
-        # Sampled token / logit vs probe (from rerun data)
+        # Sampled token / logit entropy (from rerun data, alpha=0)
         if df_rerun is not None:
-            sub = df_rerun[np.isclose(df_rerun['alpha'], 0.0)].copy()
-            sub['probe_display'] = flip_if_needed(concept, sub['probe_score'].values)
-            sub_clean_t = sub.dropna(subset=['probe_display', 'token_rating'])
-            sub_clean_l = sub.dropna(subset=['probe_display', 'logit_rating'])
+            sub = df_rerun[np.isclose(df_rerun['alpha'], 0.0)]
+            tok_vals = sub['token_rating'].dropna().values
+            logit_vals = sub['logit_rating'].dropna().values
 
-            if len(sub_clean_t) > 5:
-                r2_t = isotonic_r2(sub_clean_t['probe_display'].values,
-                                   sub_clean_t['token_rating'].values)
-                rho_t, p_t = stats.spearmanr(sub_clean_t['probe_display'],
-                                             sub_clean_t['token_rating'])
-            else:
-                r2_t, rho_t, p_t = 0.0, 0.0, 1.0
-            r2_data['Sampled\n(token)'].append(r2_t)
-            r2_entry['sampled_token_r2'] = round(float(r2_t), 4)
-            r2_entry['sampled_token_rho'] = round(float(rho_t), 4)
-            r2_entry['sampled_token_rho_p'] = float(p_t)
+            h_token = _shannon_entropy_discrete(tok_vals)
+            h_logit = _shannon_entropy_binned(logit_vals, n_bins=n_bins_logit)
 
-            if len(sub_clean_l) > 5:
-                r2_l = isotonic_r2(sub_clean_l['probe_display'].values,
-                                   sub_clean_l['logit_rating'].values)
-                rho_l, p_l = stats.spearmanr(sub_clean_l['probe_display'],
-                                             sub_clean_l['logit_rating'])
-            else:
-                r2_l, rho_l, p_l = 0.0, 0.0, 1.0
-            r2_data['Logit-\nbased'].append(r2_l)
-            r2_entry['logit_r2'] = round(float(r2_l), 4)
-            r2_entry['logit_rho'] = round(float(rho_l), 4)
-            r2_entry['logit_rho_p'] = float(p_l)
+            entropy_data['Sampled\n(token)'].append(h_token)
+            entropy_data['Logit-\nbased'].append(h_logit)
+            ent_entry['sampled_token_entropy_bits'] = round(float(h_token), 4)
+            ent_entry['sampled_token_n'] = len(tok_vals)
+            ent_entry['logit_entropy_bits'] = round(float(h_logit), 4)
+            ent_entry['logit_n'] = len(logit_vals)
+            ent_entry['logit_n_bins'] = n_bins_logit
         else:
-            r2_data['Sampled\n(token)'].append(0)
-            r2_data['Logit-\nbased'].append(0)
+            entropy_data['Sampled\n(token)'].append(0)
+            entropy_data['Logit-\nbased'].append(0)
 
-        r2_stats_json[short] = r2_entry
+        entropy_stats_json[short] = ent_entry
 
     x = np.arange(len(SHORTHANDS_ORDERED))
     width = 0.25
-    methods = list(r2_data.keys())
+    methods = list(entropy_data.keys())
     method_colors = ['#888888', '#5DADE2', '#2ECC71']
     for j, method in enumerate(methods):
-        ax.bar(x + j * width, r2_data[method], width, label=method,
+        ax.bar(x + j * width, entropy_data[method], width, label=method,
                color=method_colors[j], edgecolor='white', linewidth=0.5)
     ax.set_xticks(x + width)
     ax.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS_ORDERED], fontsize=8)
-    ax.set_ylabel('Isotonic R² (self-report ~ probe)')
-    ax.set_title('Self-Report Informativeness (R² with Probe Score)')
+    ax.set_ylabel('Shannon Entropy (bits)')
+    ax.set_title('Self-Report Informativeness (Entropy)')
     ax.legend(fontsize=8)
     ax.set_ylim(0, None)
     add_panel_label(ax, 'F')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_02_F_informativeness_r2')
+    prefix = os.path.join(fig_dir, 'Fig_02_F_informativeness_entropy')
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_02_F',
-        'title': 'Self-Report Informativeness (Isotonic R² with Probe Score)',
-        'description': ('Isotonic R² between self-report values and probe scores at alpha=0. '
-                        'Measures how well each self-report method captures the model\'s '
-                        'internal state as measured by the linear probe. Greedy decoding '
-                        'produces near-constant outputs (R²≈0); logit-based method tracks '
-                        'probe scores most faithfully.'),
-        'metric': 'isotonic_r2',
+        'title': 'Self-Report Informativeness (Shannon Entropy)',
+        'description': ('Shannon entropy (bits) of self-report distributions at alpha=0. '
+                        'Greedy and sampled token use discrete entropy over integer ratings; '
+                        f'logit-based uses binned entropy ({n_bins_logit} bins). '
+                        'Higher entropy = more diverse/informative responses. '
+                        'Does not require comparison with probe (avoids spoiling Figure 3).'),
+        'metric': 'shannon_entropy_bits',
         'data_sources_rerun': {k: v for k, v in LLAMA_3B_RERUN_SELF.items()},
         'data_sources_greedy': {k: v for k, v in LLAMA_3B_GREEDY.items()},
-        'per_concept_r2': r2_stats_json,
+        'per_concept_entropy': entropy_stats_json,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -482,7 +501,7 @@ def generate_figure_2(results_dir):
         if i == 0:
             ax.set_ylabel('Logit Rating')
         ax.set_title(SHORTHAND_DISPLAY[short])
-        ax.plot([0, 9], [0, 9], 'k:', alpha=0.3, linewidth=0.8)
+        # Auto-scale axes per panel (no forced identity line)
     add_panel_label(axes[0], 'G', x=-0.18)
     fig.suptitle('Logit vs Token Self-Report Correlation', fontsize=12, y=1.02)
     plt.tight_layout()
@@ -503,11 +522,11 @@ def generate_figure_2(results_dir):
                         'and validates different self-report extraction methods. Key finding: '
                         'models show internal state drift but fail to report it with greedy '
                         'decoding. Logit-based method captures drift with continuous values. '
-                        'Informativeness metric uses isotonic R² between self-report and probe.'),
+                        'Informativeness uses Shannon entropy of self-report distributions.'),
         'greedy_stats': greedy_stats,
         'probe_drift_stats': drift_stats,
         'logit_drift_stats': logit_drift_stats,
-        'informativeness_r2': r2_stats_json,
+        'informativeness_entropy': entropy_stats_json,
         'logit_vs_token_correlation': corr_stats,
     }
     save_other_stats(fig_dir, other_stats)

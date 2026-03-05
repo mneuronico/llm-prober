@@ -1,0 +1,60 @@
+{
+  "panel_id": "Fig_02_B",
+  "title": "Internal State Drift Across Turns",
+  "description": "Probe scores (flipped for intuitive direction where needed) show clear drift across conversation turns, despite flat greedy self-reports. Individual conversations at alpha=0.15, mean with 95% CI in bold.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "model": "LLaMA-3.2-3B-Instruct",
+  "metric": "prompt_assistant_last_mean",
+  "alpha": 0.0,
+  "per_concept_drift": {
+    "wellbeing": {
+      "mean_first_turn": -0.1721,
+      "mean_last_turn": -0.1569,
+      "drift_magnitude": 0.0152,
+      "spearman_rho_vs_turn": -0.0109,
+      "spearman_p_vs_turn": 0.8284293371823168,
+      "first_vs_last_mann_whitney_U": 749.0,
+      "first_vs_last_mann_whitney_p": 0.6270122052187526,
+      "n_conversations": 40,
+      "polarity_flip_applied": true
+    },
+    "interest": {
+      "mean_first_turn": -0.3112,
+      "mean_last_turn": -0.2276,
+      "drift_magnitude": 0.0836,
+      "spearman_rho_vs_turn": 0.2075,
+      "spearman_p_vs_turn": 2.8913166537691832e-05,
+      "first_vs_last_mann_whitney_U": 278.0,
+      "first_vs_last_mann_whitney_p": 5.217521308068866e-07,
+      "n_conversations": 40,
+      "polarity_flip_applied": false
+    },
+    "focus": {
+      "mean_first_turn": -0.3584,
+      "mean_last_turn": -0.3431,
+      "drift_magnitude": 0.0153,
+      "spearman_rho_vs_turn": 0.2264,
+      "spearman_p_vs_turn": 4.797291104769383e-06,
+      "first_vs_last_mann_whitney_U": 494.0,
+      "first_vs_last_mann_whitney_p": 0.003285565458051267,
+      "n_conversations": 40,
+      "polarity_flip_applied": false
+    },
+    "impulsivity": {
+      "mean_first_turn": -0.5364,
+      "mean_last_turn": -0.5524,
+      "drift_magnitude": -0.0159,
+      "spearman_rho_vs_turn": 0.0859,
+      "spearman_p_vs_turn": 0.08627927430152246,
+      "first_vs_last_mann_whitney_U": 915.0,
+      "first_vs_last_mann_whitney_p": 0.2705587346338152,
+      "n_conversations": 40,
+      "polarity_flip_applied": true
+    }
+  }
+}

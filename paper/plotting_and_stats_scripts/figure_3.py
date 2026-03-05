@@ -368,14 +368,11 @@ def generate_figure_3(results_dir):
         # R² for first and last
         r2_first = isotonic_r2(first['probe_display'].values, first['logit_rating'].values)
         r2_last = isotonic_r2(last_['probe_display'].values, last_['logit_rating'].values)
-        # Rho for first and last
+        # Rho for first and last (probe_display already polarity-corrected by flip_if_needed)
         rho_first, p_first = stats.spearmanr(
             first['probe_display'].values, first['logit_rating'].values)
         rho_last, p_last = stats.spearmanr(
             last_['probe_display'].values, last_['logit_rating'].values)
-        # Flip rho for FLIP concepts
-        if concept in FLIP_CONCEPTS:
-            rho_first, rho_last = -rho_first, -rho_last
 
         width = 0.35
         # R² bars (first vs last)
@@ -415,9 +412,9 @@ def generate_figure_3(results_dir):
 
     axes[1].set_xticks(range(4))
     axes[1].set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS], fontsize=8, rotation=15)
-    axes[1].set_ylabel('Spearman ρ')
+    axes[1].set_ylabel('Spearman ρ (polarity-corrected)')
     axes[1].set_title('First vs Last Turn: ρ')
-    axes[1].set_ylim(-0.3, 1)
+    axes[1].set_ylim(0, 1)
     axes[1].axhline(0, color='gray', linestyle=':', alpha=0.5)
 
     plt.tight_layout()

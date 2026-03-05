@@ -204,20 +204,19 @@ def generate_figure_5(results_dir):
         for size in LLAMA_SIZES:
             if short in raw_r2_data[size]:
                 d = raw_r2_data[size][short]
-                # Flip rho for FLIP concepts
-                flip = -1 if concept in FLIP_CONCEPTS else 1
+                # Rho already polarity-corrected via flip_if_needed in
+                # _compute_r2_from_raw — do NOT flip again.
                 sizes_x.append(LLAMA_SIZE_VALS[size])
-                rho_y.append(d['spearman_rho'] * flip)
-                rho_lo.append(d['rho_ci_low'] * flip if flip > 0 else d['rho_ci_high'] * flip)
-                rho_hi.append(d['rho_ci_high'] * flip if flip > 0 else d['rho_ci_low'] * flip)
+                rho_y.append(d['spearman_rho'])
+                rho_lo.append(d['rho_ci_low'])
+                rho_hi.append(d['rho_ci_high'])
         if sizes_x:
-            sort_idx = np.argsort(rho_lo)  # just for proper errorbars
             ax.errorbar(sizes_x, rho_y,
                         yerr=[np.array(rho_y) - np.array(rho_lo),
                               np.array(rho_hi) - np.array(rho_y)],
                         fmt='o-', color=color, label=SHORTHAND_DISPLAY[short],
                         capsize=4, linewidth=1.5, markersize=7)
-            bii_stats[short] = {s: round(raw_r2_data[s].get(short, {}).get('spearman_rho', 0) * flip, 4)
+            bii_stats[short] = {s: round(raw_r2_data[s].get(short, {}).get('spearman_rho', 0), 4)
                                 for s in LLAMA_SIZES}
 
     ax.set_xlabel('Model Size (B parameters)')
@@ -226,9 +225,9 @@ def generate_figure_5(results_dir):
     ax.set_xscale('log')
     ax.set_xticks([1, 3, 8])
     ax.set_xticklabels(['1B', '3B', '8B'])
-    ax.set_ylim(-0.3, 1)
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
     ax.legend(fontsize=7, loc='upper left')
+    # Auto-scale y-axis to data
     add_panel_label(ax, 'Bii')
     plt.tight_layout()
     prefix = os.path.join(fig_dir, 'Fig_05_Bii_rho_vs_model_size')
@@ -239,6 +238,66 @@ def generate_figure_5(results_dir):
         'description': ('Spearman ρ at alpha=0 (polarity-corrected for FLIP concepts). '
                         'Rho flipped for sad_vs_happy & impulsive_vs_planning.'),
         'per_concept': bii_stats,
+    })
+
+    # ──────────────────────────────────────────────────────────────
+    # Panel Biii: LLaMA 8B best-introspection scatter plots
+    #   (Moved here — before C — for logical ordering near size data)
+    # ──────────────────────────────────────────────────────────────
+    best_concepts_8b = ['wellbeing', 'interest']
+    fig, axes = plt.subplots(1, 2, figsize=(9, 4))
+    best_scatter_stats = {}
+    for i, short in enumerate(best_concepts_8b):
+        concept = SHORTHAND_TO_CONCEPT[short]
+        color = CONCEPT_COLORS[concept]
+        ax = axes[i]
+        exp_dir = LLAMA_8B_SELF.get(short)
+        if exp_dir is None or not os.path.isdir(exp_dir):
+            continue
+        try:
+            results = load_results(exp_dir)
+            df = results_to_dataframe(results, probe_name=concept)
+            sub = df[np.isclose(df['alpha'], 0.0)].dropna(
+                subset=['probe_score', 'logit_rating'])
+            probe_vals = flip_if_needed(concept, sub['probe_score'].values)
+            ratings = sub['logit_rating'].values
+            ax.scatter(probe_vals, ratings, color=color, alpha=0.3, s=15,
+                       edgecolors='none')
+            if len(probe_vals) > 5:
+                ir = IsotonicRegression(out_of_bounds='clip')
+                sort_idx = np.argsort(probe_vals)
+                y_pred = ir.fit_transform(probe_vals[sort_idx], ratings[sort_idx])
+                ax.plot(probe_vals[sort_idx], y_pred, 'k-', linewidth=2, alpha=0.7)
+                rho_val, p_val = stats.spearmanr(probe_vals, ratings)
+                r2_val = isotonic_r2(probe_vals, ratings)
+                ax.text(0.05, 0.95,
+                        f'ρ = {rho_val:.3f}\n{format_p(p_val)}\nR²(iso) = {r2_val:.3f}',
+                        transform=ax.transAxes, fontsize=9, va='top',
+                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+                best_scatter_stats[short] = {
+                    'spearman_rho': round(float(rho_val), 4),
+                    'spearman_p': float(p_val),
+                    'isotonic_r2': round(float(r2_val), 4),
+                    'n': len(probe_vals),
+                }
+            ax.set_xlabel('Probe Score')
+            if i == 0:
+                ax.set_ylabel('Logit Self-Report')
+            ax.set_title(f'LLaMA 8B — {SHORTHAND_DISPLAY[short]}')
+        except Exception as e:
+            print(f"    Warning: 8B scatter error for {short}: {e}")
+
+    add_panel_label(axes[0], 'Biii')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_05_Biii_llama8b_best_scatters')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_05_Biii',
+        'title': 'High-Introspection Scatter — LLaMA 8B',
+        'description': ('Scatter plots of probe score vs logit self-report for the two '
+                        'concepts with highest R² at LLaMA 8B (wellbeing, interest). '
+                        'R² ~0.9, confirming strong introspection at larger model size.'),
+        'statistics': best_scatter_stats,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -440,10 +499,19 @@ def generate_figure_5(results_dir):
                               color=color, label=f'LLaMA {size}')
             rho_e, p_e = stats.spearmanr(
                 sub['turn'], sub['probe_display'].dropna())
+            # Per-conversation drift (for error bars in Eii)
+            conv_drifts = []
+            for ci_idx in sub['conversation_index'].unique():
+                cv = sub[sub['conversation_index'] == ci_idx].sort_values('turn')
+                if len(cv) >= 2:
+                    first_val = cv['probe_display'].iloc[0]
+                    last_val = cv['probe_display'].iloc[-1]
+                    conv_drifts.append(last_val - first_val)
             drift_stats_e[size] = {
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
                 'spearman_rho_vs_turn': round(float(rho_e), 4),
                 'spearman_p': float(p_e),
+                'per_conv_drifts': conv_drifts,
             }
         except Exception as e:
             print(f"    Warning: Drift plot error for {size}: {e}")
@@ -464,13 +532,29 @@ def generate_figure_5(results_dir):
         'drift_stats': drift_stats_e,
     })
 
-    # Panel Eii: Drift magnitude bar chart
+    # Panel Eii: Drift magnitude bar chart with error bars
     fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+    eii_json_stats = {}
     for i, size in enumerate(LLAMA_SIZES):
         if size in drift_stats_e:
             color = MODEL_SIZE_COLORS[size]
-            ax.bar(i, drift_stats_e[size]['drift_magnitude'], color=color,
-                   edgecolor='white', linewidth=0.5)
+            drifts = drift_stats_e[size].get('per_conv_drifts', [])
+            mean_drift = np.mean(drifts) if drifts else drift_stats_e[size]['drift_magnitude']
+            ax.bar(i, mean_drift, color=color, edgecolor='white', linewidth=0.5)
+            if len(drifts) > 1:
+                rng = np.random.RandomState(42)
+                boots = [np.mean(rng.choice(drifts, len(drifts))) for _ in range(1000)]
+                ci_lo = np.percentile(boots, 2.5)
+                ci_hi = np.percentile(boots, 97.5)
+                ax.errorbar(i, mean_drift,
+                            yerr=[[mean_drift - ci_lo], [ci_hi - mean_drift]],
+                            color='black', capsize=5, linewidth=1.5, capthick=1.5)
+                eii_json_stats[size] = {
+                    'mean_drift': round(float(mean_drift), 4),
+                    'ci_95': [round(float(ci_lo), 4), round(float(ci_hi), 4)],
+                    'n_conversations': len(drifts),
+                    'std_drift': round(float(np.std(drifts, ddof=1)), 4),
+                }
     ax.set_xticks(range(len(LLAMA_SIZES)))
     ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
     ax.set_ylabel('Drift (last − first turn)')
@@ -482,8 +566,10 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_Eii',
-        'title': 'Probe Drift Magnitude Bars',
-        'drift_stats': drift_stats_e,
+        'title': 'Probe Drift Magnitude Bars (with 95% CI)',
+        'description': ('Per-conversation probe score drift (last − first turn) '
+                        'with bootstrap 95% CI error bars.'),
+        'drift_stats': eii_json_stats,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -515,10 +601,18 @@ def generate_figure_5(results_dir):
                               color=color, label=f'LLaMA {size}')
             rho_f, p_f = stats.spearmanr(
                 sub['turn'], sub['logit_rating'].dropna())
+            # Per-conversation drift (for error bars in Fii)
+            conv_drifts_f = []
+            for ci_idx in sub['conversation_index'].unique():
+                cv = sub[sub['conversation_index'] == ci_idx].sort_values('turn')
+                lr = cv['logit_rating'].dropna()
+                if len(lr) >= 2:
+                    conv_drifts_f.append(lr.iloc[-1] - lr.iloc[0])
             drift_stats_f[size] = {
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
                 'spearman_rho_vs_turn': round(float(rho_f), 4),
                 'spearman_p': float(p_f),
+                'per_conv_drifts': conv_drifts_f,
             }
         except Exception as e:
             print(f"    Warning: Self-report drift error for {size}: {e}")
@@ -539,13 +633,28 @@ def generate_figure_5(results_dir):
         'drift_stats': drift_stats_f,
     })
 
-    # Panel Fii: Self-report drift magnitude bars
+    # Panel Fii: Self-report drift magnitude bars (with bootstrap CI)
     fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+    fii_stats = {}
+    rng_fii = np.random.default_rng(42)
     for i, size in enumerate(LLAMA_SIZES):
-        if size in drift_stats_f:
+        if size in drift_stats_f and drift_stats_f[size].get('per_conv_drifts'):
             color = MODEL_SIZE_COLORS[size]
-            ax.bar(i, drift_stats_f[size]['drift_magnitude'], color=color,
-                   edgecolor='white', linewidth=0.5)
+            drifts = np.array(drift_stats_f[size]['per_conv_drifts'])
+            mean_d = float(np.mean(drifts))
+            # Bootstrap 95% CI
+            boot_means = [float(np.mean(rng_fii.choice(drifts, size=len(drifts), replace=True)))
+                          for _ in range(1000)]
+            ci_lo, ci_hi = np.percentile(boot_means, [2.5, 97.5])
+            ax.bar(i, mean_d, color=color, edgecolor='white', linewidth=0.5)
+            ax.errorbar(i, mean_d, yerr=[[mean_d - ci_lo], [ci_hi - mean_d]],
+                        fmt='none', ecolor='black', capsize=4, linewidth=1.2)
+            fii_stats[size] = {
+                'mean_drift': round(mean_d, 4),
+                'ci_95': [round(ci_lo, 4), round(ci_hi, 4)],
+                'n_conversations': len(drifts),
+                'std_drift': round(float(np.std(drifts)), 4),
+            }
     ax.set_xticks(range(len(LLAMA_SIZES)))
     ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
     ax.set_ylabel('Drift (last − first turn)')
@@ -557,8 +666,8 @@ def generate_figure_5(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_Fii',
-        'title': 'Report Drift Magnitude Bars',
-        'drift_stats': drift_stats_f,
+        'title': 'Report Drift Magnitude Bars (bootstrap CI)',
+        'drift_stats': fii_stats,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -595,6 +704,7 @@ def generate_figure_5(results_dir):
                     label=f'{model_name} (d={best_d:.2f}, L{best_layer}/{num_layers})')
             ax.plot(best_norm, sweep_d[best_layer], 'o', color=color,
                     markersize=7, markeredgecolor='white', markeredgewidth=1)
+            ax.axvline(best_norm, color=color, linestyle='--', alpha=0.5, linewidth=1)
             sweep_info[model_name] = {
                 'best_layer': best_layer,
                 'best_layer_normalized': round(float(best_norm), 3),
@@ -810,61 +920,6 @@ def generate_figure_5(results_dir):
         'description': (f'Isotonic R² (K) and Spearman ρ (L, sign-flipped for {cross_concept}) '
                         'per turn for cross-family models.'),
         'cross_turnwise': cross_turnwise,
-    })
-
-    # ──────────────────────────────────────────────────────────────
-    # Panel M: LLaMA 8B best introspection scatter
-    # ──────────────────────────────────────────────────────────────
-    best_concepts = ['wellbeing', 'interest']
-    fig, axes = plt.subplots(1, 2, figsize=(9, 4))
-    best_scatter_stats = {}
-    for i, short in enumerate(best_concepts):
-        concept = SHORTHAND_TO_CONCEPT[short]
-        color = CONCEPT_COLORS[concept]
-        ax = axes[i]
-        exp_dir = LLAMA_8B_SELF.get(short)
-        if exp_dir is None or not os.path.isdir(exp_dir):
-            continue
-        try:
-            results = load_results(exp_dir)
-            df = results_to_dataframe(results, probe_name=concept)
-            sub = df[np.isclose(df['alpha'], 0.0)].dropna(
-                subset=['probe_score', 'logit_rating'])
-            probe_vals = flip_if_needed(concept, sub['probe_score'].values)
-            ratings = sub['logit_rating'].values
-            ax.scatter(probe_vals, ratings, color=color, alpha=0.3, s=15,
-                       edgecolors='none')
-            if len(probe_vals) > 5:
-                ir = IsotonicRegression(out_of_bounds='clip')
-                sort_idx = np.argsort(probe_vals)
-                y_pred = ir.fit_transform(probe_vals[sort_idx], ratings[sort_idx])
-                ax.plot(probe_vals[sort_idx], y_pred, 'k-', linewidth=2, alpha=0.7)
-                rho_val, p_val = stats.spearmanr(probe_vals, ratings)
-                r2_val = isotonic_r2(probe_vals, ratings)
-                ax.text(0.05, 0.95,
-                        f'ρ = {rho_val:.3f}\n{format_p(p_val)}\nR²(iso) = {r2_val:.3f}',
-                        transform=ax.transAxes, fontsize=9, va='top',
-                        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
-                best_scatter_stats[short] = {
-                    'spearman_rho': round(float(rho_val), 4),
-                    'spearman_p': float(p_val),
-                    'isotonic_r2': round(float(r2_val), 4),
-                }
-            ax.set_xlabel('Probe Score')
-            if i == 0:
-                ax.set_ylabel('Logit Self-Report')
-            ax.set_title(f'LLaMA 8B — {SHORTHAND_DISPLAY[short]}')
-        except Exception as e:
-            print(f"    Warning: 8B scatter error for {short}: {e}")
-
-    add_panel_label(axes[0], 'M')
-    plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_M_llama8b_best_scatters')
-    savefig(fig, prefix)
-    save_panel_json(prefix, {
-        'panel_id': 'Fig_05_M',
-        'title': 'High-Introspection — LLaMA 8B',
-        'statistics': best_scatter_stats,
     })
 
     # ── Save other_stats ──

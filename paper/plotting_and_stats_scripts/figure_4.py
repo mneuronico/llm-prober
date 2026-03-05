@@ -344,7 +344,20 @@ def generate_figure_4(results_dir):
     ax.set_title('Introspection Correlation vs. Steering Strength')
     ax.legend(fontsize=8)
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
-    ax.set_ylim(-0.2, 1)
+    # Tighten y-axis to data with some margin
+    all_rho_vals = []
+    for key, data in sig_data.items():
+        all_rho_vals.extend([v for v in data['rho'] if not np.isnan(v)])
+        for lo, hi in data['rho_ci']:
+            if not np.isnan(lo):
+                all_rho_vals.append(lo)
+            if not np.isnan(hi):
+                all_rho_vals.append(hi)
+    if all_rho_vals:
+        y_lo = min(all_rho_vals)
+        y_hi = max(all_rho_vals)
+        margin = (y_hi - y_lo) * 0.15
+        ax.set_ylim(y_lo - margin, y_hi + margin)
     add_panel_label(ax, 'H')
     plt.tight_layout()
     prefix = os.path.join(fig_dir, 'Fig_04_H_rho_vs_alpha_significant')
@@ -398,6 +411,14 @@ def generate_figure_4(results_dir):
                 rho_d, p_d = stats.spearmanr(sub_nona['turn'], sub_nona['probe_display'])
             else:
                 rho_d, p_d = np.nan, np.nan
+            # Per-conversation drift for error bars
+            per_conv_drifts_l = []
+            for ci_l in sub['conversation_index'].unique():
+                cv_l = sub[sub['conversation_index'] == ci_l].sort_values('turn')
+                pv_l = cv_l['probe_display'].dropna()
+                if len(pv_l) >= 2:
+                    per_conv_drifts_l.append(float(pv_l.iloc[-1] - pv_l.iloc[0]))
+
             drift_by_alpha[str(a)] = {
                 'display_alpha': float(display_a),
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
@@ -405,6 +426,7 @@ def generate_figure_4(results_dir):
                 'last_turn_mean': round(float(means[-1]), 4),
                 'drift_spearman_rho': round(float(rho_d), 4),
                 'drift_spearman_p': float(p_d),
+                'per_conv_drifts': per_conv_drifts_l,
             }
 
         ax.set_xlabel('Turn')
@@ -474,6 +496,7 @@ def generate_figure_4(results_dir):
     # ──────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
     l_stats = {}
+    rng_l = np.random.default_rng(42)
     for idx, (key, data) in enumerate(sig_data.items()):
         steer_short = data['steer_short']
         meas_short = data['meas_short']
@@ -483,15 +506,34 @@ def generate_figure_4(results_dir):
             da = data['display_alphas']
             sort_idx = np.argsort(da)
             da_sorted = [da[k] for k in sort_idx]
-            drift_vals = [drift_decomposition[dk][str(ALPHAS[k])]['drift_magnitude']
-                          for k in sort_idx]
-            ax.plot(da_sorted, drift_vals, 'o-', color=color, label=data['label'],
-                    linewidth=1.5, markersize=6)
+            drift_vals = []
+            ci_lo_l = []
+            ci_hi_l = []
+            for k in sort_idx:
+                entry = drift_decomposition[dk][str(ALPHAS[k])]
+                pcl = np.array(entry.get('per_conv_drifts', []))
+                mean_d = float(np.mean(pcl)) if len(pcl) > 0 else entry['drift_magnitude']
+                drift_vals.append(mean_d)
+                if len(pcl) >= 2:
+                    boots = [float(np.mean(rng_l.choice(pcl, size=len(pcl), replace=True)))
+                             for _ in range(1000)]
+                    ci_lo_l.append(np.percentile(boots, 2.5))
+                    ci_hi_l.append(np.percentile(boots, 97.5))
+                else:
+                    ci_lo_l.append(mean_d)
+                    ci_hi_l.append(mean_d)
+            yerr_lo = [drift_vals[j] - ci_lo_l[j] for j in range(len(drift_vals))]
+            yerr_hi = [ci_hi_l[j] - drift_vals[j] for j in range(len(drift_vals))]
+            ax.errorbar(da_sorted, drift_vals, yerr=[yerr_lo, yerr_hi],
+                        fmt='o-', color=color, label=data['label'],
+                        linewidth=1.5, markersize=6, capsize=3)
             # Trend test: Spearman of drift magnitude vs display alpha
             rho_dl, p_dl = stats.spearmanr(da_sorted, drift_vals)
             l_stats[dk] = {
                 'display_alphas': da_sorted,
-                'drift_values': drift_vals,
+                'drift_values': [round(v, 4) for v in drift_vals],
+                'ci_95_low': [round(v, 4) for v in ci_lo_l],
+                'ci_95_high': [round(v, 4) for v in ci_hi_l],
                 'spearman_rho_drift_vs_alpha': round(float(rho_dl), 4),
                 'spearman_p': float(p_dl),
             }

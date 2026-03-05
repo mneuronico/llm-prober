@@ -1,0 +1,145 @@
+{
+  "panel_id": "Fig_03_E",
+  "title": "Self-Steering: Mean Self-Report vs. Alpha (Polarity-Corrected)",
+  "description": "Mean logit-based self-report vs steering alpha (sign-corrected for FLIP concepts so positive α → positive direction). Monotonic increase confirms causal relationship. 95% bootstrap CIs.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "steering_stats": {
+    "wellbeing": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        5.3763,
+        5.8826,
+        6.332,
+        6.6375,
+        6.8631
+      ],
+      "ci_low": [
+        5.3487,
+        5.8451,
+        6.2925,
+        6.6003,
+        6.8284
+      ],
+      "ci_high": [
+        5.4055,
+        5.923,
+        6.3753,
+        6.6762,
+        6.8983
+      ],
+      "alpha_display_flipped": true,
+      "spearman_rho_display_alpha_vs_rating": 0.8077,
+      "spearman_p": 0.0
+    },
+    "interest": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        6.1103,
+        6.6754,
+        7.2859,
+        7.7667,
+        8.0291
+      ],
+      "ci_low": [
+        6.0554,
+        6.6117,
+        7.2274,
+        7.7328,
+        8.0102
+      ],
+      "ci_high": [
+        6.1643,
+        6.7364,
+        7.3417,
+        7.8024,
+        8.0483
+      ],
+      "alpha_display_flipped": false,
+      "spearman_rho_display_alpha_vs_rating": 0.8376,
+      "spearman_p": 0.0
+    },
+    "focus": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        4.7305,
+        6.5387,
+        7.7948,
+        7.986,
+        8.0318
+      ],
+      "ci_low": [
+        4.6937,
+        6.4824,
+        7.7659,
+        7.9693,
+        8.0165
+      ],
+      "ci_high": [
+        4.7657,
+        6.5933,
+        7.8203,
+        8.0006,
+        8.0454
+      ],
+      "alpha_display_flipped": false,
+      "spearman_rho_display_alpha_vs_rating": 0.8844,
+      "spearman_p": 0.0
+    },
+    "impulsivity": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "mean_ratings": [
+        3.7809,
+        3.8006,
+        3.8937,
+        4.1027,
+        4.3029
+      ],
+      "ci_low": [
+        3.7589,
+        3.777,
+        3.8651,
+        4.0702,
+        4.2718
+      ],
+      "ci_high": [
+        3.8028,
+        3.825,
+        3.9222,
+        4.1351,
+        4.3369
+      ],
+      "alpha_display_flipped": true,
+      "spearman_rho_display_alpha_vs_rating": 0.6007,
+      "spearman_p": 1.9436715720051882e-196
+    }
+  }
+}

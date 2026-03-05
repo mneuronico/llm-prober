@@ -1,0 +1,193 @@
+{
+  "description": "Figure 2 demonstrates internal state drift through conversations and validates different self-report extraction methods. Key finding: models show internal state drift but fail to report it with greedy decoding. Logit-based method captures drift with continuous values. Informativeness uses Shannon entropy of self-report distributions.",
+  "greedy_stats": {
+    "wellbeing": {
+      "mean_variance_across_turns": 0.7167,
+      "mean_rating": 6.117,
+      "n_conversations": 40,
+      "spearman_rho_vs_turn": 0.082,
+      "spearman_p_vs_turn": 0.10150839137251175
+    },
+    "interest": {
+      "mean_variance_across_turns": 0.5754,
+      "mean_rating": 7.5,
+      "n_conversations": 40,
+      "spearman_rho_vs_turn": 0.4319,
+      "spearman_p_vs_turn": 1.3022572823260678e-19
+    },
+    "focus": {
+      "mean_variance_across_turns": 0.0863,
+      "mean_rating": 7.952,
+      "n_conversations": 40,
+      "spearman_rho_vs_turn": 0.2117,
+      "spearman_p_vs_turn": 1.9534302323769192e-05
+    },
+    "impulsivity": {
+      "mean_variance_across_turns": 0.01,
+      "mean_rating": 4.005,
+      "n_conversations": 40,
+      "spearman_rho_vs_turn": 0.061,
+      "spearman_p_vs_turn": 0.22345758029818644
+    }
+  },
+  "probe_drift_stats": {
+    "wellbeing": {
+      "mean_first_turn": -0.1721,
+      "mean_last_turn": -0.1569,
+      "drift_magnitude": 0.0152,
+      "spearman_rho_vs_turn": -0.0109,
+      "spearman_p_vs_turn": 0.8284293371823168,
+      "first_vs_last_mann_whitney_U": 749.0,
+      "first_vs_last_mann_whitney_p": 0.6270122052187526,
+      "n_conversations": 40,
+      "polarity_flip_applied": true
+    },
+    "interest": {
+      "mean_first_turn": -0.3112,
+      "mean_last_turn": -0.2276,
+      "drift_magnitude": 0.0836,
+      "spearman_rho_vs_turn": 0.2075,
+      "spearman_p_vs_turn": 2.8913166537691832e-05,
+      "first_vs_last_mann_whitney_U": 278.0,
+      "first_vs_last_mann_whitney_p": 5.217521308068866e-07,
+      "n_conversations": 40,
+      "polarity_flip_applied": false
+    },
+    "focus": {
+      "mean_first_turn": -0.3584,
+      "mean_last_turn": -0.3431,
+      "drift_magnitude": 0.0153,
+      "spearman_rho_vs_turn": 0.2264,
+      "spearman_p_vs_turn": 4.797291104769383e-06,
+      "first_vs_last_mann_whitney_U": 494.0,
+      "first_vs_last_mann_whitney_p": 0.003285565458051267,
+      "n_conversations": 40,
+      "polarity_flip_applied": false
+    },
+    "impulsivity": {
+      "mean_first_turn": -0.5364,
+      "mean_last_turn": -0.5524,
+      "drift_magnitude": -0.0159,
+      "spearman_rho_vs_turn": 0.0859,
+      "spearman_p_vs_turn": 0.08627927430152246,
+      "first_vs_last_mann_whitney_U": 915.0,
+      "first_vs_last_mann_whitney_p": 0.2705587346338152,
+      "n_conversations": 40,
+      "polarity_flip_applied": true
+    }
+  },
+  "logit_drift_stats": {
+    "wellbeing": {
+      "mean_first_turn": 6.2386,
+      "mean_last_turn": 6.4167,
+      "drift_magnitude": 0.1781,
+      "spearman_rho_vs_turn": 0.1198,
+      "spearman_p_vs_turn": 0.01649082830537667,
+      "n_conversations": 40
+    },
+    "interest": {
+      "mean_first_turn": 6.4083,
+      "mean_last_turn": 7.5885,
+      "drift_magnitude": 1.1801,
+      "spearman_rho_vs_turn": 0.4819,
+      "spearman_p_vs_turn": 1.1882723996563983e-24,
+      "n_conversations": 40
+    },
+    "focus": {
+      "mean_first_turn": 7.4947,
+      "mean_last_turn": 7.9291,
+      "drift_magnitude": 0.4344,
+      "spearman_rho_vs_turn": 0.3951,
+      "spearman_p_vs_turn": 2.150526481512235e-16,
+      "n_conversations": 40
+    },
+    "impulsivity": {
+      "mean_first_turn": 4.0467,
+      "mean_last_turn": 3.8459,
+      "drift_magnitude": -0.2008,
+      "spearman_rho_vs_turn": -0.164,
+      "spearman_p_vs_turn": 0.0009973034658057789,
+      "n_conversations": 40
+    }
+  },
+  "informativeness_entropy": {
+    "wellbeing": {
+      "greedy_entropy_bits": 1.0975,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 2.0455,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.6828,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    },
+    "interest": {
+      "greedy_entropy_bits": 0.8474,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 1.3515,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.676,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    },
+    "focus": {
+      "greedy_entropy_bits": 0.1804,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 0.6824,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.2717,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    },
+    "impulsivity": {
+      "greedy_entropy_bits": 0.0252,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 1.7396,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.1054,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    }
+  },
+  "logit_vs_token_correlation": {
+    "wellbeing": {
+      "pearson_r": 0.3616,
+      "pearson_p": 8.415355213097923e-14,
+      "spearman_rho": 0.3396,
+      "spearman_p": 2.98303683921535e-12,
+      "isotonic_r2": 0.1387,
+      "n": 400,
+      "slope": 0.1359,
+      "intercept": 5.466
+    },
+    "interest": {
+      "pearson_r": 0.6088,
+      "pearson_p": 6.184388065934806e-42,
+      "spearman_rho": 0.5585,
+      "spearman_p": 3.5118949654839764e-34,
+      "isotonic_r2": 0.3957,
+      "n": 400,
+      "slope": 0.3674,
+      "intercept": 4.5571
+    },
+    "focus": {
+      "pearson_r": 0.4562,
+      "pearson_p": 5.912612243056552e-22,
+      "spearman_rho": 0.3576,
+      "spearman_p": 1.6502180021290444e-13,
+      "isotonic_r2": 0.2177,
+      "n": 400,
+      "slope": 0.2526,
+      "intercept": 5.8086
+    },
+    "impulsivity": {
+      "pearson_r": 0.2584,
+      "pearson_p": 1.59830359708165e-07,
+      "spearman_rho": 0.2457,
+      "spearman_p": 6.494514131269473e-07,
+      "isotonic_r2": 0.0828,
+      "n": 400,
+      "slope": 0.0711,
+      "intercept": 3.6201
+    }
+  }
+}

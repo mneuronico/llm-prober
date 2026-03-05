@@ -1,0 +1,10 @@
+{
+  "panel_id": "Fig_05_I",
+  "title": "Scatter — Gemma 3 4B",
+  "statistics": {
+    "spearman_rho": 0.2808,
+    "spearman_p": 1.1031122364368862e-08,
+    "isotonic_r2": 0.1141,
+    "n": 400
+  }
+}

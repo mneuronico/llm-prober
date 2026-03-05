@@ -1,0 +1,42 @@
+{
+  "panel_id": "Fig_02_D",
+  "title": "Non-Greedy (Sampled) Self-Report Across Turns",
+  "description": "Sampled (temperature=0.8) token-based self-reports. More variable than greedy but still discrete (integer-valued) and relatively noisy.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "rating_type": "token (sampled, temp=0.8)",
+  "per_concept_stats": {
+    "wellbeing": {
+      "mean_rating": 6.372,
+      "variance": 1.312,
+      "spearman_rho_vs_turn": -0.0026,
+      "spearman_p_vs_turn": 0.958051195861529,
+      "n_conversations": 40
+    },
+    "interest": {
+      "mean_rating": 7.428,
+      "variance": 0.9621,
+      "spearman_rho_vs_turn": 0.3568,
+      "spearman_p_vs_turn": 1.8631017395904062e-13,
+      "n_conversations": 40
+    },
+    "focus": {
+      "mean_rating": 7.862,
+      "variance": 0.2643,
+      "spearman_rho_vs_turn": 0.149,
+      "spearman_p_vs_turn": 0.0028131468396823144,
+      "n_conversations": 40
+    },
+    "impulsivity": {
+      "mean_rating": 3.85,
+      "variance": 1.0902,
+      "spearman_rho_vs_turn": -0.0022,
+      "spearman_p_vs_turn": 0.9656826304174726,
+      "n_conversations": 40
+    }
+  }
+}

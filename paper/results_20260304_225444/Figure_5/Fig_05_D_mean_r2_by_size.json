@@ -1,0 +1,28 @@
+{
+  "panel_id": "Fig_05_D",
+  "title": "Mean R² by Size (Validated Probes)",
+  "description": "Mean isotonic R² across concepts with validated probes (ρ(α,rating) ≥ 0), excluding inverted-steering cases.",
+  "good_r2": {
+    "1B": [
+      0.2587,
+      0.0527,
+      0.0463
+    ],
+    "3B": [
+      0.452,
+      0.6572,
+      0.0371,
+      0.3304
+    ],
+    "8B": [
+      0.9022,
+      0.9313,
+      0.0073
+    ]
+  },
+  "means": [
+    0.1192,
+    0.3692,
+    0.6136
+  ]
+}

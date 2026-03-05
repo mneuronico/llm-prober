@@ -1,0 +1,269 @@
+{
+  "panel_id": "Fig_05_C",
+  "title": "Self-Report vs Alpha Curves + Rho Heatmap",
+  "description": "Left 3 panels: logit self-report vs display-corrected alpha per concept per model size. Right: heatmap of Spearman ρ between alpha and logit rating (* = p<0.05). Replaces previous signed-R² panel.",
+  "per_size_stats": {
+    "1B": {
+      "wellbeing": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          3.2474,
+          4.3784,
+          6.8946,
+          7.3154,
+          6.6618
+        ],
+        "spearman_rho_alpha_rating": 0.7274,
+        "spearman_p": 0.0
+      },
+      "interest": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          2.0799,
+          5.5659,
+          7.6804,
+          7.8911,
+          2.1535
+        ],
+        "spearman_rho_alpha_rating": 0.1962,
+        "spearman_p": 8.422866556797393e-19
+      },
+      "focus": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          6.3824,
+          7.8083,
+          6.7825,
+          5.7897,
+          1.2255
+        ],
+        "spearman_rho_alpha_rating": -0.6388,
+        "spearman_p": 9.105964052627752e-230
+      },
+      "impulsivity": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          6.7143,
+          6.6193,
+          6.3946,
+          6.5036,
+          7.7534
+        ],
+        "spearman_rho_alpha_rating": 0.3397,
+        "spearman_p": 3.3495454578314846e-55
+      }
+    },
+    "3B": {
+      "wellbeing": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          5.282,
+          5.7588,
+          6.2129,
+          6.5216,
+          6.7545
+        ],
+        "spearman_rho_alpha_rating": 0.8038,
+        "spearman_p": 0.0
+      },
+      "interest": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          5.8872,
+          6.4033,
+          7.0188,
+          7.5777,
+          7.9462
+        ],
+        "spearman_rho_alpha_rating": 0.8079,
+        "spearman_p": 0.0
+      },
+      "focus": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          4.6869,
+          6.5465,
+          7.7875,
+          7.9817,
+          8.0386
+        ],
+        "spearman_rho_alpha_rating": 0.8827,
+        "spearman_p": 0.0
+      },
+      "impulsivity": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          3.7797,
+          3.8098,
+          3.9159,
+          4.1478,
+          4.363
+        ],
+        "spearman_rho_alpha_rating": 0.621,
+        "spearman_p": 1.211022171617129e-213
+      }
+    },
+    "8B": {
+      "wellbeing": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          4.8421,
+          5.1952,
+          5.9372,
+          7.0086,
+          7.8839
+        ],
+        "spearman_rho_alpha_rating": 0.8741,
+        "spearman_p": 0.0
+      },
+      "interest": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          5.8371,
+          5.9912,
+          6.161,
+          6.3333,
+          6.5336
+        ],
+        "spearman_rho_alpha_rating": 0.2033,
+        "spearman_p": 4.2412501238721325e-20
+      },
+      "focus": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          4.3612,
+          6.3373,
+          7.7292,
+          7.9189,
+          7.8926
+        ],
+        "spearman_rho_alpha_rating": 0.8305,
+        "spearman_p": 0.0
+      },
+      "impulsivity": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          3.3552,
+          3.0489,
+          2.9483,
+          2.8467,
+          2.9202
+        ],
+        "spearman_rho_alpha_rating": -0.3019,
+        "spearman_p": 1.969675224138072e-43
+      }
+    }
+  },
+  "rho_matrix": [
+    [
+      0.7273870927466994,
+      0.19618333225703696,
+      -0.6387872005579376,
+      0.33968793152093685
+    ],
+    [
+      0.8037695409437139,
+      0.8079195894591805,
+      0.8827276279272197,
+      0.6210100267604207
+    ],
+    [
+      0.874120119895141,
+      0.20328991526160958,
+      0.8305185846509726,
+      -0.30194128997954567
+    ]
+  ],
+  "rho_p_matrix": [
+    [
+      0.0,
+      8.422866556797393e-19,
+      9.105964052627752e-230,
+      3.3495454578314846e-55
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.211022171617129e-213
+    ],
+    [
+      0.0,
+      4.2412501238721325e-20,
+      0.0,
+      1.969675224138072e-43
+    ]
+  ]
+}

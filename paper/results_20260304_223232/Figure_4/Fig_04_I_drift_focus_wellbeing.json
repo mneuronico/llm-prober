@@ -1,0 +1,51 @@
+{
+  "panel_id": "Fig_04_I",
+  "title": "Probe Score Drift — Focused / Distracted → Happy / Sad",
+  "description": "Mean probe score (sad_vs_happy, polarity-corrected) across turns for different steering alphas (steering: focus). Alpha labels display-corrected (flipped=False). Drift significance: Spearman ρ of turn vs probe score at each α.",
+  "steer_concept": "focus",
+  "meas_concept": "wellbeing",
+  "alpha_display_flipped": false,
+  "probe_polarity_flipped": true,
+  "drift_by_alpha": {
+    "-4.0": {
+      "display_alpha": -4.0,
+      "drift_magnitude": -0.0077,
+      "first_turn_mean": -0.5191,
+      "last_turn_mean": -0.5269,
+      "drift_spearman_rho": -0.1144,
+      "drift_spearman_p": 0.022097550117395472
+    },
+    "-2.0": {
+      "display_alpha": -2.0,
+      "drift_magnitude": -0.0047,
+      "first_turn_mean": -0.4091,
+      "last_turn_mean": -0.4138,
+      "drift_spearman_rho": -0.0635,
+      "drift_spearman_p": 0.20532665880125175
+    },
+    "0.0": {
+      "display_alpha": 0.0,
+      "drift_magnitude": 0.0287,
+      "first_turn_mean": -0.2052,
+      "last_turn_mean": -0.1765,
+      "drift_spearman_rho": 0.0342,
+      "drift_spearman_p": 0.4951187836881543
+    },
+    "2.0": {
+      "display_alpha": 2.0,
+      "drift_magnitude": 0.0723,
+      "first_turn_mean": -0.0326,
+      "last_turn_mean": 0.0398,
+      "drift_spearman_rho": 0.1137,
+      "drift_spearman_p": 0.022895166071485184
+    },
+    "4.0": {
+      "display_alpha": 4.0,
+      "drift_magnitude": 0.1264,
+      "first_turn_mean": 0.0198,
+      "last_turn_mean": 0.1462,
+      "drift_spearman_rho": 0.2128,
+      "drift_spearman_p": 1.774961468956268e-05
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "panel_id": "Fig_05_J",
+  "title": "Scatter — Qwen 2.5 7B",
+  "statistics": {
+    "spearman_rho": 0.489,
+    "spearman_p": 1.9408479049919138e-25,
+    "isotonic_r2": 0.7566,
+    "n": 400
+  }
+}

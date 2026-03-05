@@ -1,0 +1,26 @@
+{
+  "panel_id": "Fig_01_B",
+  "title": "Score Distribution - Happy / Sad",
+  "description": "Boxplot of per-token probe scores for positive (sad) and negative (happy) evaluation texts at best layer 16. Scores flipped for intuitive direction. n = 5 evaluation prompts per condition.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\outputs\\sad_vs_happy\\20260106_181019\\scores/",
+  "model": "LLaMA-3.2-3B-Instruct",
+  "concept": "sad_vs_happy",
+  "best_layer": 16,
+  "pos_label": "sad",
+  "neg_label": "happy",
+  "n_eval_prompts": 5,
+  "statistics": {
+    "high_label": "Happy",
+    "low_label": "Sad",
+    "high_n_tokens": 20,
+    "low_n_tokens": 20,
+    "high_n_prompts": 1,
+    "low_n_prompts": 1,
+    "high_median": -0.0911,
+    "low_median": -0.2971,
+    "high_mean": -0.09,
+    "low_mean": -0.3033,
+    "mann_whitney_U": 398.0,
+    "mann_whitney_p": 9.172772711656482e-08
+  }
+}

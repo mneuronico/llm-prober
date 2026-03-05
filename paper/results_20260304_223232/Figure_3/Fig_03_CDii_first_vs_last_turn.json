@@ -1,0 +1,67 @@
+{
+  "panel_id": "Fig_03_CDii",
+  "title": "First vs Last Turn Introspection Comparison",
+  "description": "Comparison of introspection metrics at the first and last conversation turn. Tests whether introspection degrades or improves across the conversation. Rho sign-flipped for FLIP concepts.",
+  "first_last_stats": {
+    "wellbeing": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "r2_first": 0.4106,
+      "r2_last": 0.5943,
+      "r2_difference": 0.1837,
+      "rho_first": -0.5223,
+      "rho_last": -0.7856,
+      "rho_difference": -0.2632,
+      "rho_first_p": 0.0005457896413379208,
+      "rho_last_p": 1.9331041361980485e-09,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": true
+    },
+    "interest": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "r2_first": 0.4505,
+      "r2_last": 0.5223,
+      "r2_difference": 0.0718,
+      "rho_first": 0.5499,
+      "rho_last": 0.7953,
+      "rho_difference": 0.2454,
+      "rho_first_p": 0.00023722925487054883,
+      "rho_last_p": 8.750870280177239e-10,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": false
+    },
+    "focus": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "r2_first": 0.1999,
+      "r2_last": 0.3257,
+      "r2_difference": 0.1258,
+      "rho_first": 0.2576,
+      "rho_last": 0.4722,
+      "rho_difference": 0.2146,
+      "rho_first_p": 0.10854918990260146,
+      "rho_last_p": 0.0020937495945318324,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": false
+    },
+    "impulsivity": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "r2_first": 0.5061,
+      "r2_last": 0.3834,
+      "r2_difference": -0.1227,
+      "rho_first": -0.6458,
+      "rho_last": -0.4086,
+      "rho_difference": 0.2371,
+      "rho_first_p": 6.796689161600402e-06,
+      "rho_last_p": 0.008848734558672335,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": true
+    }
+  }
+}

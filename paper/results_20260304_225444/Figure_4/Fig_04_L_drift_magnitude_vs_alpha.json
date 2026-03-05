@@ -1,0 +1,71 @@
+{
+  "panel_id": "Fig_04_L",
+  "title": "Drift Magnitude vs. Display-Corrected Alpha",
+  "description": "Probe score drift (last−first turn) vs display-corrected alpha. Alpha flipped for impulsive_vs_planning steering. Includes Spearman test of drift-vs-alpha trend.",
+  "drift_vs_alpha_stats": {
+    "focus→wellbeing": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "drift_values": [
+        -0.0077,
+        -0.0047,
+        0.0287,
+        0.0723,
+        0.1264
+      ],
+      "ci_95_low": [
+        -0.0287,
+        -0.0268,
+        0.0037,
+        0.0495,
+        0.1046
+      ],
+      "ci_95_high": [
+        0.014,
+        0.0185,
+        0.0519,
+        0.0956,
+        0.1513
+      ],
+      "spearman_rho_drift_vs_alpha": 1.0,
+      "spearman_p": 1.4042654220543672e-24
+    },
+    "impulsivity→interest": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "drift_values": [
+        0.0608,
+        0.0739,
+        0.0858,
+        0.0959,
+        0.0992
+      ],
+      "ci_95_low": [
+        0.0438,
+        0.0557,
+        0.0666,
+        0.0742,
+        0.0774
+      ],
+      "ci_95_high": [
+        0.0775,
+        0.0937,
+        0.1042,
+        0.1172,
+        0.1212
+      ],
+      "spearman_rho_drift_vs_alpha": 1.0,
+      "spearman_p": 1.4042654220543672e-24
+    }
+  }
+}

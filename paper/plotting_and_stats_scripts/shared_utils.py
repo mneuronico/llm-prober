@@ -390,86 +390,32 @@ def load_model_size_steering_csv():
 
 def load_individual_eval_scores(probe_dir, best_layer=None):
     """
-    Load individual per-token probe scores from npz files in the scores/ directory.
-    Returns dict with keys 'pos_scores' and 'neg_scores', each a list of arrays
-    (one array of generation-token scores per evaluation prompt).
-    If best_layer is None, reads it from metrics.json.
+    Load individual per-eval-text probe scores from tensors.npz.
+    Returns dict with keys 'pos_scores' (array of shape [n_pos]) and
+    'neg_scores' (array of shape [n_neg]) — one score per eval text at
+    the best layer.  If best_layer is None, reads it from the npz.
     """
-    if best_layer is None:
-        metrics = load_metrics(probe_dir)
-        best_layer = metrics['best_layer']
-
-    scores_dir = os.path.join(probe_dir, 'scores')
-    if not os.path.isdir(scores_dir):
+    tensors_path = os.path.join(probe_dir, 'tensors.npz')
+    if not os.path.exists(tensors_path):
         return None
 
-    # Read the config to get alpha values and determine pos/neg
-    log_path = os.path.join(probe_dir, 'log.jsonl')
-    score_prompts = []
-    with open(log_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            try:
-                entry = json.loads(line.strip())
-                if entry.get('event') == 'score_prompt':
-                    score_prompts.append(entry)
-            except json.JSONDecodeError:
-                continue
+    try:
+        npz = np.load(tensors_path, allow_pickle=True)
+        if best_layer is None:
+            best_layer = int(npz['best_layer'][0])
 
-    # Group by alpha: alpha > 0 → "positive" condition; alpha == 0 / baseline
-    # Actually the structure is: score_prompt events with alpha and npz_path
-    # We want the alpha=0 evaluation scores, split by system prompt direction
-    concept_info = load_concept(probe_dir)
-    pos_system = concept_info.get('pos_system', '')
-    neg_system = concept_info.get('neg_system', '')
+        pos_mat = npz['eval_pos_scores_mat']  # shape (n_pos, num_layers)
+        neg_mat = npz['eval_neg_scores_mat']  # shape (n_neg, num_layers)
 
-    pos_scores = []
-    neg_scores = []
-    for sp in score_prompts:
-        npz_path = sp.get('npz_path')
-        if not npz_path:
-            continue
-        full_npz = os.path.join(REPO_ROOT, npz_path) if not os.path.isabs(npz_path) else npz_path
-        if not os.path.exists(full_npz):
-            continue
-        try:
-            npz = np.load(full_npz, allow_pickle=True)
-            prompt_len = int(npz['prompt_len'][0])
-            all_scores = npz['scores_agg']
-            gen_scores = all_scores[prompt_len:]  # generation tokens only
-            alpha = sp.get('alpha', 0.0)
-            system = sp.get('system_prompt', '')
+        pos_scores = pos_mat[:, best_layer] if pos_mat.ndim == 2 else pos_mat
+        neg_scores = neg_mat[:, best_layer] if neg_mat.ndim == 2 else neg_mat
 
-            if system == pos_system and np.isclose(alpha, 0.0):
-                pos_scores.append(gen_scores)
-            elif system == neg_system and np.isclose(alpha, 0.0):
-                neg_scores.append(gen_scores)
-        except Exception:
-            continue
-
-    # If pos_system == neg_system (neutral system), split by alpha sign
-    if pos_system == neg_system:
-        pos_scores = []
-        neg_scores = []
-        for sp in score_prompts:
-            npz_path = sp.get('npz_path')
-            if not npz_path:
-                continue
-            full_npz = os.path.join(REPO_ROOT, npz_path) if not os.path.isabs(npz_path) else npz_path
-            if not os.path.exists(full_npz):
-                continue
-            try:
-                npz = np.load(full_npz, allow_pickle=True)
-                prompt_len = int(npz['prompt_len'][0])
-                gen_scores = npz['scores_agg'][prompt_len:]
-                alpha = sp.get('alpha', 0.0)
-                if alpha > 0:
-                    pos_scores.append(gen_scores)
-                elif alpha < 0:
-                    neg_scores.append(gen_scores)
-            except Exception:
-                continue
-
-    return {'pos_scores': pos_scores, 'neg_scores': neg_scores}
+        return {
+            'pos_scores': [pos_scores],   # wrap in list for backward compat
+            'neg_scores': [neg_scores],
+        }
+    except Exception:
+        return None
 
 
 # ──────────────────── DATA EXTRACTION ────────────────────

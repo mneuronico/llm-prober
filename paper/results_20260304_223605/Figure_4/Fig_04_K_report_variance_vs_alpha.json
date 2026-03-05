@@ -1,0 +1,39 @@
+{
+  "panel_id": "Fig_04_K",
+  "title": "Self-Report Variance vs. Display-Corrected Alpha",
+  "description": "Variance of logit self-reports vs display-corrected alpha. Alpha sign-flipped for impulsive_vs_planning steering.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "variance_values": [
+        0.0332,
+        0.0767,
+        0.1644,
+        0.2319,
+        0.2045
+      ]
+    },
+    "('impulsivity', 'interest')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "variance_values": [
+        0.2446,
+        0.3267,
+        0.3775,
+        0.3871,
+        0.3819
+      ]
+    }
+  }
+}
