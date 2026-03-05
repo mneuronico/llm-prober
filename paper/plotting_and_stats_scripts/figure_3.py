@@ -32,6 +32,9 @@ from shared_utils import (
     flip_alpha_if_needed, flip_alpha_scalar,
     get_turnwise_stats,
     isotonic_r2, bootstrap_stat, spearman_rho, spearman_full,
+    cluster_bootstrap_stat, per_conversation_spearman, one_sample_test,
+    lmm_test, corrected_drift_stats, corrected_steering_stats,
+    corrected_correlation_stats,
     savefig, save_panel_json, save_other_stats, ensure_dir,
     add_panel_label, plot_line_with_ci, format_p,
     compute_per_turn_means, SHORTHAND_DISPLAY,
@@ -95,14 +98,30 @@ def generate_figure_3(results_dir):
             rho_pt, rho_ci_lo, rho_ci_hi = bootstrap_stat(
                 probe_vals, ratings, spearman_rho)
 
+            # Cluster bootstrap (resample at conversation level)
+            conv_ids = sub['conversation_index'].values
+            r2_cpt, r2_cci_lo, r2_cci_hi = cluster_bootstrap_stat(
+                conv_ids, probe_vals, ratings, isotonic_r2)
+            rho_cpt, rho_cci_lo, rho_cci_hi = cluster_bootstrap_stat(
+                conv_ids, probe_vals, ratings, spearman_rho)
+
+            # Corrected: per-conversation rho + LMM
+            sub_corr = sub.copy()
+            sub_corr['probe_display'] = probe_vals
+            corrected_a = corrected_correlation_stats(
+                sub_corr, 'probe_display', 'logit_rating', alpha_val=0.0)
+
             scatter_stats[short] = {
-                'spearman_rho': round(float(rho_val), 4),
-                'spearman_p': float(p_val),
+                'spearman_rho_POOLED': round(float(rho_val), 4),
+                'spearman_p_POOLED': float(p_val),
                 'isotonic_r2': round(float(r2_iso), 4),
-                'isotonic_r2_ci': [round(r2_ci_lo, 4), round(r2_ci_hi, 4)],
-                'rho_ci': [round(rho_ci_lo, 4), round(rho_ci_hi, 4)],
-                'n': len(probe_vals),
+                'observation_bootstrap_r2_ci': [round(r2_ci_lo, 4), round(r2_ci_hi, 4)],
+                'observation_bootstrap_rho_ci': [round(rho_ci_lo, 4), round(rho_ci_hi, 4)],
+                'cluster_bootstrap_r2_ci': [round(float(r2_cci_lo), 4), round(float(r2_cci_hi), 4)],
+                'cluster_bootstrap_rho_ci': [round(float(rho_cci_lo), 4), round(float(rho_cci_hi), 4)],
+                'n_POOLED': len(probe_vals),
                 'polarity_flip_applied': concept in FLIP_CONCEPTS,
+                'corrected_stats': corrected_a,
             }
             ax.text(0.05, 0.95,
                     f'ρ = {rho_val:.3f}\n{format_p(p_val)}\nR²(iso) = {r2_iso:.3f}',
@@ -171,7 +190,7 @@ def generate_figure_3(results_dir):
             ax.bar(i + offset_probe, s['isotonic_r2'], bar_w,
                    color=color, edgecolor='white', linewidth=0.5,
                    label='Probe' if i == 0 else None)
-            ci = s['isotonic_r2_ci']
+            ci = s['cluster_bootstrap_r2_ci']
             ax.errorbar(i + offset_probe, s['isotonic_r2'],
                         yerr=[[s['isotonic_r2'] - ci[0]], [ci[1] - s['isotonic_r2']]],
                         color='black', capsize=3, linewidth=1.2, capthick=1.2)
@@ -195,12 +214,12 @@ def generate_figure_3(results_dir):
         color = CONCEPT_COLORS[concept]
         if short in scatter_stats:
             s = scatter_stats[short]
-            ax.bar(i + offset_probe, s['spearman_rho'], bar_w,
+            ax.bar(i + offset_probe, s['spearman_rho_POOLED'], bar_w,
                    color=color, edgecolor='white', linewidth=0.5,
                    label='Probe' if i == 0 else None)
-            ci = s['rho_ci']
-            ax.errorbar(i + offset_probe, s['spearman_rho'],
-                        yerr=[[s['spearman_rho'] - ci[0]], [ci[1] - s['spearman_rho']]],
+            ci = s['cluster_bootstrap_rho_ci']
+            ax.errorbar(i + offset_probe, s['spearman_rho_POOLED'],
+                        yerr=[[s['spearman_rho_POOLED'] - ci[0]], [ci[1] - s['spearman_rho_POOLED']]],
                         color='black', capsize=3, linewidth=1.2, capthick=1.2)
         if has_random and short in random_stats:
             ax.bar(i + offset_random, random_stats[short]['spearman_rho'], bar_w,
@@ -472,14 +491,21 @@ def generate_figure_3(results_dir):
             flip_alpha_if_needed(short, df['alpha'].values),
             df['logit_rating'].dropna().values[:len(df['alpha'].values)])
 
+        # Corrected steering stats (3 methods)
+        df_steer = df.copy()
+        df_steer['display_alpha'] = flip_alpha_if_needed(short, df['alpha'].values)
+        corrected_steer = corrected_steering_stats(
+            df_steer, 'display_alpha', 'logit_rating')
+
         steering_stats[short] = {
             'display_alphas': [float(a) for a in display_alphas],
             'mean_ratings': [round(m, 4) for m in alpha_means],
             'ci_low': [round(c, 4) for c in alpha_ci_lo],
             'ci_high': [round(c, 4) for c in alpha_ci_hi],
             'alpha_display_flipped': short in FLIP_SHORTHANDS,
-            'spearman_rho_display_alpha_vs_rating': round(float(rho_a), 4),
-            'spearman_p': float(p_a),
+            'spearman_rho_display_alpha_vs_rating_POOLED': round(float(rho_a), 4),
+            'spearman_p_POOLED': float(p_a),
+            'corrected_steering': corrected_steer,
         }
 
     ax.set_xlabel('Steering α (display-corrected)')
@@ -538,14 +564,17 @@ def generate_figure_3(results_dir):
             # Drift statistic: Spearman of turn vs rating at this alpha
             sub_nona = sub.dropna(subset=['logit_rating'])
             rho_d, p_d = stats.spearmanr(sub_nona['turn'], sub_nona['logit_rating'])
+            # Corrected drift (per-conv slope + LMM)
+            corrected_fi = corrected_drift_stats(sub, 'logit_rating', alpha_val=a)
             drift_by_alpha[str(a)] = {
                 'display_alpha': float(display_a),
                 'means': [round(m, 4) for m in means],
                 'ci_low': [round(c, 4) for c in ci_lo],
                 'ci_high': [round(c, 4) for c in ci_hi],
-                'drift_spearman_rho': round(float(rho_d), 4),
-                'drift_spearman_p': float(p_d),
+                'drift_spearman_rho_POOLED': round(float(rho_d), 4),
+                'drift_spearman_p_POOLED': float(p_d),
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
+                'corrected_drift': corrected_fi,
             }
 
         ax.set_xlabel('Turn')

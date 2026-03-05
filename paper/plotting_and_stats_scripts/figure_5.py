@@ -38,6 +38,10 @@ from shared_utils import (
     results_to_dataframe, flip_if_needed,
     flip_alpha_if_needed, flip_alpha_scalar,
     get_turnwise_stats, isotonic_r2, bootstrap_stat, spearman_rho,
+    cluster_bootstrap_stat, per_conversation_spearman,
+    one_sample_test, lmm_test,
+    corrected_drift_stats, corrected_correlation_stats,
+    corrected_steering_stats,
     savefig, save_panel_json, save_other_stats, ensure_dir,
     add_panel_label, plot_line_with_ci, format_p,
     compute_per_turn_means,
@@ -54,7 +58,8 @@ LLAMA_MODELS = {
 
 
 def _compute_r2_from_raw(model_key, exp_dirs, concept_short, alpha=0.0):
-    """Compute isotonic R² and Spearman rho from raw experiment directory."""
+    """Compute isotonic R² and Spearman rho from raw experiment directory.
+    Includes corrected statistics (per-conversation rho, cluster bootstrap, LMM)."""
     concept = SHORTHAND_TO_CONCEPT[concept_short]
     exp_dir = exp_dirs.get(concept_short)
     if exp_dir is None or not os.path.isdir(exp_dir):
@@ -71,15 +76,31 @@ def _compute_r2_from_raw(model_key, exp_dirs, concept_short, alpha=0.0):
         r2_pt, r2_lo, r2_hi = bootstrap_stat(probe_vals, ratings, isotonic_r2)
         rho_pt, rho_lo, rho_hi = bootstrap_stat(probe_vals, ratings, spearman_rho)
         rho_val, rho_p = stats.spearmanr(probe_vals, ratings)
+        # Cluster bootstrap CIs
+        conv_ids = sub['conversation_index'].values
+        r2_cpt, r2_clo, r2_chi = cluster_bootstrap_stat(
+            conv_ids, probe_vals, ratings, isotonic_r2)
+        rho_cpt, rho_clo, rho_chi = cluster_bootstrap_stat(
+            conv_ids, probe_vals, ratings, spearman_rho)
+        # Corrected: per-conversation rho + LMM
+        sub_corr = sub.copy()
+        sub_corr['probe_display'] = probe_vals
+        corrected = corrected_correlation_stats(
+            sub_corr, 'probe_display', 'logit_rating', alpha_val=alpha)
         return {
             'isotonic_r2': float(r2_pt),
             'r2_ci_low': float(r2_lo),
             'r2_ci_high': float(r2_hi),
+            'r2_cluster_ci_low': float(r2_clo),
+            'r2_cluster_ci_high': float(r2_chi),
             'spearman_rho': float(rho_val),
-            'spearman_p': float(rho_p),
+            'spearman_p_POOLED': float(rho_p),
             'rho_ci_low': float(rho_lo),
             'rho_ci_high': float(rho_hi),
-            'n': len(probe_vals),
+            'rho_cluster_ci_low': float(rho_clo),
+            'rho_cluster_ci_high': float(rho_chi),
+            'n_POOLED': len(probe_vals),
+            'corrected_stats': corrected,
         }
     except Exception:
         return None
@@ -274,11 +295,17 @@ def generate_figure_5(results_dir):
                         f'ρ = {rho_val:.3f}\n{format_p(p_val)}\nR²(iso) = {r2_val:.3f}',
                         transform=ax.transAxes, fontsize=9, va='top',
                         bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+                # Corrected stats: per-conversation rho + LMM
+                sub_corr = sub.copy()
+                sub_corr['probe_display'] = probe_vals
+                corrected_biii = corrected_correlation_stats(
+                    sub_corr, 'probe_display', 'logit_rating', alpha_val=0.0)
                 best_scatter_stats[short] = {
                     'spearman_rho': round(float(rho_val), 4),
-                    'spearman_p': float(p_val),
+                    'spearman_p_POOLED': float(p_val),
                     'isotonic_r2': round(float(r2_val), 4),
-                    'n': len(probe_vals),
+                    'n_POOLED': len(probe_vals),
+                    'corrected_stats': corrected_biii,
                 }
             ax.set_xlabel('Probe Score')
             if i == 0:
@@ -311,7 +338,11 @@ def generate_figure_5(results_dir):
     ax_heat = fig.add_subplot(gs[0, 3])
 
     rho_matrix = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)
-    rho_p_matrix = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)
+    rho_p_matrix_pooled = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)
+    # Three corrected p-value matrices
+    p_matrix_m1 = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)  # exact perm on N=5 means
+    p_matrix_m2 = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)  # LMM
+    p_matrix_m3 = np.full((len(LLAMA_SIZES), len(SHORTHANDS)), np.nan)  # per-conv slopes t-test
     c_stats = {}
 
     for si, size in enumerate(LLAMA_SIZES):
@@ -351,18 +382,37 @@ def generate_figure_5(results_dir):
                                   color=color, label=SHORTHAND_DISPLAY[short],
                                   alpha_fill=0.15)
 
-                # Compute rho(display_alpha, rating)
+                # Pooled rho (original, kept with _POOLED tag)
                 da_all = flip_alpha_if_needed(short, df['alpha'].values)
                 lr_all = df['logit_rating'].dropna().values
                 n_min = min(len(da_all), len(lr_all))
                 rho_c, p_c = stats.spearmanr(da_all[:n_min], lr_all[:n_min])
                 rho_matrix[si, SHORTHANDS.index(short)] = rho_c
-                rho_p_matrix[si, SHORTHANDS.index(short)] = p_c
+                rho_p_matrix_pooled[si, SHORTHANDS.index(short)] = p_c
+
+                # Corrected steering stats (3 methods)
+                df_steer = df.copy()
+                df_steer['display_alpha'] = flip_alpha_if_needed(short, df['alpha'].values)
+                corrected_c = corrected_steering_stats(
+                    df_steer, 'display_alpha', 'logit_rating')
+                ci_short = SHORTHANDS.index(short)
+                # Method 1: exact perm on N=5 means
+                m1_info = corrected_c.get('method1_alpha_means', {})
+                p_matrix_m1[si, ci_short] = m1_info.get(
+                    'exact_permutation_p', np.nan)
+                # Method 2: LMM
+                lmm_info = corrected_c.get('method2_lmm', {})
+                p_matrix_m2[si, ci_short] = lmm_info.get('slope_p', np.nan)
+                # Method 3: per-conv slopes t-test
+                slopes_info = corrected_c.get('method3_per_conv_slopes', {})
+                p_matrix_m3[si, ci_short] = slopes_info.get('t_p', np.nan)
+
                 c_stats[size][short] = {
                     'display_alphas': [float(a) for a in da_s],
                     'mean_ratings': [round(m, 4) for m in means_s],
                     'spearman_rho_alpha_rating': round(float(rho_c), 4),
-                    'spearman_p': float(p_c),
+                    'spearman_p_POOLED': float(p_c),
+                    'corrected_steering': corrected_c,
                 }
             except Exception as e:
                 print(f"    Warning: Panel C error {size}/{short}: {e}")
@@ -374,16 +424,16 @@ def generate_figure_5(results_dir):
         if si == 0:
             ax.legend(fontsize=6, loc='upper left')
 
-    # Rho heatmap
+    # Rho heatmap (use method 1 p-values for stars)
     im = ax_heat.imshow(rho_matrix, cmap='RdYlGn', vmin=-1, vmax=1, aspect='auto')
     for si in range(len(LLAMA_SIZES)):
         for ci_idx in range(len(SHORTHANDS)):
             v = rho_matrix[si, ci_idx]
-            p_v = rho_p_matrix[si, ci_idx]
+            p_v = p_matrix_m1[si, ci_idx]  # exact permutation p
             if np.isnan(v):
                 ax_heat.text(ci_idx, si, '—', ha='center', va='center', fontsize=9)
             else:
-                sig_star = '*' if p_v < 0.05 else ''
+                sig_star = '*' if (not np.isnan(p_v) and p_v < 0.05) else ''
                 text_color = 'white' if abs(v) > 0.6 else 'black'
                 ax_heat.text(ci_idx, si, f'{v:.2f}{sig_star}', ha='center',
                              va='center', fontsize=9, color=text_color)
@@ -404,67 +454,84 @@ def generate_figure_5(results_dir):
         'title': 'Self-Report vs Alpha Curves + Rho Heatmap',
         'description': ('Left 3 panels: logit self-report vs display-corrected alpha per '
                         'concept per model size. Right: heatmap of Spearman ρ between alpha '
-                        'and logit rating (* = p<0.05). Replaces previous signed-R² panel.'),
+                        'and logit rating (* = p<0.05 by exact permutation). '
+                        'Three corrected p-value matrices included.'),
         'per_size_stats': c_stats,
         'rho_matrix': rho_matrix.tolist(),
-        'rho_p_matrix': rho_p_matrix.tolist(),
+        'rho_p_matrix_POOLED': rho_p_matrix_pooled.tolist(),
+        'p_matrix_method1_exact_perm': p_matrix_m1.tolist(),
+        'p_matrix_method2_lmm': p_matrix_m2.tolist(),
+        'p_matrix_method3_per_conv_slopes': p_matrix_m3.tolist(),
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel D: Mean R² bar chart (good-quality probes)
+    # Panel D: Mean R² bar chart — THREE versions based on three
+    #   significance methods for filtering validated probes
     # ──────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(1, 1, figsize=(5, 4))
-    good_r2 = {s: [] for s in LLAMA_SIZES}
+    method_labels = [
+        ('m1_exact_perm', p_matrix_m1, 'Exact Permutation'),
+        ('m2_lmm', p_matrix_m2, 'LMM'),
+        ('m3_per_conv_slopes', p_matrix_m3, 'Per-Conv Slopes'),
+    ]
+    all_d_stats = {}
+    for method_tag, p_mat, method_name in method_labels:
+        fig, ax = plt.subplots(1, 1, figsize=(5, 4))
+        good_r2 = {s: [] for s in LLAMA_SIZES}
 
-    for size in LLAMA_SIZES:
-        for short in SHORTHANDS:
-            if short in raw_r2_data[size]:
-                d = raw_r2_data[size][short]
-                # Exclude if rho(alpha, rating) is negative (inverted steering)
-                concept = SHORTHAND_TO_CONCEPT[short]
-                rho_idx = SHORTHANDS.index(short)
-                si = LLAMA_SIZES.index(size)
-                rho_val = rho_matrix[si, rho_idx]
-                if np.isnan(rho_val) or rho_val >= 0:
-                    good_r2[size].append(d['isotonic_r2'])
+        for size in LLAMA_SIZES:
+            for short in SHORTHANDS:
+                if short in raw_r2_data[size]:
+                    d = raw_r2_data[size][short]
+                    rho_idx = SHORTHANDS.index(short)
+                    si = LLAMA_SIZES.index(size)
+                    rho_val = rho_matrix[si, rho_idx]
+                    p_val_method = p_mat[si, rho_idx]
+                    # Include only if significantly positively steered
+                    # (rho > 0 AND p < 0.05 by this method), or NaN (no data)
+                    if np.isnan(rho_val):
+                        good_r2[size].append(d['isotonic_r2'])
+                    elif rho_val > 0 and (not np.isnan(p_val_method)) and p_val_method < 0.05:
+                        good_r2[size].append(d['isotonic_r2'])
 
-    means = [np.mean(good_r2[s]) if good_r2[s] else 0 for s in LLAMA_SIZES]
-    ci_lo_list, ci_hi_list = [], []
-    for s in LLAMA_SIZES:
-        vals = good_r2[s]
-        if len(vals) > 1:
-            rng = np.random.RandomState(42)
-            boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
-            ci_lo_list.append(np.percentile(boots, 2.5))
-            ci_hi_list.append(np.percentile(boots, 97.5))
-        else:
-            ci_lo_list.append(means[LLAMA_SIZES.index(s)])
-            ci_hi_list.append(means[LLAMA_SIZES.index(s)])
+        d_means = [np.mean(good_r2[s]) if good_r2[s] else 0 for s in LLAMA_SIZES]
+        ci_lo_list, ci_hi_list = [], []
+        for s in LLAMA_SIZES:
+            vals = good_r2[s]
+            if len(vals) > 1:
+                rng = np.random.RandomState(42)
+                boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
+                ci_lo_list.append(np.percentile(boots, 2.5))
+                ci_hi_list.append(np.percentile(boots, 97.5))
+            else:
+                ci_lo_list.append(d_means[LLAMA_SIZES.index(s)])
+                ci_hi_list.append(d_means[LLAMA_SIZES.index(s)])
 
-    colors = [MODEL_SIZE_COLORS[s] for s in LLAMA_SIZES]
-    ax.bar(range(len(LLAMA_SIZES)), means, color=colors,
-           edgecolor='white', linewidth=0.5)
-    for i in range(len(LLAMA_SIZES)):
-        ax.errorbar(i, means[i],
-                    yerr=[[means[i] - ci_lo_list[i]], [ci_hi_list[i] - means[i]]],
-                    color='black', capsize=5, linewidth=1.5, capthick=1.5)
-    ax.set_xticks(range(len(LLAMA_SIZES)))
-    ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
-    ax.set_ylabel('Mean Isotonic R²')
-    ax.set_title('Introspection by Model Size\n(validated probes only)')
-    ax.set_ylim(0, 1)
-    add_panel_label(ax, 'D')
-    plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_D_mean_r2_by_size')
-    savefig(fig, prefix)
-    save_panel_json(prefix, {
-        'panel_id': 'Fig_05_D',
-        'title': 'Mean R² by Size (Validated Probes)',
-        'description': ('Mean isotonic R² across concepts with validated probes '
-                        '(ρ(α,rating) ≥ 0), excluding inverted-steering cases.'),
-        'good_r2': {s: [round(v, 4) for v in good_r2[s]] for s in LLAMA_SIZES},
-        'means': [round(m, 4) for m in means],
-    })
+        colors = [MODEL_SIZE_COLORS[s] for s in LLAMA_SIZES]
+        ax.bar(range(len(LLAMA_SIZES)), d_means, color=colors,
+               edgecolor='white', linewidth=0.5)
+        for i in range(len(LLAMA_SIZES)):
+            ax.errorbar(i, d_means[i],
+                        yerr=[[d_means[i] - ci_lo_list[i]], [ci_hi_list[i] - d_means[i]]],
+                        color='black', capsize=5, linewidth=1.5, capthick=1.5)
+        ax.set_xticks(range(len(LLAMA_SIZES)))
+        ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
+        ax.set_ylabel('Mean Isotonic R²')
+        ax.set_title(f'Introspection by Model Size\n(filter: {method_name})')
+        ax.set_ylim(0, 1)
+        add_panel_label(ax, 'D')
+        plt.tight_layout()
+        prefix = os.path.join(fig_dir, f'Fig_05_D_mean_r2_by_size_{method_tag}')
+        savefig(fig, prefix)
+        d_json = {
+            'panel_id': f'Fig_05_D_{method_tag}',
+            'title': f'Mean R² by Size — {method_name}',
+            'description': (f'Mean isotonic R² across concepts with validated probes '
+                            f'(ρ(α,rating) ≥ 0). Filter method: {method_name}.'),
+            'good_r2': {s: [round(v, 4) for v in good_r2[s]] for s in LLAMA_SIZES},
+            'means': [round(m, 4) for m in d_means],
+        }
+        save_panel_json(prefix, d_json)
+        all_d_stats[method_tag] = d_json
 
     # ──────────────────────────────────────────────────────────────
     # Panel E: Probe score drift — one concept, 3 LLaMA sizes
@@ -507,11 +574,14 @@ def generate_figure_5(results_dir):
                     first_val = cv['probe_display'].iloc[0]
                     last_val = cv['probe_display'].iloc[-1]
                     conv_drifts.append(last_val - first_val)
+            # Corrected drift stats
+            corrected_e = corrected_drift_stats(sub, 'probe_display', alpha_val=0.0)
             drift_stats_e[size] = {
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
-                'spearman_rho_vs_turn': round(float(rho_e), 4),
-                'spearman_p': float(p_e),
+                'spearman_rho_vs_turn_POOLED': round(float(rho_e), 4),
+                'spearman_p_POOLED': float(p_e),
                 'per_conv_drifts': conv_drifts,
+                'corrected_drift': corrected_e,
             }
         except Exception as e:
             print(f"    Warning: Drift plot error for {size}: {e}")
@@ -608,11 +678,15 @@ def generate_figure_5(results_dir):
                 lr = cv['logit_rating'].dropna()
                 if len(lr) >= 2:
                     conv_drifts_f.append(lr.iloc[-1] - lr.iloc[0])
+            # Corrected drift stats
+            sub_f = sub.copy()
+            corrected_f = corrected_drift_stats(sub_f, 'logit_rating', alpha_val=0.0)
             drift_stats_f[size] = {
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
-                'spearman_rho_vs_turn': round(float(rho_f), 4),
-                'spearman_p': float(p_f),
+                'spearman_rho_vs_turn_POOLED': round(float(rho_f), 4),
+                'spearman_p_POOLED': float(p_f),
                 'per_conv_drifts': conv_drifts_f,
+                'corrected_drift': corrected_f,
             }
         except Exception as e:
             print(f"    Warning: Self-report drift error for {size}: {e}")
@@ -768,10 +842,14 @@ def generate_figure_5(results_dir):
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=color, label=model_name)
             rho_h, p_h = stats.spearmanr(sub['turn'], sub['logit_rating'].dropna())
+            # Corrected drift stats
+            sub_h = sub.copy()
+            corrected_h = corrected_drift_stats(sub_h, 'logit_rating', alpha_val=0.0)
             h_drift_stats[model_name] = {
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
-                'spearman_rho_vs_turn': round(float(rho_h), 4),
-                'spearman_p': float(p_h),
+                'spearman_rho_vs_turn_POOLED': round(float(rho_h), 4),
+                'spearman_p_POOLED': float(p_h),
+                'corrected_drift': corrected_h,
             }
         except Exception as e:
             print(f"    Warning: Cross-family drift error for {model_name}: {e}")
@@ -824,11 +902,17 @@ def generate_figure_5(results_dir):
                         f'ρ = {rho_val:.3f}\n{format_p(p_val)}\nR²(iso) = {r2_val:.3f}',
                         transform=ax.transAxes, fontsize=9, va='top',
                         bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+                # Corrected stats: per-conversation rho + LMM
+                sub_corr = sub.copy()
+                sub_corr['probe_display'] = probe_vals
+                corrected_ij = corrected_correlation_stats(
+                    sub_corr, 'probe_display', 'logit_rating', alpha_val=0.0)
                 cross_scatter_stats[model_name] = {
                     'spearman_rho': round(float(rho_val), 4),
-                    'spearman_p': float(p_val),
+                    'spearman_p_POOLED': float(p_val),
                     'isotonic_r2': round(float(r2_val), 4),
-                    'n': len(probe_vals),
+                    'n_POOLED': len(probe_vals),
+                    'corrected_stats': corrected_ij,
                 }
             ax.set_xlabel('Probe Score')
             ax.set_ylabel('Logit Self-Report')

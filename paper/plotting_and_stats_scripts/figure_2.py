@@ -31,6 +31,9 @@ from shared_utils import (
     isotonic_r2,
     savefig, save_panel_json, save_other_stats, ensure_dir, add_panel_label,
     plot_line_with_ci, format_p,
+    corrected_drift_stats, corrected_correlation_stats,
+    per_conversation_slope, per_conversation_drift, one_sample_test,
+    lmm_test,
 )
 
 
@@ -78,12 +81,15 @@ def generate_figure_2(results_dir):
             n_conv = df['conversation_index'].nunique()
             # Spearman of turn vs rating
             rho_g, p_g = stats.spearmanr(df['turn'], df['token_rating'])
+            # Corrected drift stats (per-conv slope + LMM)
+            corrected_g = corrected_drift_stats(df, 'token_rating', alpha_val=0.0)
             greedy_stats[short] = {
                 'mean_variance_across_turns': round(float(greedy_var), 4),
                 'mean_rating': round(float(df['token_rating'].mean()), 3),
                 'n_conversations': int(n_conv),
-                'spearman_rho_vs_turn': round(float(rho_g), 4),
-                'spearman_p_vs_turn': float(p_g),
+                'spearman_rho_vs_turn_POOLED': round(float(rho_g), 4),
+                'spearman_p_vs_turn_POOLED': float(p_g),
+                'corrected_drift': corrected_g,
             }
         ax.set_xlabel('Turn')
         if i == 0:
@@ -148,23 +154,29 @@ def generate_figure_2(results_dir):
                         color=color, alpha=0.3, linewidth=0.5)
 
             rho, p = stats.spearmanr(sub['turn'], sub['probe_display'])
-            # First vs last turn Mann-Whitney
-            first_vals = sub[sub['turn'] == turns[0]]['probe_display'].values
-            last_vals = sub[sub['turn'] == turns[-1]]['probe_display'].values
-            if len(first_vals) > 0 and len(last_vals) > 0:
-                u_stat, u_p = stats.mannwhitneyu(first_vals, last_vals, alternative='two-sided')
+            # First vs last turn: Wilcoxon signed-rank (paired, corrected from Mann-Whitney)
+            first_vals = sub[sub['turn'] == turns[0]].sort_values('conversation_index')['probe_display'].values
+            last_vals = sub[sub['turn'] == turns[-1]].sort_values('conversation_index')['probe_display'].values
+            if len(first_vals) > 0 and len(last_vals) > 0 and len(first_vals) == len(last_vals):
+                try:
+                    w_stat, w_p = stats.wilcoxon(last_vals - first_vals, alternative='two-sided')
+                except Exception:
+                    w_stat, w_p = np.nan, np.nan
             else:
-                u_stat, u_p = np.nan, np.nan
+                w_stat, w_p = np.nan, np.nan
+            # Corrected drift stats
+            corrected_b = corrected_drift_stats(sub, 'probe_display', alpha_val=0.0)
             drift_stats[short] = {
                 'mean_first_turn': round(float(means[0]), 4),
                 'mean_last_turn': round(float(means[-1]), 4),
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
-                'spearman_rho_vs_turn': round(float(rho), 4),
-                'spearman_p_vs_turn': float(p),
-                'first_vs_last_mann_whitney_U': float(u_stat),
-                'first_vs_last_mann_whitney_p': float(u_p),
+                'spearman_rho_vs_turn_POOLED': round(float(rho), 4),
+                'spearman_p_vs_turn_POOLED': float(p),
+                'first_vs_last_wilcoxon_stat': float(w_stat),
+                'first_vs_last_wilcoxon_p': float(w_p),
                 'n_conversations': int(sub['conversation_index'].nunique()),
                 'polarity_flip_applied': concept in FLIP_CONCEPTS,
+                'corrected_drift': corrected_b,
             }
 
         ax.set_xlabel('Turn')
@@ -274,12 +286,14 @@ def generate_figure_2(results_dir):
                 ax.plot(conv['turn'], conv['token_rating'],
                         color=color, alpha=0.5, linewidth=0.5)
             rho_s, p_s = stats.spearmanr(sub_a0['turn'], sub_a0['token_rating'].dropna())
+            corrected_d = corrected_drift_stats(sub_a0, 'token_rating', alpha_val=0.0)
             sampled_drift[short] = {
                 'mean_rating': round(float(sub_a0['token_rating'].mean()), 3),
                 'variance': round(float(sub_a0['token_rating'].var()), 4),
-                'spearman_rho_vs_turn': round(float(rho_s), 4),
-                'spearman_p_vs_turn': float(p_s),
+                'spearman_rho_vs_turn_POOLED': round(float(rho_s), 4),
+                'spearman_p_vs_turn_POOLED': float(p_s),
                 'n_conversations': int(sub_a0['conversation_index'].nunique()),
+                'corrected_drift': corrected_d,
             }
         ax.set_xlabel('Turn')
         if i == 0:
@@ -332,13 +346,15 @@ def generate_figure_2(results_dir):
 
             rho, p = stats.spearmanr(sub_a0['turn'], sub_a0['logit_rating'].dropna())
             pt = per_turn
+            corrected_e = corrected_drift_stats(sub_a0, 'logit_rating', alpha_val=0.0)
             logit_drift_stats[short] = {
                 'mean_first_turn': round(float(pt['mean'].iloc[0]), 4),
                 'mean_last_turn': round(float(pt['mean'].iloc[-1]), 4),
                 'drift_magnitude': round(float(pt['mean'].iloc[-1] - pt['mean'].iloc[0]), 4),
-                'spearman_rho_vs_turn': round(float(rho), 4),
-                'spearman_p_vs_turn': float(p),
+                'spearman_rho_vs_turn_POOLED': round(float(rho), 4),
+                'spearman_p_vs_turn_POOLED': float(p),
                 'n_conversations': int(sub_a0['conversation_index'].nunique()),
+                'corrected_drift': corrected_e,
             }
 
         ax.set_xlabel('Turn')
@@ -484,15 +500,28 @@ def generate_figure_2(results_dir):
                 ax.plot(x_fit, slope * x_fit + intercept, 'k--', linewidth=1, alpha=0.7)
                 rho_s, p_s = stats.spearmanr(sub['token_rating'], sub['logit_rating'])
                 r2_iso = isotonic_r2(sub['token_rating'].values, sub['logit_rating'].values)
+                # Corrected: per-conversation means correlation + LMM
+                conv_means_tok = sub.groupby('conversation_index')['token_rating'].mean()
+                conv_means_log = sub.groupby('conversation_index')['logit_rating'].mean()
+                common_idx = conv_means_tok.index.intersection(conv_means_log.index)
+                rho_conv, p_conv = stats.spearmanr(conv_means_tok[common_idx], conv_means_log[common_idx])
+                pearson_conv, pearson_p_conv = stats.pearsonr(conv_means_tok[common_idx].values, conv_means_log[common_idx].values)
+                lmm_g = lmm_test(sub, 'logit_rating', 'token_rating', group_col='conversation_index')
                 corr_stats[short] = {
-                    'pearson_r': round(float(r), 4),
-                    'pearson_p': float(p),
-                    'spearman_rho': round(float(rho_s), 4),
-                    'spearman_p': float(p_s),
+                    'pearson_r_POOLED': round(float(r), 4),
+                    'pearson_p_POOLED': float(p),
+                    'spearman_rho_POOLED': round(float(rho_s), 4),
+                    'spearman_p_POOLED': float(p_s),
                     'isotonic_r2': round(float(r2_iso), 4),
-                    'n': len(sub),
+                    'n_POOLED': len(sub),
                     'slope': round(float(slope), 4),
                     'intercept': round(float(intercept), 4),
+                    'per_conv_means_spearman_rho': round(float(rho_conv), 4),
+                    'per_conv_means_spearman_p': float(p_conv),
+                    'per_conv_means_pearson_r': round(float(pearson_conv), 4),
+                    'per_conv_means_pearson_p': float(pearson_p_conv),
+                    'n_conversations': len(common_idx),
+                    'lmm_results': lmm_g,
                 }
                 ax.text(0.05, 0.95,
                         f'ρ = {rho_s:.3f}\n{format_p(p_s)}',

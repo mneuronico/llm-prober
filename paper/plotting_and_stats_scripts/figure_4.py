@@ -34,6 +34,9 @@ from shared_utils import (
     results_to_dataframe, flip_if_needed,
     flip_alpha_if_needed, flip_alpha_scalar,
     get_turnwise_stats, isotonic_r2, bootstrap_stat, spearman_rho,
+    exact_permutation_spearman_p, cluster_bootstrap_stat,
+    per_conversation_spearman, one_sample_test, lmm_test,
+    corrected_drift_stats,
     savefig, save_panel_json, save_other_stats, ensure_dir,
     add_panel_label, plot_line_with_ci, format_p,
 )
@@ -290,13 +293,58 @@ def generate_figure_4(results_dir):
         plot_line_with_ci(ax, da_sorted, r2_sorted, r2_lo_sorted, r2_hi_sorted,
                           color=color, label=data['label'])
         # Test: Spearman of R² vs display alpha
-        rho_r2a, p_r2a = stats.spearmanr(da_sorted, r2_sorted)
+        rho_r2a, p_r2a = exact_permutation_spearman_p(da_sorted, r2_sorted)
+        # Also: per-conversation R² approach
+        per_conv_r2_data = []
+        df = data['df']
+        meas_concept = data['meas_concept']
+        for a_idx_g, a_val in enumerate(data['raw_alphas']):
+            sub_g = df[np.isclose(df['alpha'], a_val)].dropna(
+                subset=['probe_score', 'logit_rating'])
+            da_val = data['display_alphas'][a_idx_g]
+            for ci_g in sub_g['conversation_index'].unique():
+                cv_g = sub_g[sub_g['conversation_index'] == ci_g]
+                if len(cv_g) >= 3:
+                    pv_g = flip_if_needed(meas_concept, cv_g['probe_score'].values)
+                    r2_g = isotonic_r2(pv_g, cv_g['logit_rating'].values)
+                    per_conv_r2_data.append({'conv': ci_g, 'display_alpha': da_val, 'r2': r2_g})
+        per_conv_r2_df = pd.DataFrame(per_conv_r2_data)
+        # LMM: R2 ~ display_alpha + (1|conversation)
+        lmm_g_r2_result = {}
+        per_conv_rhos_g_result = {}
+        if len(per_conv_r2_df) > 5:
+            per_conv_r2_df.columns = ['conversation_index', 'x_val', 'y_val']
+            try:
+                import statsmodels.formula.api as smf
+                md = smf.mixedlm('y_val ~ x_val', per_conv_r2_df, groups=per_conv_r2_df['conversation_index'])
+                res = md.fit(reml=True, method='lbfgs')
+                lmm_g_r2_result = {
+                    'slope': float(res.fe_params.get('x_val', res.fe_params.iloc[1])),
+                    'slope_p': float(res.pvalues.get('x_val', res.pvalues.iloc[1])),
+                    'n_obs': len(per_conv_r2_df),
+                    'n_groups': int(per_conv_r2_df['conversation_index'].nunique()),
+                    'converged': res.converged,
+                }
+            except Exception as e:
+                lmm_g_r2_result = {'error': str(e)}
+            # Per-conversation rho of R2 vs alpha
+            conv_rhos_g = []
+            for ci_g in per_conv_r2_df['conversation_index'].unique():
+                cv_g = per_conv_r2_df[per_conv_r2_df['conversation_index'] == ci_g]
+                if len(cv_g) >= 3:
+                    r_g, _ = stats.spearmanr(cv_g['x_val'], cv_g['y_val'])
+                    if np.isfinite(r_g):
+                        conv_rhos_g.append(r_g)
+            per_conv_rhos_g_result = one_sample_test(np.array(conv_rhos_g))
         g_stats[str(key)] = {
             'display_alphas': da_sorted,
             'r2_values': [round(v, 4) for v in r2_sorted],
             'spearman_rho_r2_vs_alpha': round(float(rho_r2a), 4),
-            'spearman_p': float(p_r2a),
+            'exact_permutation_p': float(p_r2a),
             'alpha_display_flipped': data['steer_needs_flip'],
+            'n_alpha_levels': len(da_sorted),
+            'per_conv_r2_lmm': lmm_g_r2_result,
+            'per_conv_r2_rhos_ttest': per_conv_rhos_g_result,
         }
     ax.set_xlabel('Steering α (display-corrected)')
     ax.set_ylabel('Isotonic R²')
@@ -332,12 +380,55 @@ def generate_figure_4(results_dir):
         rho_hi_sorted = [data['rho_ci'][k][1] for k in sort_idx]
         plot_line_with_ci(ax, da_sorted, rho_sorted, rho_lo_sorted, rho_hi_sorted,
                           color=color, label=data['label'])
-        rho_rha, p_rha = stats.spearmanr(da_sorted, rho_sorted)
+        rho_rha, p_rha = exact_permutation_spearman_p(da_sorted, rho_sorted)
+        # Per-conversation rho approach for rho_change vs alpha
+        per_conv_rho_data_h = []
+        df_h = data['df']
+        meas_concept_h = data['meas_concept']
+        for a_idx_h, a_val_h in enumerate(data['raw_alphas']):
+            sub_h = df_h[np.isclose(df_h['alpha'], a_val_h)].dropna(
+                subset=['probe_score', 'logit_rating'])
+            da_val_h = data['display_alphas'][a_idx_h]
+            for ci_h in sub_h['conversation_index'].unique():
+                cv_h = sub_h[sub_h['conversation_index'] == ci_h]
+                if len(cv_h) >= 3:
+                    pv_h = flip_if_needed(meas_concept_h, cv_h['probe_score'].values)
+                    rh_c, _ = stats.spearmanr(pv_h, cv_h['logit_rating'].values)
+                    if np.isfinite(rh_c):
+                        per_conv_rho_data_h.append({'conv': ci_h, 'display_alpha': da_val_h, 'rho': rh_c})
+        per_conv_rho_df_h = pd.DataFrame(per_conv_rho_data_h)
+        lmm_h_result = {}
+        per_conv_rhos_h_result = {}
+        if len(per_conv_rho_df_h) > 5:
+            per_conv_rho_df_h.columns = ['conversation_index', 'x_val', 'y_val']
+            try:
+                import statsmodels.formula.api as smf
+                md_h = smf.mixedlm('y_val ~ x_val', per_conv_rho_df_h, groups=per_conv_rho_df_h['conversation_index'])
+                res_h = md_h.fit(reml=True, method='lbfgs')
+                lmm_h_result = {
+                    'slope': float(res_h.fe_params.get('x_val', res_h.fe_params.iloc[1])),
+                    'slope_p': float(res_h.pvalues.get('x_val', res_h.pvalues.iloc[1])),
+                    'n_obs': len(per_conv_rho_df_h),
+                    'n_groups': int(per_conv_rho_df_h['conversation_index'].nunique()),
+                    'converged': res_h.converged,
+                }
+            except Exception as e:
+                lmm_h_result = {'error': str(e)}
+            conv_rhos_hh = []
+            for ci_h in per_conv_rho_df_h['conversation_index'].unique():
+                cv_h = per_conv_rho_df_h[per_conv_rho_df_h['conversation_index'] == ci_h]
+                if len(cv_h) >= 3:
+                    r_hh, _ = stats.spearmanr(cv_h['x_val'], cv_h['y_val'])
+                    if np.isfinite(r_hh):
+                        conv_rhos_hh.append(r_hh)
+            per_conv_rhos_h_result = one_sample_test(np.array(conv_rhos_hh))
         h_stats[str(key)] = {
             'display_alphas': da_sorted,
             'rho_values': [round(v, 4) for v in rho_sorted],
             'spearman_rho_change_vs_alpha': round(float(rho_rha), 4),
-            'spearman_p': float(p_rha),
+            'exact_permutation_p': float(p_rha),
+            'per_conv_rho_lmm': lmm_h_result,
+            'per_conv_rhos_ttest': per_conv_rhos_h_result,
         }
     ax.set_xlabel('Steering α (display-corrected)')
     ax.set_ylabel('Spearman ρ')
@@ -411,6 +502,8 @@ def generate_figure_4(results_dir):
                 rho_d, p_d = stats.spearmanr(sub_nona['turn'], sub_nona['probe_display'])
             else:
                 rho_d, p_d = np.nan, np.nan
+            # Corrected drift (per-conv slope + LMM)
+            corrected_ij = corrected_drift_stats(sub, 'probe_display', alpha_val=a)
             # Per-conversation drift for error bars
             per_conv_drifts_l = []
             for ci_l in sub['conversation_index'].unique():
@@ -424,9 +517,10 @@ def generate_figure_4(results_dir):
                 'drift_magnitude': round(float(means[-1] - means[0]), 4),
                 'first_turn_mean': round(float(means[0]), 4),
                 'last_turn_mean': round(float(means[-1]), 4),
-                'drift_spearman_rho': round(float(rho_d), 4),
-                'drift_spearman_p': float(p_d),
+                'drift_spearman_rho_POOLED': round(float(rho_d), 4),
+                'drift_spearman_p_POOLED': float(p_d),
                 'per_conv_drifts': per_conv_drifts_l,
+                'corrected_drift': corrected_ij,
             }
 
         ax.set_xlabel('Turn')
@@ -527,15 +621,58 @@ def generate_figure_4(results_dir):
             ax.errorbar(da_sorted, drift_vals, yerr=[yerr_lo, yerr_hi],
                         fmt='o-', color=color, label=data['label'],
                         linewidth=1.5, markersize=6, capsize=3)
-            # Trend test: Spearman of drift magnitude vs display alpha
-            rho_dl, p_dl = stats.spearmanr(da_sorted, drift_vals)
+            # Trend test: exact permutation Spearman of drift magnitude vs display alpha
+            rho_dl, p_dl = exact_permutation_spearman_p(da_sorted, drift_vals)
+            # Per-conversation drift approach: each conv has 5 drift values (one per alpha)
+            per_conv_drift_data_l = []
+            for k_idx in sort_idx:
+                entry_l = drift_decomposition[dk][str(ALPHAS[k_idx])]
+                pcl = entry_l.get('per_conv_drifts', [])
+                da_val_l = da_sorted[list(sort_idx).index(k_idx)]
+                # We need to match conversations across alphas
+                # Use the drift values per alpha
+                for ci_ll, d_val in enumerate(pcl):
+                    per_conv_drift_data_l.append({'conv': ci_ll, 'display_alpha': float(ALPHAS[k_idx]), 'drift': d_val})
+            per_conv_drift_df_l = pd.DataFrame(per_conv_drift_data_l)
+            lmm_l_result = {}
+            per_conv_rhos_l_result = {}
+            if len(per_conv_drift_df_l) > 5:
+                per_conv_drift_df_l_r = per_conv_drift_df_l.copy()
+                per_conv_drift_df_l_r['display_alpha'] = flip_alpha_if_needed(
+                    data['steer_short'], per_conv_drift_df_l_r['display_alpha'].values)
+                try:
+                    import statsmodels.formula.api as smf
+                    md_l = smf.mixedlm('drift ~ display_alpha', per_conv_drift_df_l_r,
+                                       groups=per_conv_drift_df_l_r['conv'])
+                    res_l = md_l.fit(reml=True, method='lbfgs')
+                    lmm_l_result = {
+                        'slope': float(res_l.fe_params.get('display_alpha', res_l.fe_params.iloc[1])),
+                        'slope_p': float(res_l.pvalues.get('display_alpha', res_l.pvalues.iloc[1])),
+                        'n_obs': len(per_conv_drift_df_l_r),
+                        'n_groups': int(per_conv_drift_df_l_r['conv'].nunique()),
+                        'converged': res_l.converged,
+                    }
+                except Exception as e:
+                    lmm_l_result = {'error': str(e)}
+                # Per-conversation rho of drift vs display_alpha
+                conv_rhos_l = []
+                for ci_l in per_conv_drift_df_l_r['conv'].unique():
+                    cv_l = per_conv_drift_df_l_r[per_conv_drift_df_l_r['conv'] == ci_l]
+                    if len(cv_l) >= 3:
+                        r_l, _ = stats.spearmanr(cv_l['display_alpha'], cv_l['drift'])
+                        if np.isfinite(r_l):
+                            conv_rhos_l.append(r_l)
+                per_conv_rhos_l_result = one_sample_test(np.array(conv_rhos_l))
             l_stats[dk] = {
                 'display_alphas': da_sorted,
                 'drift_values': [round(v, 4) for v in drift_vals],
                 'ci_95_low': [round(v, 4) for v in ci_lo_l],
                 'ci_95_high': [round(v, 4) for v in ci_hi_l],
                 'spearman_rho_drift_vs_alpha': round(float(rho_dl), 4),
-                'spearman_p': float(p_dl),
+                'exact_permutation_p': float(p_dl),
+                'n_alpha_levels': len(da_sorted),
+                'per_conv_drift_lmm': lmm_l_result,
+                'per_conv_drift_rhos_ttest': per_conv_rhos_l_result,
             }
     ax.set_xlabel('Steering α (display-corrected)')
     ax.set_ylabel('Drift (Δ Probe Score, last − first)')

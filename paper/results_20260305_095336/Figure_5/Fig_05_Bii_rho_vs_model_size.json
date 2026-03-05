@@ -1,0 +1,27 @@
+{
+  "panel_id": "Fig_05_Bii",
+  "title": "Spearman ρ vs. Model Size",
+  "description": "Spearman ρ at alpha=0 (polarity-corrected for FLIP concepts). Rho flipped for sad_vs_happy & impulsive_vs_planning.",
+  "per_concept": {
+    "wellbeing": {
+      "1B": 0.4843,
+      "3B": 0.6591,
+      "8B": 0.9335
+    },
+    "interest": {
+      "1B": 0.193,
+      "3B": 0.7953,
+      "8B": 0.958
+    },
+    "focus": {
+      "1B": -0.084,
+      "3B": 0.2742,
+      "8B": -0.2317
+    },
+    "impulsivity": {
+      "1B": 0.2129,
+      "3B": 0.5233,
+      "8B": 0.0672
+    }
+  }
+}

@@ -720,6 +720,297 @@ def format_p(p):
         return f"p = {p:.2f}"
 
 
+# ──────────────────── CORRECTED STATISTICS ────────────────────
+
+def exact_permutation_spearman_p(x, y, alternative='two-sided'):
+    """
+    Compute exact permutation p-value for Spearman rho (for small N ≤ 10).
+    For N>10 falls back to scipy asymptotic approximation.
+    """
+    from itertools import permutations
+    from math import factorial
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    mask = np.isfinite(x) & np.isfinite(y)
+    x, y = x[mask], y[mask]
+    n = len(x)
+    if n < 3:
+        return np.nan, np.nan
+    observed_rho, _ = stats.spearmanr(x, y)
+    if n > 10:
+        # Use scipy for larger N (asymptotic is OK)
+        _, p = stats.spearmanr(x, y)
+        return float(observed_rho), float(p)
+    # Exact permutation
+    count_extreme = 0
+    total = factorial(n)
+    for perm in permutations(range(n)):
+        perm_y = y[list(perm)]
+        rho_perm, _ = stats.spearmanr(x, perm_y)
+        if alternative == 'two-sided':
+            if abs(rho_perm) >= abs(observed_rho) - 1e-12:
+                count_extreme += 1
+        elif alternative == 'greater':
+            if rho_perm >= observed_rho - 1e-12:
+                count_extreme += 1
+        elif alternative == 'less':
+            if rho_perm <= observed_rho + 1e-12:
+                count_extreme += 1
+    p_exact = count_extreme / total
+    return float(observed_rho), float(p_exact)
+
+
+def cluster_bootstrap_stat(conv_ids, x, y, stat_fn, n_bootstrap=1000, ci=0.95, seed=42):
+    """
+    Bootstrap a statistic by resampling at the conversation (cluster) level.
+    conv_ids: array of conversation identifiers for each observation.
+    stat_fn(x, y) → scalar.
+    Returns (point_estimate, ci_low, ci_high).
+    """
+    rng = np.random.RandomState(seed)
+    conv_ids = np.asarray(conv_ids)
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    mask = np.isfinite(x) & np.isfinite(y)
+    conv_ids, x, y = conv_ids[mask], x[mask], y[mask]
+    unique_convs = np.unique(conv_ids)
+    n_convs = len(unique_convs)
+    point = stat_fn(x, y)
+    boot_vals = []
+    for _ in range(n_bootstrap):
+        sampled_convs = rng.choice(unique_convs, n_convs, replace=True)
+        # Gather all observations from sampled conversations
+        indices = []
+        for c in sampled_convs:
+            indices.extend(np.where(conv_ids == c)[0].tolist())
+        idx = np.array(indices)
+        try:
+            val = stat_fn(x[idx], y[idx])
+            boot_vals.append(val)
+        except Exception:
+            continue
+    boot_vals = np.array(boot_vals)
+    alpha_ci = (1 - ci) / 2
+    ci_low = np.nanpercentile(boot_vals, 100 * alpha_ci)
+    ci_high = np.nanpercentile(boot_vals, 100 * (1 - alpha_ci))
+    return float(point), float(ci_low), float(ci_high)
+
+
+def per_conversation_spearman(df, x_col, y_col, min_obs=3):
+    """
+    Compute Spearman rho per conversation. Returns array of rho values (one per conversation).
+    df must have 'conversation_index' column.
+    """
+    rhos = []
+    for ci in df['conversation_index'].unique():
+        sub = df[df['conversation_index'] == ci].dropna(subset=[x_col, y_col])
+        if len(sub) >= min_obs:
+            r, _ = stats.spearmanr(sub[x_col], sub[y_col])
+            if np.isfinite(r):
+                rhos.append(r)
+    return np.array(rhos)
+
+
+def per_conversation_slope(df, x_col, y_col):
+    """
+    Compute OLS slope of y_col vs x_col per conversation.
+    Returns array of slopes (one per conversation with ≥2 data points).
+    """
+    slopes = []
+    for ci in df['conversation_index'].unique():
+        sub = df[df['conversation_index'] == ci].dropna(subset=[x_col, y_col])
+        if len(sub) >= 2:
+            x = sub[x_col].values.astype(float)
+            y = sub[y_col].values.astype(float)
+            if np.std(x) > 0:
+                slope = np.polyfit(x, y, 1)[0]
+                slopes.append(slope)
+    return np.array(slopes)
+
+
+def per_conversation_drift(df, value_col, alpha_val=0.0):
+    """
+    Compute drift = last_turn_value - first_turn_value per conversation at a given alpha.
+    Returns array of drifts (one per conversation).
+    """
+    sub = df[np.isclose(df['alpha'], alpha_val)].copy()
+    drifts = []
+    for ci in sub['conversation_index'].unique():
+        cv = sub[sub['conversation_index'] == ci].sort_values('turn')
+        vals = cv[value_col].dropna()
+        if len(vals) >= 2:
+            drifts.append(float(vals.iloc[-1] - vals.iloc[0]))
+    return np.array(drifts)
+
+
+def one_sample_test(values, alternative='two-sided'):
+    """
+    Run both one-sample t-test and Wilcoxon signed-rank test against 0.
+    Returns dict with both results.
+    """
+    values = np.asarray(values, dtype=float)
+    values = values[np.isfinite(values)]
+    n = len(values)
+    result = {'n': n, 'mean': float(np.mean(values)), 'std': float(np.std(values, ddof=1))}
+    if n < 3:
+        result['t_stat'] = np.nan
+        result['t_p'] = np.nan
+        result['wilcoxon_stat'] = np.nan
+        result['wilcoxon_p'] = np.nan
+        return result
+    t_stat, t_p = stats.ttest_1samp(values, 0)
+    result['t_stat'] = float(t_stat)
+    result['t_p'] = float(t_p)
+    try:
+        w_stat, w_p = stats.wilcoxon(values, alternative=alternative)
+        result['wilcoxon_stat'] = float(w_stat)
+        result['wilcoxon_p'] = float(w_p)
+    except Exception:
+        result['wilcoxon_stat'] = np.nan
+        result['wilcoxon_p'] = np.nan
+    return result
+
+
+def lmm_test(df, y_col, x_col, group_col='conversation_index'):
+    """
+    Fit a linear mixed model: y ~ x + (1|group), return fixed-effect results.
+    Uses statsmodels MixedLM.
+    Returns dict with slope, intercept, z-value, p-value.
+    """
+    import statsmodels.formula.api as smf
+    sub = df.dropna(subset=[y_col, x_col]).copy()
+    sub = sub[[y_col, x_col, group_col]].copy()
+    sub.columns = ['y', 'x', 'group']
+    if len(sub) < 5:
+        return {'slope': np.nan, 'slope_p': np.nan, 'intercept': np.nan, 'n_obs': len(sub)}
+    try:
+        model = smf.mixedlm('y ~ x', sub, groups=sub['group'])
+        result = model.fit(reml=True, method='lbfgs')
+        fe = result.fe_params
+        pvals = result.pvalues
+        return {
+            'intercept': float(fe.get('Intercept', fe.iloc[0])),
+            'slope': float(fe.get('x', fe.iloc[1])),
+            'slope_z': float(result.tvalues.get('x', result.tvalues.iloc[1])),
+            'slope_p': float(pvals.get('x', pvals.iloc[1])),
+            'n_obs': len(sub),
+            'n_groups': int(sub['group'].nunique()),
+            'converged': result.converged,
+        }
+    except Exception as e:
+        return {'slope': np.nan, 'slope_p': np.nan, 'error': str(e), 'n_obs': len(sub)}
+
+
+def lmm_correlation_test(df, y_col, x_col, group_col='conversation_index'):
+    """
+    Fit y ~ x + (1|group) to test if x predicts y accounting for repeated measures.
+    Same as lmm_test but with clearer naming for correlation contexts.
+    """
+    return lmm_test(df, y_col, x_col, group_col)
+
+
+def corrected_drift_stats(df, value_col, alpha_val=0.0):
+    """
+    Compute drift statistics with corrected methods:
+    1. Per-conversation slope (OLS) + one-sample t-test/Wilcoxon on slopes
+    2. LMM: value ~ turn + (1|conversation)
+    Returns dict with both results.
+    """
+    sub = df[np.isclose(df['alpha'], alpha_val)].copy()
+    sub = sub.dropna(subset=[value_col])
+    result = {}
+    # Method 1: Per-conversation slopes
+    slopes = per_conversation_slope(sub, 'turn', value_col)
+    result['per_conv_slopes'] = one_sample_test(slopes)
+    result['per_conv_slopes']['slopes'] = [round(s, 6) for s in slopes.tolist()]
+    # Method 2: LMM
+    result['lmm'] = lmm_test(sub, value_col, 'turn')
+    return result
+
+
+def corrected_correlation_stats(df, x_col, y_col, alpha_val=0.0,
+                                 concept_name=None):
+    """
+    Compute correlation statistics with corrected methods:
+    1. Per-conversation rho + one-sample t-test on rhos
+    2. LMM: y ~ x + (1|conversation)
+    Returns dict with both results.
+    """
+    sub = df[np.isclose(df['alpha'], alpha_val)].copy()
+    sub = sub.dropna(subset=[x_col, y_col])
+    if concept_name and concept_name in FLIP_CONCEPTS:
+        sub[x_col] = -sub[x_col]
+    result = {}
+    # Method 1: Per-conversation Spearman rhos
+    rhos = per_conversation_spearman(sub, x_col, y_col)
+    result['per_conv_rhos'] = one_sample_test(rhos)
+    result['per_conv_rhos']['rhos'] = [round(r, 4) for r in rhos.tolist()]
+    # Method 2: LMM
+    result['lmm'] = lmm_test(sub, y_col, x_col)
+    return result
+
+
+def corrected_steering_stats(df, alpha_col_display, rating_col, group_col='conversation_index'):
+    """
+    Compute steering statistics with corrected methods:
+    1. Spearman/Kendall on N=5 per-alpha means (exact permutation p)
+    2. LMM: rating ~ alpha + (1|conversation) on observation-level (N=200)
+    3. Per-conversation slope across alphas + one-sample t-test on 40 slopes
+    Returns dict with all three results.
+    """
+    result = {}
+    sub = df.dropna(subset=[alpha_col_display, rating_col]).copy()
+
+    # Method 1: Per-alpha means, Spearman on N=5
+    alpha_means = sub.groupby(alpha_col_display)[rating_col].mean()
+    alphas_sorted = np.sort(alpha_means.index.values)
+    means_sorted = np.array([alpha_means[a] for a in alphas_sorted])
+    rho_m, p_m = exact_permutation_spearman_p(alphas_sorted, means_sorted)
+    result['method1_alpha_means'] = {
+        'alphas': alphas_sorted.tolist(),
+        'means': means_sorted.tolist(),
+        'spearman_rho': round(float(rho_m), 4),
+        'exact_permutation_p': float(p_m),
+        'n': len(alphas_sorted),
+    }
+
+    # Method 2: LMM on observation-level
+    sub_lmm = sub[[rating_col, alpha_col_display, group_col]].copy()
+    sub_lmm.columns = ['y', 'x', 'group']
+    try:
+        import statsmodels.formula.api as smf
+        model = smf.mixedlm('y ~ x', sub_lmm, groups=sub_lmm['group'])
+        res = model.fit(reml=True, method='lbfgs')
+        result['method2_lmm'] = {
+            'slope': float(res.fe_params.get('x', res.fe_params.iloc[1])),
+            'slope_z': float(res.tvalues.get('x', res.tvalues.iloc[1])),
+            'slope_p': float(res.pvalues.get('x', res.pvalues.iloc[1])),
+            'n_obs': len(sub_lmm),
+            'n_groups': int(sub_lmm['group'].nunique()),
+            'converged': res.converged,
+        }
+    except Exception as e:
+        result['method2_lmm'] = {'error': str(e)}
+
+    # Method 3: Per-conversation slope across alphas
+    slopes = []
+    for ci in sub[group_col].unique():
+        cv = sub[sub[group_col] == ci]
+        if len(cv['alpha'].unique()) >= 2:
+            # Mean rating per alpha for this conversation
+            conv_means = cv.groupby(alpha_col_display)[rating_col].mean()
+            if len(conv_means) >= 2:
+                x = conv_means.index.values.astype(float)
+                y = conv_means.values.astype(float)
+                if np.std(x) > 0:
+                    slope = np.polyfit(x, y, 1)[0]
+                    slopes.append(slope)
+    slopes = np.array(slopes)
+    result['method3_per_conv_slopes'] = one_sample_test(slopes)
+
+    return result
+
+
 if __name__ == '__main__':
     # Quick validation
     print("=== Shared Utils Validation ===")

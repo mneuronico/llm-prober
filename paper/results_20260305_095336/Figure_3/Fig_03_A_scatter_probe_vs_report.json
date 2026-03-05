@@ -1,0 +1,355 @@
+{
+  "panel_id": "Fig_03_A",
+  "title": "Probe Score vs. Logit Self-Report Scatter Plots",
+  "description": "Scatter of polarity-corrected probe score vs. logit self-report at alpha=0. Black line: isotonic regression fit. One dot per conversation-turn observation.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "model": "LLaMA-3.2-3B-Instruct",
+  "metric": "prompt_assistant_last_mean",
+  "scatter_statistics": {
+    "wellbeing": {
+      "spearman_rho_POOLED": 0.6831,
+      "spearman_p_POOLED": 2.789340869001356e-56,
+      "isotonic_r2": 0.4777,
+      "observation_bootstrap_r2_ci": [
+        0.4236,
+        0.5703
+      ],
+      "observation_bootstrap_rho_ci": [
+        0.6269,
+        0.7315
+      ],
+      "cluster_bootstrap_r2_ci": [
+        0.3478,
+        0.6584
+      ],
+      "cluster_bootstrap_rho_ci": [
+        0.5576,
+        0.7704
+      ],
+      "n_POOLED": 400,
+      "polarity_flip_applied": true,
+      "corrected_stats": {
+        "per_conv_rhos": {
+          "n": 40,
+          "mean": 0.40303030303030296,
+          "std": 0.35202117745024203,
+          "t_stat": 7.2410059694420985,
+          "t_p": 1.0026230733594836e-08,
+          "wilcoxon_stat": 54.5,
+          "wilcoxon_p": 1.03669663076289e-07,
+          "rhos": [
+            0.7455,
+            0.8667,
+            -0.2242,
+            -0.0545,
+            0.8303,
+            0.7091,
+            0.5879,
+            0.3939,
+            0.4424,
+            0.6848,
+            0.2364,
+            0.6364,
+            0.2727,
+            0.6242,
+            -0.0182,
+            0.3697,
+            0.103,
+            0.2,
+            -0.2606,
+            0.1758,
+            0.6848,
+            0.9515,
+            0.3091,
+            0.8303,
+            0.503,
+            0.3576,
+            0.4667,
+            0.5152,
+            0.4909,
+            -0.2121,
+            0.6727,
+            0.4424,
+            0.6121,
+            0.4909,
+            0.903,
+            -0.6121,
+            0.3212,
+            0.103,
+            0.3212,
+            0.6485
+          ]
+        },
+        "lmm": {
+          "intercept": 6.676170807563175,
+          "slope": 1.9841705355981603,
+          "slope_z": 10.563867065351307,
+          "slope_p": 4.382281213465912e-26,
+          "n_obs": 400,
+          "n_groups": 40,
+          "converged": true
+        }
+      }
+    },
+    "interest": {
+      "spearman_rho_POOLED": 0.763,
+      "spearman_p_POOLED": 2.0212181961199723e-77,
+      "isotonic_r2": 0.5393,
+      "observation_bootstrap_r2_ci": [
+        0.4944,
+        0.6236
+      ],
+      "observation_bootstrap_rho_ci": [
+        0.7149,
+        0.801
+      ],
+      "cluster_bootstrap_r2_ci": [
+        0.4652,
+        0.6761
+      ],
+      "cluster_bootstrap_rho_ci": [
+        0.6811,
+        0.8227
+      ],
+      "n_POOLED": 400,
+      "polarity_flip_applied": false,
+      "corrected_stats": {
+        "per_conv_rhos": {
+          "n": 40,
+          "mean": 0.486060606060606,
+          "std": 0.32915857131880644,
+          "t_stat": 9.339319889954439,
+          "t_p": 1.709323134019876e-11,
+          "wilcoxon_stat": 25.5,
+          "wilcoxon_p": 1.9444996723905206e-09,
+          "rhos": [
+            -0.2727,
+            0.8061,
+            0.6485,
+            0.6,
+            -0.4182,
+            0.8788,
+            0.5394,
+            0.6606,
+            0.5515,
+            0.8424,
+            0.903,
+            0.1758,
+            0.7939,
+            0.6606,
+            0.2727,
+            0.7818,
+            0.3212,
+            0.7939,
+            -0.0788,
+            0.7212,
+            0.0909,
+            0.7576,
+            0.5152,
+            0.0303,
+            0.4545,
+            0.8061,
+            0.5273,
+            -0.1273,
+            0.4788,
+            0.7212,
+            0.8788,
+            0.5758,
+            0.4303,
+            0.5515,
+            0.2606,
+            0.3455,
+            0.2848,
+            0.4303,
+            0.4667,
+            0.7818
+          ]
+        },
+        "lmm": {
+          "intercept": -3.3840253462574474,
+          "slope": 6.3183677161632525,
+          "slope_z": 15.505940451424696,
+          "slope_p": 3.1625196390816e-54,
+          "n_obs": 400,
+          "n_groups": 40,
+          "converged": true
+        }
+      }
+    },
+    "focus": {
+      "spearman_rho_POOLED": 0.3997,
+      "spearman_p_POOLED": 8.953550834779397e-17,
+      "isotonic_r2": 0.1247,
+      "observation_bootstrap_r2_ci": [
+        0.0848,
+        0.214
+      ],
+      "observation_bootstrap_rho_ci": [
+        0.3106,
+        0.4808
+      ],
+      "cluster_bootstrap_r2_ci": [
+        0.0638,
+        0.2818
+      ],
+      "cluster_bootstrap_rho_ci": [
+        0.2508,
+        0.5406
+      ],
+      "n_POOLED": 400,
+      "polarity_flip_applied": false,
+      "corrected_stats": {
+        "per_conv_rhos": {
+          "n": 40,
+          "mean": 0.2612121212121212,
+          "std": 0.37328761867055965,
+          "t_stat": 4.425677221313274,
+          "t_p": 7.518889329502869e-05,
+          "wilcoxon_stat": 144.5,
+          "wilcoxon_p": 0.00020590441454260144,
+          "rhos": [
+            -0.1636,
+            0.7939,
+            0.5758,
+            0.4788,
+            -0.2242,
+            0.9394,
+            -0.5758,
+            -0.1273,
+            -0.0303,
+            0.3455,
+            0.2121,
+            0.6848,
+            -0.0545,
+            0.0182,
+            0.1152,
+            0.4909,
+            0.3455,
+            0.6242,
+            0.3455,
+            -0.3455,
+            0.5152,
+            0.6,
+            -0.103,
+            0.1636,
+            0.4182,
+            0.5879,
+            0.1273,
+            -0.3576,
+            -0.1636,
+            0.7576,
+            0.5515,
+            0.4303,
+            0.7697,
+            0.1152,
+            0.3212,
+            -0.2242,
+            0.0667,
+            0.6485,
+            0.6364,
+            0.1394
+          ]
+        },
+        "lmm": {
+          "intercept": -2.229331484437617,
+          "slope": 2.9385453398372676,
+          "slope_z": 4.458727857277632,
+          "slope_p": 8.244752094837452e-06,
+          "n_obs": 400,
+          "n_groups": 40,
+          "converged": true
+        }
+      }
+    },
+    "impulsivity": {
+      "spearman_rho_POOLED": 0.509,
+      "spearman_p_POOLED": 9.558852261767222e-28,
+      "isotonic_r2": 0.3142,
+      "observation_bootstrap_r2_ci": [
+        0.2511,
+        0.413
+      ],
+      "observation_bootstrap_rho_ci": [
+        0.4295,
+        0.578
+      ],
+      "cluster_bootstrap_r2_ci": [
+        0.222,
+        0.479
+      ],
+      "cluster_bootstrap_rho_ci": [
+        0.3292,
+        0.6364
+      ],
+      "n_POOLED": 400,
+      "polarity_flip_applied": true,
+      "corrected_stats": {
+        "per_conv_rhos": {
+          "n": 40,
+          "mean": 0.2621212121212121,
+          "std": 0.4227808099820376,
+          "t_stat": 3.921181064875593,
+          "t_p": 0.0003463710378349297,
+          "wilcoxon_stat": 157.0,
+          "wilcoxon_p": 0.0004266080886736745,
+          "rhos": [
+            0.3091,
+            0.3455,
+            0.6364,
+            0.0303,
+            0.9152,
+            0.7939,
+            0.7697,
+            0.1758,
+            0.3455,
+            0.1515,
+            0.8303,
+            0.7091,
+            -0.0545,
+            0.3091,
+            -0.8788,
+            -0.0545,
+            -0.3333,
+            0.0545,
+            -0.1152,
+            -0.3212,
+            0.3939,
+            0.8667,
+            -0.0303,
+            0.7697,
+            0.1879,
+            0.7939,
+            0.2606,
+            0.4424,
+            -0.1273,
+            0.5636,
+            0.4182,
+            0.3091,
+            -0.5394,
+            0.8667,
+            0.0303,
+            0.4061,
+            0.4182,
+            0.0424,
+            -0.3576,
+            0.1515
+          ]
+        },
+        "lmm": {
+          "intercept": 4.889323699270271,
+          "slope": 1.790747627907966,
+          "slope_z": 6.9175809301971585,
+          "slope_p": 4.594209392722353e-12,
+          "n_obs": 400,
+          "n_groups": 40,
+          "converged": true
+        }
+      }
+    }
+  }
+}
