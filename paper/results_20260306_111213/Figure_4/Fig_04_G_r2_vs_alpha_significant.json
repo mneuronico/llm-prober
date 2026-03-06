@@ -1,0 +1,75 @@
+{
+  "panel_id": "Fig_04_G",
+  "title": "Isotonic R² vs. Steering Alpha (Display-Corrected)",
+  "description": "Isotonic R² as a function of display-corrected steering alpha. For impulsive_vs_planning steering, alpha is sign-flipped so positive α = more impulsive. Auto y-scale.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "r2_values": [
+        0.3403,
+        0.3733,
+        0.4522,
+        0.6393,
+        0.753
+      ],
+      "spearman_rho_r2_vs_alpha": 1.0,
+      "exact_permutation_p": 0.016666666666666666,
+      "alpha_display_flipped": false,
+      "n_alpha_levels": 5,
+      "per_conv_r2_lmm": {
+        "error": "Singular matrix"
+      },
+      "per_conv_r2_rhos_ttest": {
+        "n": 40,
+        "mean": 0.4625,
+        "std": 0.593420117536839,
+        "t_stat": 4.929234364007153,
+        "t_p": 1.5654022619656873e-05,
+        "wilcoxon_stat": 99.0,
+        "wilcoxon_p": 7.733384413337217e-05
+      }
+    },
+    "('impulsivity', 'interest')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "r2_values": [
+        0.4562,
+        0.5037,
+        0.5522,
+        0.6141,
+        0.6873
+      ],
+      "spearman_rho_r2_vs_alpha": 1.0,
+      "exact_permutation_p": 0.016666666666666666,
+      "alpha_display_flipped": true,
+      "n_alpha_levels": 5,
+      "per_conv_r2_lmm": {
+        "slope": 0.017721494801462026,
+        "slope_p": 2.9512882067885297e-10,
+        "n_obs": 200,
+        "n_groups": 40,
+        "converged": true
+      },
+      "per_conv_r2_rhos_ttest": {
+        "n": 40,
+        "mean": 0.32999999999999996,
+        "std": 0.7204699321116205,
+        "t_stat": 2.896863786659429,
+        "t_p": 0.006151423496248344,
+        "wilcoxon_stat": 177.0,
+        "wilcoxon_p": 0.0012975311765330844
+      }
+    }
+  }
+}

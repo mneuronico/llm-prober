@@ -1,0 +1,71 @@
+{
+  "panel_id": "Fig_04_H",
+  "title": "Spearman ρ vs. Steering Alpha (Display-Corrected)",
+  "description": "Spearman ρ vs display-corrected steering alpha for the two significant conditions. Enhanced with Spearman test of rho-change vs alpha.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "rho_values": [
+        0.4241,
+        0.5461,
+        0.67,
+        0.7817,
+        0.8456
+      ],
+      "spearman_rho_change_vs_alpha": 1.0,
+      "exact_permutation_p": 0.016666666666666666,
+      "per_conv_rho_lmm": {
+        "error": "Singular matrix"
+      },
+      "per_conv_rhos_ttest": {
+        "n": 40,
+        "mean": 0.5127762281850028,
+        "std": 0.5652152686706197,
+        "t_stat": 5.737781340793162,
+        "t_p": 1.1980226716979924e-06,
+        "wilcoxon_stat": 85.5,
+        "wilcoxon_p": 2.0088478137756264e-05
+      }
+    },
+    "('impulsivity', 'interest')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "rho_values": [
+        0.7031,
+        0.7377,
+        0.7565,
+        0.785,
+        0.8263
+      ],
+      "spearman_rho_change_vs_alpha": 1.0,
+      "exact_permutation_p": 0.016666666666666666,
+      "per_conv_rho_lmm": {
+        "slope": 0.02037878787878787,
+        "slope_p": 1.598373881767534e-12,
+        "n_obs": 200,
+        "n_groups": 40,
+        "converged": true
+      },
+      "per_conv_rhos_ttest": {
+        "n": 40,
+        "mean": 0.30206272553812785,
+        "std": 0.6897271688484682,
+        "t_stat": 2.7698088521974737,
+        "t_p": 0.008544071368260504,
+        "wilcoxon_stat": 208.5,
+        "wilcoxon_p": 0.006096451763369259
+      }
+    }
+  }
+}

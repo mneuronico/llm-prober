@@ -1,0 +1,24 @@
+{
+  "panel_id": "Fig_05_A",
+  "title": "Probe Quality — Max Cohen's d",
+  "d_values": {
+    "1B": {
+      "wellbeing": 1.686,
+      "interest": 3.413,
+      "focus": 1.676,
+      "impulsivity": 3.196
+    },
+    "3B": {
+      "wellbeing": 3.342,
+      "interest": 1.666,
+      "focus": 1.985,
+      "impulsivity": 3.595
+    },
+    "8B": {
+      "wellbeing": 3.382,
+      "interest": 2.091,
+      "focus": 1.867,
+      "impulsivity": 3.679
+    }
+  }
+}

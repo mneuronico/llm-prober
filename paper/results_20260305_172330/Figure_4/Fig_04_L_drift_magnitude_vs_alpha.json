@@ -1,0 +1,105 @@
+{
+  "panel_id": "Fig_04_L",
+  "title": "Drift Magnitude vs. Display-Corrected Alpha",
+  "description": "Probe score drift (last−first turn) vs display-corrected alpha. Alpha flipped for impulsive_vs_planning steering. Includes Spearman test of drift-vs-alpha trend.",
+  "drift_vs_alpha_stats": {
+    "focus→wellbeing": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "drift_values": [
+        -0.0077,
+        -0.0047,
+        0.0287,
+        0.0723,
+        0.1264
+      ],
+      "ci_95_low": [
+        -0.0287,
+        -0.0268,
+        0.0037,
+        0.0495,
+        0.1046
+      ],
+      "ci_95_high": [
+        0.014,
+        0.0185,
+        0.0519,
+        0.0956,
+        0.1513
+      ],
+      "spearman_rho_drift_vs_alpha": 1.0,
+      "exact_permutation_p": 0.016666666666666666,
+      "n_alpha_levels": 5,
+      "per_conv_drift_lmm": {
+        "slope": 0.01726131834089756,
+        "slope_p": 2.6887109034794015e-78,
+        "n_obs": 200,
+        "n_groups": 40,
+        "converged": true
+      },
+      "per_conv_drift_rhos_ttest": {
+        "n": 40,
+        "mean": 0.8125,
+        "std": 0.2971553163772811,
+        "t_stat": 17.292980857355086,
+        "t_p": 6.911522239082776e-20,
+        "wilcoxon_stat": 4.5,
+        "wilcoxon_p": 1.8189894035458565e-11
+      }
+    },
+    "impulsivity→interest": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "drift_values": [
+        0.0608,
+        0.0739,
+        0.0858,
+        0.0959,
+        0.0992
+      ],
+      "ci_95_low": [
+        0.0438,
+        0.0557,
+        0.0666,
+        0.0742,
+        0.0774
+      ],
+      "ci_95_high": [
+        0.0775,
+        0.0937,
+        0.1042,
+        0.1172,
+        0.1212
+      ],
+      "spearman_rho_drift_vs_alpha": 1.0,
+      "exact_permutation_p": 0.016666666666666666,
+      "n_alpha_levels": 5,
+      "per_conv_drift_lmm": {
+        "slope": 0.004932345179840922,
+        "slope_p": 9.284501782366034e-78,
+        "n_obs": 200,
+        "n_groups": 40,
+        "converged": true
+      },
+      "per_conv_drift_rhos_ttest": {
+        "n": 40,
+        "mean": 0.82,
+        "std": 0.4267948525390695,
+        "t_stat": 12.151354056458295,
+        "t_p": 7.802468221352694e-15,
+        "wilcoxon_stat": 15.0,
+        "wilcoxon_p": 2.4920154828578234e-10
+      }
+    }
+  }
+}

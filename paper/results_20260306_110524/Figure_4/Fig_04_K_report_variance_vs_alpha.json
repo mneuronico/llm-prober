@@ -1,0 +1,107 @@
+{
+  "panel_id": "Fig_04_K",
+  "title": "Self-Report Variance vs. Display-Corrected Alpha",
+  "description": "Variance of logit self-reports vs display-corrected alpha. Alpha sign-flipped for impulsive_vs_planning steering. Three statistical tests: (1) Exact permutation Spearman on aggregate N=5 points (low power), (2) LMM: log(variance) ~ alpha + (1|turn) using 10 per-turn variances × 5 alphas = 50 observations, (3) Jonckheere-Terpstra permutation trend test on per-turn variances.",
+  "conditions": {
+    "('focus', 'wellbeing')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        0.0,
+        2.0,
+        4.0
+      ],
+      "variance_values": [
+        0.0332,
+        0.0767,
+        0.1644,
+        0.2319,
+        0.2045
+      ],
+      "variance_ci_low": [
+        0.0271,
+        0.0664,
+        0.1377,
+        0.1964,
+        0.1693
+      ],
+      "variance_ci_high": [
+        0.0403,
+        0.0881,
+        0.193,
+        0.2733,
+        0.2434
+      ],
+      "aggregate_spearman_rho_vs_alpha": 0.9,
+      "aggregate_spearman_p_vs_alpha": 0.083333,
+      "aggregate_spearman_note": "N=5 alpha levels, low power",
+      "per_turn_variance_lmm": {
+        "error": "Singular matrix"
+      },
+      "jonckheere_terpstra_trend": {
+        "jt_statistic": 856.0,
+        "jt_permutation_p": 0.0,
+        "n_permutations": 5000,
+        "n_groups": 5,
+        "group_sizes": [
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "test": "Jonckheere-Terpstra trend test (permutation)"
+      }
+    },
+    "('impulsivity', 'interest')": {
+      "display_alphas": [
+        -4.0,
+        -2.0,
+        -0.0,
+        2.0,
+        4.0
+      ],
+      "variance_values": [
+        0.2446,
+        0.3267,
+        0.3775,
+        0.3871,
+        0.3819
+      ],
+      "variance_ci_low": [
+        0.2008,
+        0.2684,
+        0.3188,
+        0.3334,
+        0.3323
+      ],
+      "variance_ci_high": [
+        0.2883,
+        0.3825,
+        0.4325,
+        0.4429,
+        0.4319
+      ],
+      "aggregate_spearman_rho_vs_alpha": 0.9,
+      "aggregate_spearman_p_vs_alpha": 0.083333,
+      "aggregate_spearman_note": "N=5 alpha levels, low power",
+      "per_turn_variance_lmm": {
+        "error": "Singular matrix"
+      },
+      "jonckheere_terpstra_trend": {
+        "jt_statistic": 785.0,
+        "jt_permutation_p": 0.0,
+        "n_permutations": 5000,
+        "n_groups": 5,
+        "group_sizes": [
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "test": "Jonckheere-Terpstra trend test (permutation)"
+      }
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "panel_id": "Fig_02_G",
+  "title": "Logit vs Token Self-Report Correlation",
+  "description": "Correlation between logit-based and token-based self-reports at alpha=0. Logit-based ratings are calibrated with token ratings but provide continuous, less noisy measurements.",
+  "correlation_stats": {
+    "wellbeing": {
+      "pearson_r_POOLED": 0.3616,
+      "pearson_p_POOLED": 8.415355213097923e-14,
+      "spearman_rho_POOLED": 0.3396,
+      "spearman_p_POOLED": 2.98303683921535e-12,
+      "isotonic_r2": 0.1387,
+      "n_POOLED": 400,
+      "slope": 0.1359,
+      "intercept": 5.466,
+      "per_conv_means_spearman_rho": 0.7562,
+      "per_conv_means_spearman_p": 1.672397908153463e-08,
+      "per_conv_means_pearson_r": 0.8223,
+      "per_conv_means_pearson_p": 7.651168947451078e-11,
+      "n_conversations": 40,
+      "lmm_results": {
+        "intercept": 6.135437544021289,
+        "slope": 0.030847549919158064,
+        "slope_z": 3.36104141569201,
+        "slope_p": 0.0007764918133950876,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true
+      }
+    },
+    "interest": {
+      "pearson_r_POOLED": 0.6088,
+      "pearson_p_POOLED": 6.184388065934806e-42,
+      "spearman_rho_POOLED": 0.5585,
+      "spearman_p_POOLED": 3.5118949654839764e-34,
+      "isotonic_r2": 0.3957,
+      "n_POOLED": 400,
+      "slope": 0.3674,
+      "intercept": 4.5571,
+      "per_conv_means_spearman_rho": 0.7207,
+      "per_conv_means_spearman_p": 1.5656822856526874e-07,
+      "per_conv_means_pearson_r": 0.7756,
+      "per_conv_means_pearson_p": 4.171960669770459e-09,
+      "n_conversations": 40,
+      "lmm_results": {
+        "intercept": 5.261895736492428,
+        "slope": 0.27250242103369265,
+        "slope_z": 14.309505250032313,
+        "slope_p": 1.9086633373106837e-46,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true
+      }
+    },
+    "focus": {
+      "pearson_r_POOLED": 0.4562,
+      "pearson_p_POOLED": 5.912612243056552e-22,
+      "spearman_rho_POOLED": 0.3576,
+      "spearman_p_POOLED": 1.6502180021290444e-13,
+      "isotonic_r2": 0.2177,
+      "n_POOLED": 400,
+      "slope": 0.2526,
+      "intercept": 5.8086,
+      "per_conv_means_spearman_rho": 0.5982,
+      "per_conv_means_spearman_p": 4.560908697744891e-05,
+      "per_conv_means_pearson_r": 0.701,
+      "per_conv_means_pearson_p": 4.7158879565140907e-07,
+      "n_conversations": 40,
+      "lmm_results": {
+        "intercept": 6.371733296196048,
+        "slope": 0.18099362025526697,
+        "slope_z": 8.91165631054432,
+        "slope_p": 5.027577600614941e-19,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true
+      }
+    },
+    "impulsivity": {
+      "pearson_r_POOLED": 0.2584,
+      "pearson_p_POOLED": 1.59830359708165e-07,
+      "spearman_rho_POOLED": 0.2457,
+      "spearman_p_POOLED": 6.494514131269473e-07,
+      "isotonic_r2": 0.0828,
+      "n_POOLED": 400,
+      "slope": 0.0711,
+      "intercept": 3.6201,
+      "per_conv_means_spearman_rho": 0.5843,
+      "per_conv_means_spearman_p": 7.549835493990772e-05,
+      "per_conv_means_pearson_r": 0.6519,
+      "per_conv_means_pearson_p": 5.182434001984673e-06,
+      "n_conversations": 40,
+      "lmm_results": {
+        "intercept": 3.814696888414878,
+        "slope": 0.02052082305682673,
+        "slope_z": 2.6941075886321455,
+        "slope_p": 0.007057737872341983,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true
+      }
+    }
+  }
+}

@@ -181,15 +181,39 @@ def generate_figure_4(results_dir):
     plt.tight_layout()
     prefix = os.path.join(fig_dir, 'Fig_04_F_max_increase_matrix')
     savefig(fig, prefix)
+    # Build per-cell test detail list for JSON
+    all_cells_detail = []
+    for _, row in inc_csv.iterrows():
+        steer = row['steering_concept']
+        meas = row['measured_concept']
+        if steer in concept_order and meas in concept_order:
+            inc_val = row.get('max_increase_vs_baseline', 0)
+            detail = {
+                'steering': steer,
+                'measured': meas,
+                'max_increase_vs_baseline': round(float(inc_val), 4) if pd.notna(inc_val) else 0,
+                'baseline_isotonic_r2': round(float(row.get('baseline_isotonic_r2', 0)), 4),
+                'best_alpha': float(row.get('best_alpha', 0)),
+                'best_isotonic_r2': round(float(row.get('best_isotonic_r2', 0)), 4),
+            }
+            p_val = row.get('bootstrap_p_two_sided')
+            detail['bootstrap_p_two_sided'] = round(float(p_val), 6) if pd.notna(p_val) else None
+            sig_col = row.get('significant_p_lt_threshold')
+            detail['significant'] = bool(
+                pd.notna(sig_col) and str(sig_col).lower() in ['yes', 'true', '1']
+            ) or (pd.notna(p_val) and float(p_val) < 0.05)
+            thresh = row.get('sig_threshold')
+            detail['sig_threshold'] = float(thresh) if pd.notna(thresh) else 0.05
+            all_cells_detail.append(detail)
+
     save_panel_json(prefix, {
         'panel_id': 'Fig_04_F',
         'title': 'Maximum R² Increase vs. Baseline',
         'description': ('Maximum isotonic R² increase over baseline (α=0) for each cell. '
-                        'Red borders and * indicate significant improvement (p < 0.05).'),
-        'significant_cells': [
-            {'steering': concept_order[s], 'measured': concept_order[m],
-             'increase': round(v, 4)} for s, m, v in significant_cells
-        ],
+                        'Red borders and * indicate significant improvement '
+                        '(bootstrap two-sided p < 0.05).'),
+        'test_method': 'Bootstrap permutation test (two-sided) per cell',
+        'all_cells': all_cells_detail,
         'matrix': increase_matrix.tolist(),
         'concept_order': concept_order,
     })
@@ -551,6 +575,7 @@ def generate_figure_4(results_dir):
 
     # ──────────────────────────────────────────────────────────────
     # Panel K: Report variance vs display alpha
+    #   Now with per-turn variance OLS and Jonckheere-Terpstra trend test
     # ──────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
     k_stats = {}
@@ -564,9 +589,123 @@ def generate_figure_4(results_dir):
         var_hi_sorted = [data['variance_ci'][k][1] for k in sort_idx]
         plot_line_with_ci(ax, da_sorted, var_sorted, var_lo_sorted, var_hi_sorted,
                           color=color, label=data['label'])
+
+        # --- Method 1: Original exact permutation Spearman (N=5, low power) ---
+        rho_var, p_var = exact_permutation_spearman_p(da_sorted, var_sorted)
+
+        # --- Method 2: Per-turn variance LMM ---
+        # For each (alpha, turn), compute variance of logit_rating across 40 conversations.
+        # Then fit: variance ~ display_alpha + (1|turn)
+        df_k = data['df']
+        steer_needs_flip = data['steer_needs_flip']
+        per_turn_var_rows = []
+        raw_alphas = data['raw_alphas']
+        for a_idx_k, a_val in enumerate(raw_alphas):
+            sub_k = df_k[np.isclose(df_k['alpha'], a_val)]
+            da_val = data['display_alphas'][a_idx_k]
+            for t in sorted(sub_k['turn'].unique()):
+                vals = sub_k[sub_k['turn'] == t]['logit_rating'].dropna().values
+                if len(vals) >= 2:
+                    per_turn_var_rows.append({
+                        'display_alpha': float(da_val),
+                        'turn': int(t),
+                        'variance': float(np.var(vals)),
+                        'n': len(vals),
+                    })
+
+        ptv_df = pd.DataFrame(per_turn_var_rows)
+        lmm_var_result = {}
+        if len(ptv_df) > 5:
+            try:
+                # Log-transform variance for normality (variance is right-skewed)
+                ptv_df['log_var'] = np.log(ptv_df['variance'] + 1e-10)
+                # Fixed-effects model: include turn as fixed effect to control for it
+                # (LMM with turn as random effect is singular since each cell has n=1)
+                import statsmodels.formula.api as smf
+                ptv_df['turn_factor'] = ptv_df['turn'].astype(str)
+                md_k = smf.ols('log_var ~ display_alpha + turn_factor', ptv_df).fit()
+                lmm_var_result = {
+                    'alpha_coef': round(float(md_k.params.get('display_alpha', np.nan)), 6),
+                    'alpha_p': float(md_k.pvalues.get('display_alpha', np.nan)),
+                    'alpha_t': round(float(md_k.tvalues.get('display_alpha', np.nan)), 4),
+                    'r_squared': round(float(md_k.rsquared), 4),
+                    'n_obs': len(ptv_df),
+                    'n_turns': int(ptv_df['turn'].nunique()),
+                    'n_alphas': int(ptv_df['display_alpha'].nunique()),
+                    'model': 'OLS: log(variance) ~ display_alpha + turn_factor',
+                    'interpretation': ('Positive alpha coefficient means variance increases '
+                                       'with display alpha; turn included as fixed effect to '
+                                       'control for turn-level variation.'),
+                }
+            except Exception as e:
+                lmm_var_result = {'error': str(e)}
+
+        # --- Method 3: Jonckheere-Terpstra trend test ---
+        # Test for ordered trend in variance across alpha levels
+        # Group variances by alpha level (ordered by display alpha)
+        jt_result = {}
+        try:
+            alpha_levels_ordered = sorted(ptv_df['display_alpha'].unique())
+            groups_jt = [ptv_df[np.isclose(ptv_df['display_alpha'], a)]['variance'].values
+                         for a in alpha_levels_ordered]
+            # Jonckheere-Terpstra statistic: count concordant pairs across groups
+            jt_stat = 0
+            jt_total = 0
+            for gi in range(len(groups_jt)):
+                for gj in range(gi + 1, len(groups_jt)):
+                    for xi in groups_jt[gi]:
+                        for xj in groups_jt[gj]:
+                            jt_total += 1
+                            if xj > xi:
+                                jt_stat += 1
+                            elif xj == xi:
+                                jt_stat += 0.5
+            # Permutation p-value for JT
+            rng_jt = np.random.RandomState(42)
+            all_vars_jt = np.concatenate(groups_jt)
+            group_sizes = [len(g) for g in groups_jt]
+            n_perm = 5000
+            jt_null = np.zeros(n_perm)
+            for pi in range(n_perm):
+                perm = rng_jt.permutation(all_vars_jt)
+                perm_groups = []
+                start = 0
+                for gs in group_sizes:
+                    perm_groups.append(perm[start:start + gs])
+                    start += gs
+                s = 0
+                for gi in range(len(perm_groups)):
+                    for gj in range(gi + 1, len(perm_groups)):
+                        for xi in perm_groups[gi]:
+                            for xj in perm_groups[gj]:
+                                if xj > xi:
+                                    s += 1
+                                elif xj == xi:
+                                    s += 0.5
+                jt_null[pi] = s
+            jt_p = float(np.mean(np.abs(jt_null - np.mean(jt_null)) >=
+                                 np.abs(jt_stat - np.mean(jt_null)))) # two-sided
+            jt_result = {
+                'jt_statistic': float(jt_stat),
+                'jt_permutation_p': round(float(jt_p), 6),
+                'n_permutations': n_perm,
+                'n_groups': len(groups_jt),
+                'group_sizes': group_sizes,
+                'test': 'Jonckheere-Terpstra trend test (permutation)',
+            }
+        except Exception as e:
+            jt_result = {'error': str(e)}
+
         k_stats[str(key)] = {
             'display_alphas': da_sorted,
             'variance_values': [round(v, 4) for v in var_sorted],
+            'variance_ci_low': [round(v, 4) for v in var_lo_sorted],
+            'variance_ci_high': [round(v, 4) for v in var_hi_sorted],
+            'aggregate_spearman_rho_vs_alpha': round(float(rho_var), 4),
+            'aggregate_spearman_p_vs_alpha': round(float(p_var), 6),
+            'aggregate_spearman_note': 'N=5 alpha levels, low power',
+            'per_turn_variance_lmm': lmm_var_result,
+            'jonckheere_terpstra_trend': jt_result,
         }
     ax.set_xlabel('Steering α (display-corrected)')
     ax.set_ylabel('Self-Report Variance')
@@ -581,7 +720,12 @@ def generate_figure_4(results_dir):
         'panel_id': 'Fig_04_K',
         'title': 'Self-Report Variance vs. Display-Corrected Alpha',
         'description': ('Variance of logit self-reports vs display-corrected alpha. '
-                        'Alpha sign-flipped for impulsive_vs_planning steering.'),
+                        'Alpha sign-flipped for impulsive_vs_planning steering. '
+                        'Three statistical tests: (1) Exact permutation Spearman on aggregate '
+                        'N=5 points (low power), (2) OLS: log(variance) ~ alpha + turn_factor '
+                        'using 10 per-turn variances x 5 alphas = 50 observations, with turn '
+                        'as fixed effect, (3) Jonckheere-Terpstra permutation trend test on '
+                        'per-turn variances.'),
         'conditions': k_stats,
     })
 

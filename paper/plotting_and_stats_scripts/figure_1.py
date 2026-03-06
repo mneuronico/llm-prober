@@ -105,9 +105,10 @@ def _plot_score_dist_boxplot(ax, probe_dir, concept_name, color, n_eval):
             u_stat, u_p = mannwhitneyu(high_data, low_data, alternative='two-sided')
             return {
                 'high_label': high_label, 'low_label': low_label,
-                'high_n_tokens': len(high_data), 'low_n_tokens': len(low_data),
-                'high_n_prompts': len(eval_data['neg_scores']) if needs_flip else len(eval_data['pos_scores']),
-                'low_n_prompts': len(eval_data['pos_scores']) if needs_flip else len(eval_data['neg_scores']),
+                'high_n_eval_texts': len(high_data),
+                'low_n_eval_texts': len(low_data),
+                'note': ('Each eval text produces one independent score at the best layer. '
+                         'Mann-Whitney U compares n_high vs n_low independent scores.'),
                 'high_median': round(float(np.median(high_data)), 4),
                 'low_median': round(float(np.median(low_data)), 4),
                 'high_mean': round(float(np.mean(high_data)), 4),
@@ -221,12 +222,13 @@ def generate_figure_1(results_dir):
         save_panel_json(prefix, {
             'panel_id': f'Fig_01_{label}',
             'title': f"Score Distribution - {CONCEPT_DISPLAY[concept]}",
-            'description': (f"Boxplot of per-token probe scores for positive "
+            'description': (f"Boxplot of probe scores for positive "
                             f"({concept_info['pos_label']}) and negative "
                             f"({concept_info['neg_label']}) evaluation texts at "
-                            f"best layer {best_layer}. "
+                            f"best layer {best_layer}. One score per eval text. "
                             f"{'Scores flipped for intuitive direction. ' if concept in FLIP_CONCEPTS else ''}"
-                            f"n = {n_eval} evaluation prompts per condition."),
+                            f"Mann-Whitney U test on {dist_stats.get('high_n_eval_texts', '?')} "
+                            f"vs {dist_stats.get('low_n_eval_texts', '?')} independent scores."),
             'data_source': os.path.join(probe_dir, 'scores/'),
             'model': 'LLaMA-3.2-3B-Instruct',
             'concept': concept,

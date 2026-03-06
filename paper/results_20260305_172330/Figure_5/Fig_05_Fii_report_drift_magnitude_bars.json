@@ -1,0 +1,33 @@
+{
+  "panel_id": "Fig_05_Fii",
+  "title": "Report Drift Magnitude Bars (bootstrap CI)",
+  "drift_stats": {
+    "1B": {
+      "mean_drift": 1.7709,
+      "ci_95": [
+        1.3944,
+        2.1391
+      ],
+      "n_conversations": 40,
+      "std_drift": 1.1887
+    },
+    "3B": {
+      "mean_drift": 0.381,
+      "ci_95": [
+        0.2627,
+        0.5011
+      ],
+      "n_conversations": 40,
+      "std_drift": 0.3887
+    },
+    "8B": {
+      "mean_drift": 1.3327,
+      "ci_95": [
+        1.1268,
+        1.5359
+      ],
+      "n_conversations": 40,
+      "std_drift": 0.66
+    }
+  }
+}

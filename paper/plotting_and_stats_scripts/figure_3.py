@@ -383,42 +383,110 @@ def generate_figure_3(results_dir):
 
         first = sub[sub['turn'] == first_turn]
         last_ = sub[sub['turn'] == last_turn]
+        n_obs = len(first)  # = number of conversations
 
-        # R² for first and last
+        # R² for first and last + bootstrap CIs
         r2_first = isotonic_r2(first['probe_display'].values, first['logit_rating'].values)
         r2_last = isotonic_r2(last_['probe_display'].values, last_['logit_rating'].values)
-        # Rho for first and last (probe_display already polarity-corrected by flip_if_needed)
+        _, r2_first_lo, r2_first_hi = bootstrap_stat(
+            first['probe_display'].values, first['logit_rating'].values, isotonic_r2)
+        _, r2_last_lo, r2_last_hi = bootstrap_stat(
+            last_['probe_display'].values, last_['logit_rating'].values, isotonic_r2)
+
+        # Rho for first and last + bootstrap CIs
         rho_first, p_first = stats.spearmanr(
             first['probe_display'].values, first['logit_rating'].values)
         rho_last, p_last = stats.spearmanr(
             last_['probe_display'].values, last_['logit_rating'].values)
+        _, rho_first_lo, rho_first_hi = bootstrap_stat(
+            first['probe_display'].values, first['logit_rating'].values, spearman_rho)
+        _, rho_last_lo, rho_last_hi = bootstrap_stat(
+            last_['probe_display'].values, last_['logit_rating'].values, spearman_rho)
+
+        # Statistical comparison: paired permutation test for R² and rho difference
+        # Per-conversation R² and rho at first and last turn
+        r2_diffs = []
+        rho_diffs = []
+        for ci_val in sorted(sub['conversation_index'].unique()):
+            cv = sub[sub['conversation_index'] == ci_val]
+            cv_first = cv[cv['turn'] == first_turn]
+            cv_last = cv[cv['turn'] == last_turn]
+            if len(cv_first) >= 1 and len(cv_last) >= 1:
+                # Can't compute per-conversation R²/rho with n=1, use paired bootstrap instead
+                pass
+        # Bootstrap test: is R²(last) - R²(first) > 0?
+        rng_cdii = np.random.RandomState(42)
+        n_boot = 2000
+        r2_diff_boots = []
+        rho_diff_boots = []
+        first_probe = first['probe_display'].values
+        first_rating = first['logit_rating'].values
+        last_probe = last_['probe_display'].values
+        last_rating = last_['logit_rating'].values
+        for _ in range(n_boot):
+            idx_f = rng_cdii.choice(len(first_probe), len(first_probe), replace=True)
+            idx_l = rng_cdii.choice(len(last_probe), len(last_probe), replace=True)
+            r2_f_b = isotonic_r2(first_probe[idx_f], first_rating[idx_f])
+            r2_l_b = isotonic_r2(last_probe[idx_l], last_rating[idx_l])
+            r2_diff_boots.append(r2_l_b - r2_f_b)
+            rho_f_b = spearman_rho(first_probe[idx_f], first_rating[idx_f])
+            rho_l_b = spearman_rho(last_probe[idx_l], last_rating[idx_l])
+            rho_diff_boots.append(rho_l_b - rho_f_b)
+        r2_diff_boots = np.array(r2_diff_boots)
+        rho_diff_boots = np.array(rho_diff_boots)
+        r2_diff_p = float(np.mean(r2_diff_boots <= 0)) * 2  # two-sided
+        r2_diff_p = min(r2_diff_p, 1.0)
+        rho_diff_p = float(np.mean(rho_diff_boots <= 0)) * 2
+        rho_diff_p = min(rho_diff_p, 1.0)
 
         width = 0.35
-        # R² bars (first vs last)
+        # R² bars with error bars
         axes[0].bar(i - width/2, r2_first, width, color=color, alpha=0.5,
                     label=f'Turn {first_turn}' if i == 0 else None)
         axes[0].bar(i + width/2, r2_last, width, color=color,
                     label=f'Turn {last_turn}' if i == 0 else None)
-        # Rho bars
+        axes[0].errorbar(i - width/2, r2_first,
+                         yerr=[[r2_first - r2_first_lo], [r2_first_hi - r2_first]],
+                         color='black', capsize=3, linewidth=1, capthick=1)
+        axes[0].errorbar(i + width/2, r2_last,
+                         yerr=[[r2_last - r2_last_lo], [r2_last_hi - r2_last]],
+                         color='black', capsize=3, linewidth=1, capthick=1)
+        # Rho bars with error bars
         axes[1].bar(i - width/2, rho_first, width, color=color, alpha=0.5,
                     label=f'Turn {first_turn}' if i == 0 else None)
         axes[1].bar(i + width/2, rho_last, width, color=color,
                     label=f'Turn {last_turn}' if i == 0 else None)
+        axes[1].errorbar(i - width/2, rho_first,
+                         yerr=[[rho_first - rho_first_lo], [rho_first_hi - rho_first]],
+                         color='black', capsize=3, linewidth=1, capthick=1)
+        axes[1].errorbar(i + width/2, rho_last,
+                         yerr=[[rho_last - rho_last_lo], [rho_last_hi - rho_last]],
+                         color='black', capsize=3, linewidth=1, capthick=1)
 
         first_last_stats[short] = {
             'first_turn': int(first_turn),
             'last_turn': int(last_turn),
-            'r2_first': round(float(r2_first), 4),
-            'r2_last': round(float(r2_last), 4),
-            'r2_difference': round(float(r2_last - r2_first), 4),
-            'rho_first': round(float(rho_first), 4),
-            'rho_last': round(float(rho_last), 4),
-            'rho_difference': round(float(rho_last - rho_first), 4),
-            'rho_first_p': float(p_first),
-            'rho_last_p': float(p_last),
-            'n_first': len(first),
+            'n_first': n_obs,
             'n_last': len(last_),
             'polarity_flip_applied': concept in FLIP_CONCEPTS,
+            'r2_first': round(float(r2_first), 4),
+            'r2_last': round(float(r2_last), 4),
+            'r2_first_ci': [round(float(r2_first_lo), 4), round(float(r2_first_hi), 4)],
+            'r2_last_ci': [round(float(r2_last_lo), 4), round(float(r2_last_hi), 4)],
+            'r2_difference': round(float(r2_last - r2_first), 4),
+            'r2_difference_bootstrap_p': round(float(r2_diff_p), 4),
+            'r2_difference_ci': [round(float(np.percentile(r2_diff_boots, 2.5)), 4),
+                                 round(float(np.percentile(r2_diff_boots, 97.5)), 4)],
+            'rho_first': round(float(rho_first), 4),
+            'rho_last': round(float(rho_last), 4),
+            'rho_first_ci': [round(float(rho_first_lo), 4), round(float(rho_first_hi), 4)],
+            'rho_last_ci': [round(float(rho_last_lo), 4), round(float(rho_last_hi), 4)],
+            'rho_difference': round(float(rho_last - rho_first), 4),
+            'rho_difference_bootstrap_p': round(float(rho_diff_p), 4),
+            'rho_difference_ci': [round(float(np.percentile(rho_diff_boots, 2.5)), 4),
+                                  round(float(np.percentile(rho_diff_boots, 97.5)), 4)],
+            'rho_first_p': float(p_first),
+            'rho_last_p': float(p_last),
         }
 
     axes[0].set_xticks(range(4))
@@ -443,9 +511,145 @@ def generate_figure_3(results_dir):
         'panel_id': 'Fig_03_CDii',
         'title': 'First vs Last Turn Introspection Comparison',
         'description': ('Comparison of introspection metrics at the first and last conversation '
-                        'turn. Tests whether introspection degrades or improves across the '
-                        'conversation. Rho sign-flipped for FLIP concepts.'),
+                        'turn with 95% bootstrap CIs and bootstrap significance test for '
+                        'the difference. Rho sign-flipped for FLIP concepts.'),
         'first_last_stats': first_last_stats,
+    })
+
+    # ──────────────────────────────────────────────────────────────
+    # Panel CDiii: Within-conversation introspection change over turns
+    #   For each conversation, compute Spearman ρ(turn, concordance) and
+    #   slope(turn, concordance) where concordance = z(probe) * z(rating).
+    #   Also: LMM interaction test: rating ~ probe * turn + (1|conv).
+    # ──────────────────────────────────────────────────────────────
+    import statsmodels.formula.api as smf
+    fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+    cdiii_stats = {}
+
+    for i, short in enumerate(SHORTHANDS):
+        concept = SHORTHAND_TO_CONCEPT[short]
+        color = CONCEPT_COLORS[concept]
+        ax = axes[i]
+
+        df = _load_df(short)
+        if df is None:
+            continue
+        sub = df[np.isclose(df['alpha'], 0.0)].dropna(
+            subset=['probe_score', 'logit_rating']).copy()
+        sub['probe_display'] = flip_if_needed(concept, sub['probe_score'].values)
+
+        # --- Method 1: Per-conversation Spearman of concordance vs turn ---
+        # For each conversation, z-score probe and rating, compute product,
+        # then correlate with turn.
+        conv_rhos_concordance = []
+        conv_rhos_residual = []
+        for ci_val in sorted(sub['conversation_index'].unique()):
+            cv = sub[sub['conversation_index'] == ci_val].sort_values('turn')
+            if len(cv) < 4:
+                continue
+            p_vals = cv['probe_display'].values
+            r_vals = cv['logit_rating'].values
+            t_vals = cv['turn'].values
+
+            # z-score within conversation
+            p_z = (p_vals - p_vals.mean()) / (p_vals.std() + 1e-12)
+            r_z = (r_vals - r_vals.mean()) / (r_vals.std() + 1e-12)
+            concordance = p_z * r_z  # positive = agreement
+
+            rho_c, _ = stats.spearmanr(t_vals, concordance)
+            if np.isfinite(rho_c):
+                conv_rhos_concordance.append(rho_c)
+
+            # Also: Spearman of |z_probe - z_rating| vs turn (residual approach)
+            abs_resid = np.abs(p_z - r_z)
+            rho_r, _ = stats.spearmanr(t_vals, abs_resid)
+            if np.isfinite(rho_r):
+                conv_rhos_residual.append(rho_r)
+
+        conv_rhos_concordance = np.array(conv_rhos_concordance)
+        conv_rhos_residual = np.array(conv_rhos_residual)
+
+        # t-test of concordance rhos against 0
+        concordance_ttest = one_sample_test(conv_rhos_concordance)
+        # t-test of residual rhos against 0 (negative = improving)
+        residual_ttest = one_sample_test(conv_rhos_residual)
+
+        # --- Method 2: LMM interaction test ---
+        # logit_rating ~ probe_display * turn + (1|conversation_index)
+        lmm_interaction = {}
+        try:
+            sub_lmm = sub.copy()
+            # Center turn for interpretability
+            sub_lmm['turn_c'] = sub_lmm['turn'] - sub_lmm['turn'].mean()
+            sub_lmm['probe_c'] = sub_lmm['probe_display'] - sub_lmm['probe_display'].mean()
+            md = smf.mixedlm(
+                'logit_rating ~ probe_c * turn_c',
+                sub_lmm, groups=sub_lmm['conversation_index'])
+            res = md.fit(reml=True, method='lbfgs')
+            # The interaction term probe_c:turn_c tests if the relationship
+            # between probe and rating changes with turn
+            interaction_key = 'probe_c:turn_c'
+            lmm_interaction = {
+                'interaction_coef': round(float(res.fe_params.get(interaction_key, np.nan)), 6),
+                'interaction_p': round(float(res.pvalues.get(interaction_key, np.nan)), 6),
+                'probe_coef': round(float(res.fe_params.get('probe_c', np.nan)), 4),
+                'probe_p': float(res.pvalues.get('probe_c', np.nan)),
+                'turn_coef': round(float(res.fe_params.get('turn_c', np.nan)), 6),
+                'turn_p': float(res.pvalues.get('turn_c', np.nan)),
+                'n_obs': len(sub_lmm),
+                'n_groups': int(sub_lmm['conversation_index'].nunique()),
+                'converged': res.converged,
+                'interpretation': ('Positive interaction means probe-rating relationship '
+                                   'strengthens over turns; negative means it weakens.'),
+            }
+        except Exception as e:
+            lmm_interaction = {'error': str(e)}
+
+        # --- Plot: distribution of per-conversation concordance rhos ---
+        ax.hist(conv_rhos_concordance, bins=15, color=color, alpha=0.6,
+                edgecolor='white', linewidth=0.5)
+        mean_rho = float(np.mean(conv_rhos_concordance))
+        ax.axvline(mean_rho, color='black', linewidth=2, linestyle='--')
+        ax.axvline(0, color='gray', linewidth=1, linestyle=':')
+        p_str = format_p(concordance_ttest.get('t_p', 1.0))
+        ax.set_title(f'{SHORTHAND_DISPLAY[short]}\nμ={mean_rho:.3f}, {p_str}',
+                     fontsize=9)
+        ax.set_xlabel('Within-conv ρ(turn, concordance)')
+        if i == 0:
+            ax.set_ylabel('Number of conversations')
+
+        cdiii_stats[short] = {
+            'n_conversations': len(conv_rhos_concordance),
+            'polarity_flip_applied': concept in FLIP_CONCEPTS,
+            'concordance_rho_ttest': concordance_ttest,
+            'concordance_rho_mean': round(float(np.mean(conv_rhos_concordance)), 4),
+            'concordance_rho_std': round(float(np.std(conv_rhos_concordance)), 4),
+            'concordance_rho_values': [round(float(v), 4) for v in conv_rhos_concordance],
+            'residual_rho_ttest': residual_ttest,
+            'residual_rho_mean': round(float(np.mean(conv_rhos_residual)), 4),
+            'lmm_interaction_test': lmm_interaction,
+        }
+
+    add_panel_label(axes[0], 'CDiii', x=-0.18)
+    fig.suptitle('Within-Conversation Introspection Change Over Turns', fontsize=12, y=1.02)
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_03_CDiii_within_conv_trend')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_03_CDiii',
+        'title': 'Within-Conversation Introspection Change Over Turns',
+        'description': (
+            'Tests whether introspection quality changes monotonically across turns '
+            'within each conversation (α=0). Three methods: '
+            '(1) Per-conversation Spearman ρ(turn, concordance) where concordance = '
+            'z(probe) × z(rating), then one-sample t-test of 40 ρ values against 0. '
+            '(2) Per-conversation Spearman ρ(turn, |z_probe − z_rating|) as a residual '
+            'measure (negative = improving agreement). '
+            '(3) LMM: logit_rating ~ probe × turn + (1|conversation), where the '
+            'interaction term tests whether the probe-rating relationship changes '
+            'with turn.'
+        ),
+        'cdiii_stats': cdiii_stats,
     })
 
     # ──────────────────────────────────────────────────────────────
