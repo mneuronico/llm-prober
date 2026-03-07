@@ -33,7 +33,7 @@ from shared_utils import (
     plot_line_with_ci, format_p,
     corrected_drift_stats, corrected_correlation_stats,
     per_conversation_slope, per_conversation_drift, one_sample_test,
-    lmm_test,
+    lmm_test, linear_regression_stats,
 )
 
 
@@ -314,8 +314,9 @@ def generate_figure_2(results_dir):
     save_panel_json(prefix, {
         'panel_id': 'Fig_02_D',
         'title': 'Non-Greedy (Sampled) Self-Report Across Turns',
-        'description': ('Sampled (temperature=0.8) token-based self-reports. More variable '
-                        'than greedy but still discrete (integer-valued) and relatively noisy.'),
+        'description': ('Sampled (temperature=0.8) token-based self-reports remain discrete '
+                        '(integer-valued) and noisy, even when they avoid the strongest '
+                        'collapse seen under greedy decoding.'),
         'data_sources': {k: v for k, v in LLAMA_3B_RERUN_SELF.items()},
         'rating_type': 'token (sampled, temp=0.8)',
         'per_concept_stats': sampled_drift,
@@ -494,8 +495,10 @@ def generate_figure_2(results_dir):
             ax.scatter(sub['token_rating'], sub['logit_rating'],
                        color=color, alpha=0.3, s=15, edgecolors='none')
             if len(sub) > 2:
-                slope, intercept, r, p, se = stats.linregress(
-                    sub['token_rating'], sub['logit_rating'])
+                reg = linear_regression_stats(sub['token_rating'].values,
+                                              sub['logit_rating'].values)
+                slope = reg['slope']
+                intercept = reg['intercept']
                 x_fit = np.array([sub['token_rating'].min(), sub['token_rating'].max()])
                 ax.plot(x_fit, slope * x_fit + intercept, 'k--', linewidth=1, alpha=0.7)
                 rho_s, p_s = stats.spearmanr(sub['token_rating'], sub['logit_rating'])
@@ -508,14 +511,16 @@ def generate_figure_2(results_dir):
                 pearson_conv, pearson_p_conv = stats.pearsonr(conv_means_tok[common_idx].values, conv_means_log[common_idx].values)
                 lmm_g = lmm_test(sub, 'logit_rating', 'token_rating', group_col='conversation_index')
                 corr_stats[short] = {
-                    'pearson_r_POOLED': round(float(r), 4),
-                    'pearson_p_POOLED': float(p),
+                    'pearson_r_POOLED': round(float(reg['pearson_r']), 4),
+                    'pearson_p_POOLED': float(reg['pearson_p']),
                     'spearman_rho_POOLED': round(float(rho_s), 4),
                     'spearman_p_POOLED': float(p_s),
                     'isotonic_r2': round(float(r2_iso), 4),
                     'n_POOLED': len(sub),
                     'slope': round(float(slope), 4),
                     'intercept': round(float(intercept), 4),
+                    'linear_r2_POOLED': round(float(reg['r_squared']), 4),
+                    'linear_stderr': float(reg['stderr']),
                     'per_conv_means_spearman_rho': round(float(rho_conv), 4),
                     'per_conv_means_spearman_p': float(p_conv),
                     'per_conv_means_pearson_r': round(float(pearson_conv), 4),
@@ -524,7 +529,7 @@ def generate_figure_2(results_dir):
                     'lmm_results': lmm_g,
                 }
                 ax.text(0.05, 0.95,
-                        f'ρ = {rho_s:.3f}\n{format_p(p_s)}',
+                        f'r = {reg["pearson_r"]:.3f}\n{format_p(reg["pearson_p"])}\nR² = {reg["r_squared"]:.3f}',
                         transform=ax.transAxes, fontsize=8, va='top')
         ax.set_xlabel('Token Rating')
         if i == 0:
@@ -540,8 +545,9 @@ def generate_figure_2(results_dir):
         'panel_id': 'Fig_02_G',
         'title': 'Logit vs Token Self-Report Correlation',
         'description': ('Correlation between logit-based and token-based self-reports '
-                        'at alpha=0. Logit-based ratings are calibrated with token ratings '
-                        'but provide continuous, less noisy measurements.'),
+                        'at alpha=0. Black dashed line: OLS fit. Logit-based ratings are '
+                        'linearly calibrated with token ratings while providing continuous, '
+                        'less noisy measurements.'),
         'correlation_stats': corr_stats,
     })
 

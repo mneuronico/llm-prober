@@ -16,6 +16,7 @@ v2 changes:
 
 import os
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.isotonic import IsotonicRegression
@@ -37,7 +38,8 @@ from shared_utils import (
     corrected_correlation_stats,
     savefig, save_panel_json, save_other_stats, ensure_dir,
     add_panel_label, plot_line_with_ci, format_p,
-    compute_per_turn_means, SHORTHAND_DISPLAY,
+    compute_per_turn_means, compute_grouped_cluster_means,
+    paired_difference_test, SHORTHAND_DISPLAY,
 )
 
 SHORTHANDS = SHORTHANDS_ORDERED
@@ -54,6 +56,22 @@ def _load_df(short, exp_dirs=None):
     concept = SHORTHAND_TO_CONCEPT[short]
     results = load_results(exp_dir)
     return results_to_dataframe(results, probe_name=concept)
+
+
+def _per_conversation_metric_map(df, x_col, y_col, metric_fn, min_obs=3):
+    """Compute one scalar metric per conversation."""
+    metric_map = {}
+    for conv_id in sorted(df['conversation_index'].unique()):
+        sub = df[df['conversation_index'] == conv_id].dropna(subset=[x_col, y_col])
+        if len(sub) < min_obs:
+            continue
+        try:
+            value = metric_fn(sub[x_col].values, sub[y_col].values)
+        except Exception:
+            continue
+        if np.isfinite(value):
+            metric_map[int(conv_id)] = float(value)
+    return metric_map
 
 
 def generate_figure_3(results_dir):
@@ -174,6 +192,56 @@ def generate_figure_3(results_dir):
                     'n': len(sub_r),
                 }
 
+    paired_true_vs_random = {}
+    for short in SHORTHANDS:
+        concept = SHORTHAND_TO_CONCEPT[short]
+        df_true = _load_df(short)
+        df_rand = _load_df(short, LLAMA_3B_RANDOM)
+        if df_true is None or df_rand is None:
+            continue
+
+        sub_true = df_true[np.isclose(df_true['alpha'], 0.0)].dropna(
+            subset=['probe_score', 'logit_rating']).copy()
+        sub_rand = df_rand[np.isclose(df_rand['alpha'], 0.0)].dropna(
+            subset=['probe_score', 'logit_rating']).copy()
+        sub_true['probe_display'] = flip_if_needed(concept, sub_true['probe_score'].values)
+        sub_rand['probe_display'] = flip_if_needed(concept, sub_rand['probe_score'].values)
+
+        true_r2 = _per_conversation_metric_map(
+            sub_true, 'probe_display', 'logit_rating', isotonic_r2, min_obs=3)
+        rand_r2 = _per_conversation_metric_map(
+            sub_rand, 'probe_display', 'logit_rating', isotonic_r2, min_obs=3)
+        common_r2 = sorted(set(true_r2.keys()) & set(rand_r2.keys()))
+
+        true_rho = _per_conversation_metric_map(
+            sub_true, 'probe_display', 'logit_rating',
+            lambda x, y: stats.spearmanr(x, y)[0], min_obs=3)
+        rand_rho = _per_conversation_metric_map(
+            sub_rand, 'probe_display', 'logit_rating',
+            lambda x, y: stats.spearmanr(x, y)[0], min_obs=3)
+        common_rho = sorted(set(true_rho.keys()) & set(rand_rho.keys()))
+
+        paired_true_vs_random[short] = {
+            'isotonic_r2': {
+                'n_paired_conversations': len(common_r2),
+                'paired_test': paired_difference_test(
+                    [true_r2[c] for c in common_r2],
+                    [rand_r2[c] for c in common_r2],
+                ),
+                'true_values': [round(true_r2[c], 6) for c in common_r2],
+                'random_values': [round(rand_r2[c], 6) for c in common_r2],
+            },
+            'spearman_rho': {
+                'n_paired_conversations': len(common_rho),
+                'paired_test': paired_difference_test(
+                    [true_rho[c] for c in common_rho],
+                    [rand_rho[c] for c in common_rho],
+                ),
+                'true_values': [round(true_rho[c], 6) for c in common_rho],
+                'random_values': [round(rand_rho[c], 6) for c in common_rho],
+            },
+        }
+
     has_random = len(random_stats) > 0
     n_bars = 2 if has_random else 1
     bar_w = 0.35 if has_random else 0.6
@@ -238,12 +306,13 @@ def generate_figure_3(results_dir):
     savefig(fig, prefix)
     save_panel_json(prefix, {
         'panel_id': 'Fig_03_B',
-        'title': 'Introspection Metrics — Bar Charts (with Random Control)',
+        'title': 'Introspection Metrics - Bar Charts (with Random Control)',
         'description': ('Isotonic R² (left) and Spearman ρ (right) for each concept at alpha=0. '
                         'Grey bars: random scoring control (probe scores from random direction). '
                         '95% bootstrap CIs on probe-based bars.'),
         'probe_statistics': scatter_stats,
         'random_control_statistics': random_stats,
+        'paired_true_vs_random_per_conversation': paired_true_vs_random,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -668,18 +737,22 @@ def generate_figure_3(results_dir):
         alpha_means = []
         alpha_ci_lo = []
         alpha_ci_hi = []
+        valid_alphas = []
         alphas_found = sorted(df['alpha'].unique())
         for a in alphas_found:
-            sub = df[np.isclose(df['alpha'], a)]['logit_rating'].dropna().values
-            m = np.mean(sub)
-            rng = np.random.RandomState(42)
-            boots = [np.mean(rng.choice(sub, len(sub))) for _ in range(1000)]
-            alpha_means.append(m)
-            alpha_ci_lo.append(np.percentile(boots, 2.5))
-            alpha_ci_hi.append(np.percentile(boots, 97.5))
+            sub = df[np.isclose(df['alpha'], a)].dropna(
+                subset=['conversation_index', 'logit_rating']).copy()
+            grouped = compute_grouped_cluster_means(sub, 'alpha', 'logit_rating')
+            if grouped.empty:
+                continue
+            row = grouped.iloc[0]
+            valid_alphas.append(float(a))
+            alpha_means.append(float(row['mean']))
+            alpha_ci_lo.append(float(row['ci_low']))
+            alpha_ci_hi.append(float(row['ci_high']))
 
         # Flip alpha for display if needed
-        display_alphas = flip_alpha_if_needed(short, np.array(alphas_found))
+        display_alphas = flip_alpha_if_needed(short, np.array(valid_alphas))
         # Sort by display alpha for clean line
         sort_idx = np.argsort(display_alphas)
         display_alphas = display_alphas[sort_idx]
@@ -748,16 +821,17 @@ def generate_figure_3(results_dir):
 
         for a in alphas_found:
             sub = df[np.isclose(df['alpha'], a)]
-            turns = sorted(sub['turn'].unique())
-            means, ci_lo, ci_hi = [], [], []
-            for t in turns:
-                vals = sub[sub['turn'] == t]['logit_rating'].dropna().values
-                m = np.mean(vals)
-                rng = np.random.RandomState(42)
-                boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
-                means.append(m)
-                ci_lo.append(np.percentile(boots, 2.5))
-                ci_hi.append(np.percentile(boots, 97.5))
+            per_turn = compute_grouped_cluster_means(
+                sub.dropna(subset=['conversation_index', 'logit_rating']).copy(),
+                'turn',
+                'logit_rating',
+            )
+            if per_turn.empty:
+                continue
+            turns = per_turn['turn'].tolist()
+            means = per_turn['mean'].tolist()
+            ci_lo = per_turn['ci_low'].tolist()
+            ci_hi = per_turn['ci_high'].tolist()
 
             c = ALPHA_COLORS.get(a, 'gray')
             # Display alpha label (flipped for FLIP concepts)
@@ -794,7 +868,7 @@ def generate_figure_3(results_dir):
         savefig(fig, prefix)
         save_panel_json(prefix, {
             'panel_id': f'Fig_03_{panel_labels[pi]}',
-            'title': f'Self-Report Drift Under Steering — {SHORTHAND_DISPLAY[short]}',
+            'title': f'Self-Report Drift Under Steering - {SHORTHAND_DISPLAY[short]}',
             'description': (f'Mean logit self-report across turns for different steering '
                             f'alphas (display-corrected for polarity). Drift Spearman ρ '
                             f'indicates temporal trend at each alpha level.'),
@@ -802,6 +876,80 @@ def generate_figure_3(results_dir):
             'alpha_display_flipped': short in FLIP_SHORTHANDS,
             'drift_by_alpha': drift_by_alpha,
         })
+
+    # Panel J: Drift magnitude vs alpha
+    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+    alpha_drift_stats = {}
+    for short in SHORTHANDS:
+        concept = SHORTHAND_TO_CONCEPT[short]
+        color = CONCEPT_COLORS[concept]
+        df = _load_df(short)
+        if df is None:
+            continue
+
+        drift_rows = []
+        for a in sorted(df['alpha'].unique()):
+            sub = df[np.isclose(df['alpha'], a)].copy()
+            for conv_id in sorted(sub['conversation_index'].unique()):
+                cv = sub[sub['conversation_index'] == conv_id].sort_values('turn')
+                values = cv['logit_rating'].dropna()
+                if len(values) >= 2:
+                    drift_rows.append({
+                        'conversation_index': int(conv_id),
+                        'alpha': float(a),
+                        'display_alpha': float(flip_alpha_scalar(short, a)),
+                        'drift': float(values.iloc[-1] - values.iloc[0]),
+                    })
+        if not drift_rows:
+            continue
+
+        drift_df = pd.DataFrame(drift_rows)
+        drift_summary = compute_grouped_cluster_means(drift_df, 'display_alpha', 'drift')
+        if drift_summary.empty:
+            continue
+        corrected_alpha_drift = corrected_steering_stats(
+            drift_df, 'display_alpha', 'drift')
+
+        plot_line_with_ci(
+            ax,
+            drift_summary['display_alpha'].tolist(),
+            drift_summary['mean'].tolist(),
+            drift_summary['ci_low'].tolist(),
+            drift_summary['ci_high'].tolist(),
+            color=color,
+            label=SHORTHAND_DISPLAY[short],
+        )
+
+        alpha_drift_stats[short] = {
+            'display_alphas': [float(v) for v in drift_summary['display_alpha'].tolist()],
+            'mean_drifts': [round(float(v), 4) for v in drift_summary['mean'].tolist()],
+            'ci_low': [round(float(v), 4) for v in drift_summary['ci_low'].tolist()],
+            'ci_high': [round(float(v), 4) for v in drift_summary['ci_high'].tolist()],
+            'n_conversations_per_alpha': {
+                str(float(alpha)): int(n)
+                for alpha, n in drift_df.groupby('display_alpha')['conversation_index'].nunique().items()
+            },
+            'corrected_alpha_drift': corrected_alpha_drift,
+        }
+
+    ax.set_xlabel('Steering α (display-corrected)')
+    ax.set_ylabel('Drift (last - first turn)')
+    ax.set_title('Self-Report Drift Magnitude vs. Alpha')
+    ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
+    ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
+    ax.legend(fontsize=8)
+    add_panel_label(ax, 'J')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_03_J_drift_magnitude_vs_alpha')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_03_J',
+        'title': 'Self-Report Drift Magnitude vs. Alpha',
+        'description': ('Per-conversation self-report drift (last - first turn) summarized '
+                        'by steering alpha, with cluster-bootstrap 95% CIs and three '
+                        'trend tests stored in the corrected statistics.'),
+        'alpha_drift_stats': alpha_drift_stats,
+    })
 
     # ── Save other_stats ──
     other_stats = {
@@ -812,9 +960,12 @@ def generate_figure_3(results_dir):
                         'causal modulation. Random vector controls validate probe specificity.'),
         'overall_introspection': scatter_stats,
         'random_control': random_stats,
+        'paired_true_vs_random': paired_true_vs_random,
         'first_vs_last_turn': first_last_stats,
         'turnwise_r2': {s: turnwise_data.get(s, {}) for s in SHORTHANDS},
         'turnwise_rho': {s: turnwise_rho_data.get(s, {}) for s in SHORTHANDS},
+        'steering_stats': steering_stats,
+        'alpha_drift_stats': alpha_drift_stats,
     }
     save_other_stats(fig_dir, other_stats)
     print("    Figure 3 complete.")

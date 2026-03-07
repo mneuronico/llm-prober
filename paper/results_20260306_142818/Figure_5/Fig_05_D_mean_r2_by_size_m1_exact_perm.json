@@ -1,0 +1,23 @@
+{
+  "panel_id": "Fig_05_D_m1_exact_perm",
+  "title": "Mean R² by Size — Exact Permutation",
+  "description": "Mean isotonic R² across concepts with validated probes (ρ(α,rating) ≥ 0). Filter method: Exact Permutation.",
+  "good_r2": {
+    "1B": [],
+    "3B": [
+      0.452,
+      0.6572,
+      0.0371,
+      0.3304
+    ],
+    "8B": [
+      0.9022,
+      0.9313
+    ]
+  },
+  "means": [
+    0,
+    0.3692,
+    0.9167
+  ]
+}

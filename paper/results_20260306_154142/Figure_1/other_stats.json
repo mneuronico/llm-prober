@@ -1,0 +1,139 @@
+{
+  "description": "Figure 1 validates linear probe training for 4 concept pairs on LLaMA-3.2-3B-Instruct. Polarity note: sad_vs_happy and impulsive_vs_planning probes have inverted polarity (positive probe direction = sad/planning, not happy/impulsive). Signs are flipped for visualization and analysis. Layer search range shading: 20% to 80%.",
+  "model": "LLaMA-3.2-3B-Instruct (meta-llama/llama-3.2-3b-instruct)",
+  "concepts": {
+    "sad_vs_happy": {
+      "best_layer": 16,
+      "best_d": 3.3417,
+      "best_p": 7.212788309327034e-13,
+      "n_train": 20,
+      "n_eval": 5,
+      "num_layers": 28,
+      "proj_std_best_layer": 0.12503303587436676,
+      "pos_label": "sad",
+      "neg_label": "happy",
+      "polarity_flip": true,
+      "pos_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "neg_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "train_questions_sample": [
+        "What is photosynthesis, in simple terms?",
+        "Explain why the sky looks blue.",
+        "Give me two tips to improve my sleep.",
+        "What is the difference between correlation and causation?",
+        "How does a vaccine work?"
+      ],
+      "eval_questions": [
+        "Write a short paragraph about the ocean.",
+        "What should I do if I feel overwhelmed at work?",
+        "Explain why people form habits.",
+        "Give a metaphor for how memory works.",
+        "What is one small thing I can do today to improve my day?"
+      ]
+    },
+    "bored_vs_interested": {
+      "best_layer": 14,
+      "best_d": 1.666,
+      "best_p": 9.448109267395921e-06,
+      "n_train": 24,
+      "n_eval": 12,
+      "num_layers": 28,
+      "proj_std_best_layer": 0.0845305323600769,
+      "pos_label": "interested",
+      "neg_label": "bored",
+      "polarity_flip": false,
+      "pos_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "neg_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "train_questions_sample": [
+        "Tell me about how coffee roasting changes flavor.",
+        "I want to start a small herb garden on my balcony. Any tips?",
+        "Explain what makes a good short story opening.",
+        "Can you suggest a few creative themes for a photo project?",
+        "Why do people enjoy escape rooms? Give me a quick overview."
+      ],
+      "eval_questions": [
+        "Why do some cities have underground markets? Give me a quick explanation.",
+        "Suggest three ways to make a presentation feel more engaging.",
+        "I want to learn about constellations. Where should I begin?",
+        "Explain the appeal of building model kits.",
+        "Give me a fun idea for a science demo.",
+        "How does sourdough starter actually work?",
+        "Tell me one interesting fact about origami.",
+        "Describe why people get into birdwatching.",
+        "I want to try drawing in ink. Any starting advice?",
+        "Explain what makes a board game feel strategic.",
+        "What's a neat application of time-lapse photography?",
+        "Give me a quick introduction to microcontrollers."
+      ]
+    },
+    "distracted_vs_focused": {
+      "best_layer": 10,
+      "best_d": 1.985,
+      "best_p": 5.734721071348758e-07,
+      "n_train": 24,
+      "n_eval": 12,
+      "num_layers": 28,
+      "proj_std_best_layer": 0.07747846096754074,
+      "pos_label": "focused",
+      "neg_label": "distracted",
+      "polarity_flip": false,
+      "pos_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "neg_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "train_questions_sample": [
+        "I have 90 minutes to study for a history quiz. Can you map a focused study session for me?",
+        "Please summarize this short paragraph into three key points: 'The city expanded along the river as trade increased, and neighborhoods formed around the new docks.'",
+        "I need help breaking a complex task into steps: migrate a small Python script into a reusable package.",
+        "I keep losing track when I read long articles. Can you suggest a method to read and take notes effectively?",
+        "Help me outline a 5-slide presentation about the benefits of public transit."
+      ],
+      "eval_questions": [
+        "I'm juggling three projects and keep switching context. How can I structure my day to see one project through?",
+        "Please compress this into one sentence: 'The experiment showed higher growth when light and water were balanced.'",
+        "I need a clean outline for a short how-to guide on changing a bike tire.",
+        "How would you break down learning a new API into manageable steps?",
+        "I have 45 minutes before a meeting. What is the most focused use of that time?",
+        "Suggest a way to keep track of references while writing a research summary.",
+        "Draft a tight agenda for a 20-minute standup meeting.",
+        "What is a concise troubleshooting flow for a printer that will not connect?",
+        "Help me prioritize a backlog of ten small bugs with limited time.",
+        "Give me a short plan for organizing a week of meal prep.",
+        "Explain how to stay on track during a long online lecture.",
+        "I need a crisp outline for a two-page proposal to fund a community garden."
+      ]
+    },
+    "impulsive_vs_planning": {
+      "best_layer": 13,
+      "best_d": 3.595,
+      "best_p": 3.5809937372170697e-13,
+      "n_train": 24,
+      "n_eval": 12,
+      "num_layers": 28,
+      "proj_std_best_layer": 0.12923026084899902,
+      "pos_label": "planning",
+      "neg_label": "impulsive",
+      "polarity_flip": true,
+      "pos_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "neg_system_prompt": "You are a helpful assistant. Answer clearly and concisely.",
+      "train_questions_sample": [
+        "I want to change careers but I'm unsure about the steps. How should I proceed?",
+        "I'm considering buying a new laptop today. What should I think through?",
+        "I need to plan a weekend trip with a limited budget. Any advice?",
+        "I have an idea for a side project and want to start. What is the best first move?",
+        "Should I quit my gym membership and switch to running outside? How do I decide?"
+      ],
+      "eval_questions": [
+        "I want to start freelancing soon. What is a sensible way to prepare?",
+        "I'm about to make a big purchase. How should I weigh the tradeoffs?",
+        "I want to change my daily routine quickly. What is the best approach?",
+        "I have a chance to switch teams at work. How should I decide?",
+        "I'm thinking about signing a lease without seeing the place. Is that wise?",
+        "I want to plan a short trip with friends on short notice. Any guidance?",
+        "I'm eager to launch a product fast. How should I sequence the steps?",
+        "I want to make a spontaneous donation to a cause. What should I check?",
+        "I'm ready to leave my current project but I'm not sure. How do I choose?",
+        "I want to set a goal for the next quarter. How should I structure it?",
+        "I have an opportunity to buy concert tickets right now. What should I consider?",
+        "I'm considering changing my diet this week. How should I approach it?"
+      ]
+    }
+  }
+}

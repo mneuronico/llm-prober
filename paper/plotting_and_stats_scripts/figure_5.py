@@ -44,7 +44,8 @@ from shared_utils import (
     corrected_steering_stats,
     savefig, save_panel_json, save_other_stats, ensure_dir,
     add_panel_label, plot_line_with_ci, format_p,
-    compute_per_turn_means,
+    compute_per_turn_means, compute_grouped_cluster_means,
+    linear_regression_stats, exact_permutation_slope_test,
 )
 
 SHORTHANDS = SHORTHANDS_ORDERED
@@ -104,6 +105,93 @@ def _compute_r2_from_raw(model_key, exp_dirs, concept_short, alpha=0.0):
         }
     except Exception:
         return None
+
+
+def _size_trend_from_points(size_to_value):
+    """OLS and exact-permutation trend test on one value per model size."""
+    xs = []
+    ys = []
+    for size in LLAMA_SIZES:
+        value = size_to_value.get(size)
+        if value is None or not np.isfinite(value):
+            continue
+        xs.append(np.log(LLAMA_SIZE_VALS[size]))
+        ys.append(float(value))
+    ols = linear_regression_stats(xs, ys)
+    exact = exact_permutation_slope_test(xs, ys, alternative='greater')
+    return {
+        'x_log_size': [float(v) for v in xs],
+        'y_values': [float(v) for v in ys],
+        'ols': ols,
+        'exact_permutation': exact,
+    }
+
+
+def _size_trend_from_distributions(size_to_values):
+    """OLS on independent per-conversation values pooled across sizes."""
+    xs = []
+    ys = []
+    for size in LLAMA_SIZES:
+        values = size_to_values.get(size, [])
+        for value in values:
+            if np.isfinite(value):
+                xs.append(np.log(LLAMA_SIZE_VALS[size]))
+                ys.append(float(value))
+    return linear_regression_stats(xs, ys)
+
+
+def _first_last_metric_bootstrap(sub, x_col, y_col, metric_fn, n_bootstrap=2000, seed=42):
+    """
+    Cluster bootstrap test for metric(last_turn) - metric(first_turn).
+    """
+    sub = sub.dropna(subset=['conversation_index', 'turn', x_col, y_col]).copy()
+    turns = sorted(sub['turn'].unique())
+    if len(turns) < 2:
+        return {}
+    first_turn = turns[0]
+    last_turn = turns[-1]
+    first_df = sub[sub['turn'] == first_turn].copy()
+    last_df = sub[sub['turn'] == last_turn].copy()
+    common_convs = sorted(set(first_df['conversation_index']) & set(last_df['conversation_index']))
+    if len(common_convs) < 3:
+        return {}
+    first_df = first_df[first_df['conversation_index'].isin(common_convs)].copy()
+    last_df = last_df[last_df['conversation_index'].isin(common_convs)].copy()
+
+    first_metric = metric_fn(first_df[x_col].values, first_df[y_col].values)
+    last_metric = metric_fn(last_df[x_col].values, last_df[y_col].values)
+    observed_diff = float(last_metric - first_metric)
+
+    rng = np.random.RandomState(seed)
+    boot_diffs = []
+    convs = np.array(common_convs)
+    for _ in range(n_bootstrap):
+        sampled = rng.choice(convs, len(convs), replace=True)
+        first_parts = [first_df[first_df['conversation_index'] == conv] for conv in sampled]
+        last_parts = [last_df[last_df['conversation_index'] == conv] for conv in sampled]
+        first_boot = pd.concat(first_parts, ignore_index=True)
+        last_boot = pd.concat(last_parts, ignore_index=True)
+        try:
+            boot_first = metric_fn(first_boot[x_col].values, first_boot[y_col].values)
+            boot_last = metric_fn(last_boot[x_col].values, last_boot[y_col].values)
+            boot_diffs.append(float(boot_last - boot_first))
+        except Exception:
+            continue
+    if not boot_diffs:
+        return {}
+    boot_diffs = np.array(boot_diffs, dtype=float)
+    ci_low, ci_high = np.percentile(boot_diffs, [2.5, 97.5])
+    p_two_sided = 2 * min(np.mean(boot_diffs >= 0), np.mean(boot_diffs <= 0))
+    return {
+        'first_turn': int(first_turn),
+        'last_turn': int(last_turn),
+        'first_metric': float(first_metric),
+        'last_metric': float(last_metric),
+        'difference_last_minus_first': observed_diff,
+        'bootstrap_ci_95': [float(ci_low), float(ci_high)],
+        'bootstrap_p_two_sided': float(min(1.0, p_two_sided)),
+        'n_conversations': int(len(common_convs)),
+    }
 
 
 def generate_figure_5(results_dir):
@@ -188,8 +276,12 @@ def generate_figure_5(results_dir):
                               np.array(r2_hi) - np.array(r2_y)],
                         fmt='o-', color=color, label=SHORTHAND_DISPLAY[short],
                         capsize=4, linewidth=1.5, markersize=7)
-            b_stats[short] = {s: raw_r2_data[s].get(short, {}).get('isotonic_r2')
-                              for s in LLAMA_SIZES}
+            size_to_value = {s: raw_r2_data[s].get(short, {}).get('isotonic_r2')
+                             for s in LLAMA_SIZES}
+            b_stats[short] = {
+                'per_size': size_to_value,
+                'size_trend': _size_trend_from_points(size_to_value),
+            }
 
     ax.set_xlabel('Model Size (B parameters)')
     ax.set_ylabel('Isotonic R²')
@@ -237,8 +329,15 @@ def generate_figure_5(results_dir):
                               np.array(rho_hi) - np.array(rho_y)],
                         fmt='o-', color=color, label=SHORTHAND_DISPLAY[short],
                         capsize=4, linewidth=1.5, markersize=7)
-            bii_stats[short] = {s: round(raw_r2_data[s].get(short, {}).get('spearman_rho', 0), 4)
-                                for s in LLAMA_SIZES}
+            size_to_value = {
+                s: raw_r2_data[s].get(short, {}).get('spearman_rho')
+                for s in LLAMA_SIZES
+            }
+            bii_stats[short] = {
+                'per_size': {s: round(v, 4) if v is not None else None
+                             for s, v in size_to_value.items()},
+                'size_trend': _size_trend_from_points(size_to_value),
+            }
 
     ax.set_xlabel('Model Size (B parameters)')
     ax.set_ylabel('Spearman ρ (polarity-corrected)')
@@ -360,17 +459,22 @@ def generate_figure_5(results_dir):
                 results = load_results(exp_dir)
                 df = results_to_dataframe(results, probe_name=concept)
                 alphas_found = sorted(df['alpha'].unique())
-                display_alphas = flip_alpha_if_needed(short, np.array(alphas_found))
+                valid_alphas = []
 
                 means, ci_lo, ci_hi = [], [], []
                 for a in alphas_found:
-                    vals = df[np.isclose(df['alpha'], a)]['logit_rating'].dropna().values
-                    m = np.mean(vals)
-                    rng = np.random.RandomState(42)
-                    boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
-                    means.append(m)
-                    ci_lo.append(np.percentile(boots, 2.5))
-                    ci_hi.append(np.percentile(boots, 97.5))
+                    sub_a = df[np.isclose(df['alpha'], a)].dropna(
+                        subset=['conversation_index', 'logit_rating']).copy()
+                    grouped = compute_grouped_cluster_means(sub_a, 'alpha', 'logit_rating')
+                    if grouped.empty:
+                        continue
+                    row = grouped.iloc[0]
+                    valid_alphas.append(float(a))
+                    means.append(float(row['mean']))
+                    ci_lo.append(float(row['ci_low']))
+                    ci_hi.append(float(row['ci_high']))
+
+                display_alphas = flip_alpha_if_needed(short, np.array(valid_alphas))
 
                 sort_idx = np.argsort(display_alphas)
                 da_s = [display_alphas[k] for k in sort_idx]
@@ -551,16 +655,15 @@ def generate_figure_5(results_dir):
             df = results_to_dataframe(results, probe_name=concept_name)
             sub = df[np.isclose(df['alpha'], 0.0)].copy()
             sub['probe_display'] = flip_if_needed(concept_name, sub['probe_score'].values)
-            turns = sorted(sub['turn'].unique())
-            means, ci_lo, ci_hi = [], [], []
-            for t in turns:
-                vals = sub[sub['turn'] == t]['probe_display'].dropna().values
-                m = np.mean(vals)
-                rng = np.random.RandomState(42)
-                boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
-                means.append(m)
-                ci_lo.append(np.percentile(boots, 2.5))
-                ci_hi.append(np.percentile(boots, 97.5))
+            per_turn = compute_grouped_cluster_means(
+                sub.dropna(subset=['conversation_index', 'probe_display']).copy(),
+                'turn',
+                'probe_display',
+            )
+            turns = per_turn['turn'].tolist()
+            means = per_turn['mean'].tolist()
+            ci_lo = per_turn['ci_low'].tolist()
+            ci_hi = per_turn['ci_high'].tolist()
             color = MODEL_SIZE_COLORS[size]
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=color, label=f'LLaMA {size}')
@@ -605,10 +708,12 @@ def generate_figure_5(results_dir):
     # Panel Eii: Drift magnitude bar chart with error bars
     fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
     eii_json_stats = {}
+    eii_size_values = {}
     for i, size in enumerate(LLAMA_SIZES):
         if size in drift_stats_e:
             color = MODEL_SIZE_COLORS[size]
             drifts = drift_stats_e[size].get('per_conv_drifts', [])
+            eii_size_values[size] = [float(v) for v in drifts]
             mean_drift = np.mean(drifts) if drifts else drift_stats_e[size]['drift_magnitude']
             ax.bar(i, mean_drift, color=color, edgecolor='white', linewidth=0.5)
             if len(drifts) > 1:
@@ -625,6 +730,7 @@ def generate_figure_5(results_dir):
                     'n_conversations': len(drifts),
                     'std_drift': round(float(np.std(drifts, ddof=1)), 4),
                 }
+    eii_trend = _size_trend_from_distributions(eii_size_values)
     ax.set_xticks(range(len(LLAMA_SIZES)))
     ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
     ax.set_ylabel('Drift (last − first turn)')
@@ -637,9 +743,10 @@ def generate_figure_5(results_dir):
     save_panel_json(prefix, {
         'panel_id': 'Fig_05_Eii',
         'title': 'Probe Drift Magnitude Bars (with 95% CI)',
-        'description': ('Per-conversation probe score drift (last − first turn) '
+        'description': ('Per-conversation probe score drift (last - first turn) '
                         'with bootstrap 95% CI error bars.'),
         'drift_stats': eii_json_stats,
+        'size_trend_ols_per_conversation': eii_trend,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -656,16 +763,15 @@ def generate_figure_5(results_dir):
             results = load_results(exp_dir)
             df = results_to_dataframe(results, probe_name=concept_name)
             sub = df[np.isclose(df['alpha'], 0.0)]
-            turns = sorted(sub['turn'].unique())
-            means, ci_lo, ci_hi = [], [], []
-            for t in turns:
-                vals = sub[sub['turn'] == t]['logit_rating'].dropna().values
-                m = np.mean(vals)
-                rng = np.random.RandomState(42)
-                boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
-                means.append(m)
-                ci_lo.append(np.percentile(boots, 2.5))
-                ci_hi.append(np.percentile(boots, 97.5))
+            per_turn = compute_grouped_cluster_means(
+                sub.dropna(subset=['conversation_index', 'logit_rating']).copy(),
+                'turn',
+                'logit_rating',
+            )
+            turns = per_turn['turn'].tolist()
+            means = per_turn['mean'].tolist()
+            ci_lo = per_turn['ci_low'].tolist()
+            ci_hi = per_turn['ci_high'].tolist()
             color = MODEL_SIZE_COLORS[size]
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=color, label=f'LLaMA {size}')
@@ -710,11 +816,13 @@ def generate_figure_5(results_dir):
     # Panel Fii: Self-report drift magnitude bars (with bootstrap CI)
     fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
     fii_stats = {}
+    fii_size_values = {}
     rng_fii = np.random.default_rng(42)
     for i, size in enumerate(LLAMA_SIZES):
         if size in drift_stats_f and drift_stats_f[size].get('per_conv_drifts'):
             color = MODEL_SIZE_COLORS[size]
             drifts = np.array(drift_stats_f[size]['per_conv_drifts'])
+            fii_size_values[size] = [float(v) for v in drifts.tolist()]
             mean_d = float(np.mean(drifts))
             # Bootstrap 95% CI
             boot_means = [float(np.mean(rng_fii.choice(drifts, size=len(drifts), replace=True)))
@@ -729,6 +837,7 @@ def generate_figure_5(results_dir):
                 'n_conversations': len(drifts),
                 'std_drift': round(float(np.std(drifts)), 4),
             }
+    fii_trend = _size_trend_from_distributions(fii_size_values)
     ax.set_xticks(range(len(LLAMA_SIZES)))
     ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
     ax.set_ylabel('Drift (last − first turn)')
@@ -742,6 +851,7 @@ def generate_figure_5(results_dir):
         'panel_id': 'Fig_05_Fii',
         'title': 'Report Drift Magnitude Bars (bootstrap CI)',
         'drift_stats': fii_stats,
+        'size_trend_ols_per_conversation': fii_trend,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -828,16 +938,15 @@ def generate_figure_5(results_dir):
             results = load_results(exp_dir)
             df = results_to_dataframe(results, probe_name=cross_concept)
             sub = df[np.isclose(df['alpha'], 0.0)]
-            turns = sorted(sub['turn'].unique())
-            means, ci_lo, ci_hi = [], [], []
-            for t in turns:
-                vals = sub[sub['turn'] == t]['logit_rating'].dropna().values
-                m = np.mean(vals)
-                rng = np.random.RandomState(42)
-                boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
-                means.append(m)
-                ci_lo.append(np.percentile(boots, 2.5))
-                ci_hi.append(np.percentile(boots, 97.5))
+            per_turn = compute_grouped_cluster_means(
+                sub.dropna(subset=['conversation_index', 'logit_rating']).copy(),
+                'turn',
+                'logit_rating',
+            )
+            turns = per_turn['turn'].tolist()
+            means = per_turn['mean'].tolist()
+            ci_lo = per_turn['ci_low'].tolist()
+            ci_hi = per_turn['ci_high'].tolist()
             color = cross_colors[model_name]
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=color, label=model_name)
@@ -966,13 +1075,29 @@ def generate_figure_5(results_dir):
             plot_line_with_ci(axes[1], turns, rho_vals, rho_lo_adj, rho_hi_adj,
                               color=color, label=model_name)
 
+            results = load_results(exp_dir)
+            df_cross = results_to_dataframe(results, probe_name=cross_concept)
+            sub_cross = df_cross[np.isclose(df_cross['alpha'], 0.0)].dropna(
+                subset=['conversation_index', 'turn', 'probe_score', 'logit_rating']).copy()
+            sub_cross['probe_display'] = flip_if_needed(
+                cross_concept, sub_cross['probe_score'].values)
+            first_last_r2 = _first_last_metric_bootstrap(
+                sub_cross, 'probe_display', 'logit_rating', isotonic_r2)
+            first_last_rho = _first_last_metric_bootstrap(
+                sub_cross, 'probe_display', 'logit_rating',
+                lambda x, y: stats.spearmanr(x, y)[0])
+
             cross_turnwise[model_name] = {
                 'turns': turns,
                 'r2': [round(v, 4) if not np.isnan(v) else None for v in r2_vals],
                 'rho_flipped': [round(v, 4) if not np.isnan(v) else None for v in rho_vals],
                 'rho_p': [float(p) if not np.isnan(p) else None for p in rho_p],
                 'rho_sign_flipped': cross_concept in FLIP_CONCEPTS,
-             }
+                'first_last_tests': {
+                    'r2_last_minus_first': first_last_r2,
+                    'rho_last_minus_first': first_last_rho,
+                },
+            }
         except Exception as e:
             print(f"    Warning: Cross-family turnwise error for {model_name}: {e}")
 

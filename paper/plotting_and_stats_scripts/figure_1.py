@@ -5,8 +5,9 @@ Panels A-H: Layer sweeps (Cohen's d) and score distributions for all 4 concept
 pairs on LLaMA-3.2-3B-Instruct, validating that trained linear probes
 successfully identify interpretable directions.
 
-v2 changes: boxplots from individual token scores, layer range shading,
-flipped probe scores for FLIP concepts, concept example info, enhanced stats.
+v2 changes: boxplots from per-prompt scores at the best layer, layer range
+shading, flipped probe scores for FLIP concepts, concept example info, and
+enhanced stats.
 """
 
 import os
@@ -14,7 +15,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
-from scipy.stats import mannwhitneyu
+from scipy.stats import mannwhitneyu, ttest_ind
 
 from shared_utils import (
     REPO_ROOT, PROBES, CONCEPTS_ORDERED, CONCEPT_DISPLAY, CONCEPT_COLORS,
@@ -64,8 +65,22 @@ def _plot_layer_sweep(ax, sweep_d, best_layer, num_layers, concept_name, color):
     # Allow negative d values (do not force ylim bottom=0)
 
 
+def _cohens_d(x, y):
+    """Cohen's d for two independent samples."""
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    if len(x) < 2 or len(y) < 2:
+        return np.nan
+    vx = np.var(x, ddof=1)
+    vy = np.var(y, ddof=1)
+    pooled = ((len(x) - 1) * vx + (len(y) - 1) * vy) / (len(x) + len(y) - 2)
+    if pooled <= 0:
+        return np.nan
+    return float((np.mean(x) - np.mean(y)) / np.sqrt(pooled))
+
+
 def _plot_score_dist_boxplot(ax, probe_dir, concept_name, color, n_eval):
-    """Plot boxplots of individual token scores for pos/neg evaluation prompts."""
+    """Plot boxplots of per-prompt scores for pos/neg evaluation prompts."""
     concept_info = load_concept(probe_dir)
     eval_data = load_individual_eval_scores(probe_dir)
     needs_flip = concept_name in FLIP_CONCEPTS
@@ -103,16 +118,25 @@ def _plot_score_dist_boxplot(ax, probe_dir, concept_name, color, n_eval):
 
         if len(high_data) > 0 and len(low_data) > 0:
             u_stat, u_p = mannwhitneyu(high_data, low_data, alternative='two-sided')
+            welch = ttest_ind(high_data, low_data, equal_var=False)
+            d_val = _cohens_d(high_data, low_data)
             return {
                 'high_label': high_label, 'low_label': low_label,
                 'high_n_eval_texts': len(high_data),
                 'low_n_eval_texts': len(low_data),
                 'note': ('Each eval text produces one independent score at the best layer. '
-                         'Mann-Whitney U compares n_high vs n_low independent scores.'),
+                         'Both Mann-Whitney U and Welch t-test compare n_high vs '
+                         'n_low independent prompt-level scores.'),
                 'high_median': round(float(np.median(high_data)), 4),
                 'low_median': round(float(np.median(low_data)), 4),
                 'high_mean': round(float(np.mean(high_data)), 4),
                 'low_mean': round(float(np.mean(low_data)), 4),
+                'high_std': round(float(np.std(high_data, ddof=1)), 4),
+                'low_std': round(float(np.std(low_data, ddof=1)), 4),
+                'mean_difference': round(float(np.mean(high_data) - np.mean(low_data)), 4),
+                'cohens_d': round(float(d_val), 4) if np.isfinite(d_val) else None,
+                'welch_t': float(welch.statistic),
+                'welch_p': float(welch.pvalue),
                 'mann_whitney_U': float(u_stat), 'mann_whitney_p': float(u_p),
             }
     else:

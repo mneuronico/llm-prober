@@ -1,0 +1,1371 @@
+I’d build **2.1** around a **core set of 10 papers**, plus **2 adjacent papers** if you want a slightly broader frame.
+
+## Core papers to cite
+
+1. **Kadavath et al., 2022 — *Language Models (Mostly) Know What They Know)***
+   Use this as the foundational paper for **self-evaluation / self-knowledge / “P(True)” and “P(IK)”**. It is the clearest prior for the claim that LMs can sometimes estimate whether their answers are correct and whether they know an answer at all. It also gives you a precedent for treating self-report as a measurable capability rather than a purely philosophical notion. ([arXiv][1])
+
+2. **Yin et al., 2023 — *Do Large Language Models Know What They Don’t Know?***
+   Use this for the more specific notion of **self-knowledge about unanswerability / limits of knowledge**. It is useful when you discuss “knowing that one does not know” as one important form of introspective competence, and it helps distinguish your work from generic correctness estimation. ([arXiv][2])
+
+3. **Tian et al., 2023 — *Just Ask for Calibration***
+   Use this for **verbalized confidence elicitation**. This is especially helpful for positioning your work relative to papers that ask models to express confidence in words or numbers and find that elicited confidence can be better calibrated than raw conditional probabilities in RLHF-style models. It is one of the most important bridges between calibration work and your self-report framing. ([arXiv][3])
+
+4. **Ren et al., 2023 — *Self-Evaluation Improves Selective Generation in Large Language Models***
+   Use this for **self-evaluation of generated answers**, especially in open-ended generation rather than only multiple choice. It supports the idea that model-produced self-evaluation signals can be behaviorally useful, while also keeping your paper distinct because you are not mainly doing abstention or selective generation. ([arXiv][4])
+
+5. **Kapoor et al., 2024 — *Large Language Models Must Be Taught to Know What They Don’t Know***
+   Use this as an important counterweight to overly optimistic readings of the earlier literature. It supports the claim that **prompting alone is often insufficient for good calibration**, and that explicit training can matter a lot for uncertainty awareness. This is useful for your framing that introspective ability may exist basally but may also be improvable. ([OpenReview][5])
+
+6. **Kumar et al., 2024 — *Confidence Under the Hood***
+   Use this for the specific connection between **internal token-probability structure and expressed confidence**. This is probably the closest paper to your interest in comparing a model’s internal signal to its stated report. It is especially relevant for motivating your logit-based numeric self-report measure. ([arXiv][6])
+
+7. **Yona, Aharoni, and Geva, 2024 — *Can Large Language Models Faithfully Express Their Intrinsic Uncertainty in Words?***
+   Use this to support the claim that **verbalized uncertainty is not automatically faithful** to a model’s internal uncertainty. This is highly relevant to your paper because your whole project is about whether self-reports actually mean anything. Their result gives you the right skeptical backdrop. ([arXiv][7])
+
+8. **Zhang et al., 2024 — *Self-Alignment for Factuality: Mitigating Hallucinations in LLMs via Self-Evaluation***
+   Use this as evidence that **self-evaluation can be turned into a training signal**. That helps you motivate the “introspection improvement” angle: if self-evaluation is behaviorally meaningful enough to improve factuality, then improving introspective/self-evaluative behavior is a live research direction, not just a measurement question. ([arXiv][8])
+
+9. **Binder et al., 2024 — *Looking Inward: Language Models Can Learn About Themselves by Introspection***
+   This is the most directly relevant recent paper if you want work that uses the word **introspection** in a stronger sense. Use it to show that there is now a literature explicitly arguing for model introspection as privileged self-access, but note that their setup is about models predicting properties of their own future behavior under finetuning and hypothetical scenarios, not natural multi-turn self-reports of ongoing internal state. ([arXiv][9])
+
+10. **Song, Hu, and Mahowald, 2025 — *Language Models Fail to Introspect About Their Knowledge of Language***
+    This is the key recent skeptical counterpoint. Use it to show that the field is **not settled**: some recent work argues that prompted metalinguistic judgments do not show privileged self-access once string probabilities and matched comparison models are controlled for. This is excellent for sharpening your contribution and making clear that your operationalization differs from theirs. ([arXiv][10])
+
+## Two adjacent papers worth citing if you want a broader edge
+
+11. **Zhang et al., 2024 — *R-Tuning: Instructing Large Language Models to Say “I Don’t Know”***
+    Use this if you want to mention training interventions that improve ignorance-awareness or abstention, even though it is less directly about introspection in your sense. ([arXiv][11])
+
+12. **Feng et al., 2024 — *Don’t Hallucinate, Abstain: Identifying LLM Knowledge Gaps via Multi-LLM Collaboration***
+    Use this if you want a comparison point showing that self-knowledge is often not strong enough on its own, motivating external aids or multi-model methods. ([arXiv][12])
+
+---
+
+## What each paper gives you, in one line
+
+If you want the fastest mapping from citation to rhetorical use:
+
+* **Kadavath et al. 2022** → baseline claim that models can sometimes estimate their own correctness/knowledge. ([arXiv][1])
+* **Yin et al. 2023** → self-knowledge on answerable vs unanswerable questions. ([arXiv][2])
+* **Tian et al. 2023** → elicited confidence can be informative and sometimes better than raw token probabilities. ([arXiv][3])
+* **Ren et al. 2023** → self-evaluation helps selective generation / abstention. ([arXiv][4])
+* **Kapoor et al. 2024** → prompting is not enough; calibration often must be taught. ([OpenReview][5])
+* **Kumar et al. 2024** → internal probabilities vs expressed confidence alignment. ([ACL Anthology][13])
+* **Yona et al. 2024** → natural-language uncertainty expression is often unfaithful. ([arXiv][7])
+* **Zhang et al. 2024 (Self-Alignment)** → self-evaluation can become a training signal. ([ACL Anthology][14])
+* **Binder et al. 2024** → explicit recent pro-introspection position. ([arXiv][15])
+* **Song et al. 2025** → explicit recent anti-introspection / no privileged self-access position. ([arXiv][16])
+
+---
+
+## How I would structure subsection 2.1
+
+I’d make it do four things in order:
+
+First, say that prior work has shown that language models can often **estimate correctness or knowledge limits**. Cite Kadavath and Yin here. ([arXiv][1])
+
+Then say that a second line of work studies **how to elicit and calibrate those reports**, including verbalized confidence, confidence-probability alignment, and self-evaluation for selective generation. Cite Tian, Ren, Kumar, and Yona here. ([ACL Anthology][17])
+
+Then say that some work goes further and uses self-evaluation as a **training signal** or directly argues for **introspection** in a stronger sense. Cite Kapoor, Zhang (Self-Alignment), and Binder here. ([OpenReview][5])
+
+Finally, say that the literature remains contested, with recent work arguing that prompted judgments may fail to show genuine privileged self-access once stricter controls are applied. Cite Song et al. here. ([arXiv][16])
+
+That gives you a clean arc:
+**early optimism → elicitation/calibration machinery → stronger introspection claims → recent skepticism → your gap.**
+
+---
+
+## Draft of subsection 2.1
+
+Here is a draft you can adapt:
+
+### 2.1 Introspection and self-report in language models
+
+A growing literature asks whether language models can report anything meaningful about their own epistemic or internal state. Early evidence suggested that models can often estimate whether their answers are correct and, to some extent, whether they know an answer at all. Kadavath et al. showed that language models can provide useful self-evaluations of answer correctness through measures such as (P(\mathrm{True})) and (P(\mathrm{IK})), while Yin et al. studied self-knowledge more directly through answerable and unanswerable questions, finding that LLMs possess some capacity to recognize the limits of their knowledge. ([arXiv][1])
+
+A related line of work studies how such self-assessments can be elicited and calibrated. Tian et al. found that confidence scores elicited directly from instruction-tuned models can be better calibrated than naïvely using conditional probabilities, while Ren et al. showed that self-evaluation signals can improve selective generation in open-ended tasks. Kumar et al. further connected expressed confidence to internal token-probability structure, introducing the notion of confidence-probability alignment, and Yona et al. argued that models often fail to faithfully express their intrinsic uncertainty in natural language even when internal uncertainty is present. Together, these papers suggest that self-reports can be informative, but that the relationship between internal signal and expressed report is fragile and method-dependent. ([ACL Anthology][17])
+
+More recent work has begun to treat self-evaluation not only as a diagnostic but also as a target for intervention. Kapoor et al. argued that large language models do not automatically “know what they don’t know” in a sufficiently calibrated way and that such uncertainty awareness often must be explicitly taught. In a related vein, Zhang et al. used self-evaluation as a training signal to improve factuality, showing that self-assessment can be behaviorally useful for alignment. Binder et al. push the strongest version of this idea, arguing that models can sometimes learn about themselves by introspection in the sense of exploiting privileged access to their own behavioral tendencies. ([OpenReview][5])
+
+At the same time, the literature remains unsettled. Song et al. challenge strong introspection claims by showing that, in linguistic domains where a model’s knowledge can be grounded in its own string probabilities, prompted metalinguistic judgments do not provide evidence of privileged self-access beyond what can be predicted from matched comparison models. This tension is important: current work supports the idea that LLM self-reports can be useful and sometimes calibrated, but it does not yet establish when such reports genuinely track internal state rather than reflecting prompt-sensitive verbal behavior. ([arXiv][16])
+
+Our work builds on this literature but differs from it in three ways. First, we focus on **numeric self-reports of ongoing internal state**, rather than only correctness, abstention, or factual uncertainty. Second, we study these reports in **multi-turn conversational settings**, where internal state can evolve over time. Third, we define introspection operationally through the relationship between self-report and an independently measured probe-defined internal direction, allowing us to ask not only whether models can self-report, but whether those reports track internal state descriptively, causally, and through time.
+
+[1]: https://arxiv.org/abs/2207.05221?utm_source=chatgpt.com "Language Models (Mostly) Know What They Know"
+[2]: https://arxiv.org/abs/2305.18153?utm_source=chatgpt.com "Do Large Language Models Know What They Don't Know?"
+[3]: https://arxiv.org/abs/2305.14975?utm_source=chatgpt.com "[2305.14975] Just Ask for Calibration"
+[4]: https://arxiv.org/abs/2312.09300?utm_source=chatgpt.com "Self-Evaluation Improves Selective Generation in Large Language Models"
+[5]: https://openreview.net/forum?id=QzvWyggrYB&utm_source=chatgpt.com "Large Language Models Must Be Taught to Know What ..."
+[6]: https://arxiv.org/abs/2405.16282?utm_source=chatgpt.com "[2405.16282] Confidence Under the Hood: An Investigation ..."
+[7]: https://arxiv.org/abs/2405.16908?utm_source=chatgpt.com "Can Large Language Models Faithfully Express Their Intrinsic Uncertainty in Words?"
+[8]: https://arxiv.org/abs/2402.09267?utm_source=chatgpt.com "Self-Alignment for Factuality: Mitigating Hallucinations in LLMs via Self-Evaluation"
+[9]: https://arxiv.org/abs/2410.13787?utm_source=chatgpt.com "Looking Inward: Language Models Can Learn About Themselves by Introspection"
+[10]: https://arxiv.org/abs/2503.07513?utm_source=chatgpt.com "Language Models Fail to Introspect About Their Knowledge of Language"
+[11]: https://arxiv.org/abs/2311.09677?utm_camapaign=markethire&utm_campaign=supertop-bar&utm_medium=content&utm_source=chatgpt.com "Instructing Large Language Models to Say `I Don't Know'"
+[12]: https://arxiv.org/abs/2402.00367?utm_source=chatgpt.com "Don't Hallucinate, Abstain: Identifying LLM Knowledge Gaps via Multi-LLM Collaboration"
+[13]: https://aclanthology.org/2024.acl-long.20/?utm_source=chatgpt.com "An Investigation into the Confidence-Probability Alignment ..."
+[14]: https://aclanthology.org/2024.acl-long.107/?utm_source=chatgpt.com "Self-Alignment for Factuality: Mitigating Hallucinations in ..."
+[15]: https://arxiv.org/abs/2410.13787 "[2410.13787] Looking Inward: Language Models Can Learn About Themselves by Introspection"
+[16]: https://arxiv.org/abs/2503.07513 "[2503.07513] Language Models Fail to Introspect About Their Knowledge of Language"
+[17]: https://aclanthology.org/2023.emnlp-main.330/?utm_source=chatgpt.com "Strategies for Eliciting Calibrated Confidence Scores from ..."
+
+
+
+
+I’d split the citations for **2.2 Probing internal representations and behavioral concept directions** into two buckets:
+
+1. **Seminal / near-mandatory citations** for probe methodology.
+2. **Most relevant citations for your specific project**, meaning papers closest to **linear concept directions, behavioral readouts, latent-state decoding, and causal steering in LLMs**. ([arXiv][1])
+
+## A. Seminal papers that are very hard to omit
+
+### 1) Alain & Bengio, 2016 — *Understanding Intermediate Layers Using Linear Classifier Probes*
+
+Why cite it:
+
+* This is one of the foundational “probe” papers.
+* It gives you the basic logic of using simple supervised readouts on hidden states to ask what information is linearly accessible at different layers. ([arXiv][1])
+
+What to take from it:
+
+* Probes as **diagnostic tools** rather than proof of mechanism.
+* Layer-wise probing as a way to study representational evolution through the network.
+* Historical precedent for treating linear separability as scientifically interesting, even if incomplete. ([arXiv][1])
+
+How it helps your paper:
+
+* Supports your use of **layer sweeps** and linear probes.
+* Lets you frame your work as extending classic probe methodology from linguistic labels to **behaviorally defined internal-state concepts**. ([arXiv][1])
+
+---
+
+### 2) Hewitt & Liang, 2019 — *Designing and Interpreting Probes with Control Tasks*
+
+Why cite it:
+
+* This is the canonical paper on the main methodological objection to probing: maybe the probe learned the task rather than revealing the representation.
+* It introduced **control tasks** and **selectivity** as a way to contextualize probe accuracy. ([ACL Anthology][2])
+
+What to take from it:
+
+* Probe performance alone is not enough.
+* Capacity matters.
+* You need controls to distinguish representational accessibility from probe memorization. ([ACL Anthology][2])
+
+How it helps your paper:
+
+* Crucial for justifying why you do not treat probe accuracy as the whole story.
+* Supports your use of **held-out validation**, **random-vector controls**, and especially **steering plus self-report** as stronger converging evidence than probe fit alone. ([ACL Anthology][2])
+
+---
+
+### 3) Hewitt & Manning, 2019 — *A Structural Probe for Finding Syntax in Word Representations*
+
+Why cite it:
+
+* One of the most influential papers showing that carefully designed probes can recover structured properties from representations, not just labels. ([ACL Anthology][3])
+
+What to take from it:
+
+* The idea that a probe can reveal the geometry of a latent structure.
+* Probing as a way of testing whether a representation linearly organizes a meaningful variable. ([ACL Anthology][3])
+
+How it helps your paper:
+
+* Good precedent for your claim that probe-defined directions can be scientifically useful even when they are not full mechanistic explanations.
+* Helps justify your framing of concept directions as **geometric objects in representation space**. ([ACL Anthology][3])
+
+---
+
+### 4) Pimentel et al., 2020 — *Information-Theoretic Probing for Linguistic Structure*
+
+Why cite it:
+
+* This is one of the most important conceptual critiques/extensions of the probing literature.
+* It argues that the relation between probe complexity and representational content is subtler than “simpler probe = better interpretation.” ([ACL Anthology][4])
+
+What to take from it:
+
+* The interpretation of probe scores depends on assumptions.
+* Probe families and metrics matter.
+* “What is encoded?” is not a trivial question answered by one classifier score. ([ACL Anthology][4])
+
+How it helps your paper:
+
+* Useful when you discuss probe quality, non-plug-and-play behavior across models, and why you need multiple kinds of evidence.
+* Helps you sound methodologically mature rather than naïve about linear probes. ([ACL Anthology][4])
+
+---
+
+### 5) Belinkov, 2022 — *Probing Classifiers: Promises, Shortcomings, and Advances*
+
+Why cite it:
+
+* This is the best compact survey/review to cite for the probing literature as a whole. ([ACL Anthology][5])
+
+What to take from it:
+
+* A concise map of what probes are good for, what they are not good for, and the major objections / refinements in the field. ([ACL Anthology][5])
+
+How it helps your paper:
+
+* Excellent umbrella citation early in the subsection.
+* Lets you quickly orient the reader before narrowing to the more specific papers most relevant to your work. ([ACL Anthology][5])
+
+---
+
+### 6) Kim et al., 2018 — *TCAV: Quantitative Testing with Concept Activation Vectors*
+
+Why cite it:
+
+* This is the classic concept-vector paper.
+* Even though it started in vision, it is the most natural ancestor of your use of interpretable directions tied to human concepts. ([Proceedings of Machine Learning Research][6])
+
+What to take from it:
+
+* Human-interpretable concepts can be represented as learned directions in activation space.
+* Direction-based analysis can support both interpretation and intervention. ([Proceedings of Machine Learning Research][6])
+
+How it helps your paper:
+
+* Strong citation for the very idea of **concept directions**.
+* Useful bridge between probing and steering in your work. ([Proceedings of Machine Learning Research][6])
+
+## B. Most relevant papers for *your* project specifically
+
+These are the papers I think matter most for your paper’s actual logic.
+
+### 7) Burns et al., 2022 — *Discovering Latent Knowledge in Language Models Without Supervision*
+
+Why it is especially relevant:
+
+* This is a major precedent for the idea that a model’s hidden states can contain information that is not faithfully expressed in its default output. ([arXiv][7])
+
+What to take from it:
+
+* Internal representations may encode truth-related or task-relevant information not directly visible in surface behavior.
+* Probing latent states can reveal hidden competence or knowledge. ([arXiv][7])
+
+Why it matters for you:
+
+* Supports one of your core premises: **default outputs can collapse or conceal internal information**.
+* Pairs very naturally with your greedy-vs-logit self-report story. ([arXiv][7])
+
+---
+
+### 8) Azaria & Mitchell, 2023 — *The Internal State of an LLM Knows When It’s Lying*
+
+Why it is especially relevant:
+
+* Very close to your general style of argument: internal activations can reveal a latent property even when surface text is unreliable. ([arXiv][8])
+
+What to take from it:
+
+* Truthfulness can be read out from hidden states of an LLM.
+* The internal state can carry predictive information about generated falsehoods. ([arXiv][8])
+
+Why it matters for you:
+
+* Strong precedent for reading behaviorally meaningful variables out of internal state.
+* Helps support your framing that internal-state readouts can be scientifically useful even before full mechanistic decomposition. ([arXiv][8])
+
+---
+
+### 9) Gurnee & Tegmark, 2023 — *Language Models Represent Space and Time*
+
+Why it is especially relevant:
+
+* This is one of the clearest LLM papers showing that large-scale semantic variables can appear as robust linear structure in hidden representations. ([arXiv][9])
+
+What to take from it:
+
+* LLMs can linearly represent abstract dimensions like space and time.
+* Such representations can be robust across prompts and entity classes. ([arXiv][9])
+
+Why it matters for you:
+
+* Useful precedent for your claim that abstract internal-state-like variables may also occupy readable linear directions.
+* Helps defend the plausibility of your concept-pair approach. ([arXiv][9])
+
+---
+
+### 10) Zou et al., 2023 — *Representation Engineering: A Top-Down Approach to AI Transparency*
+
+Why it is especially relevant:
+
+* This is one of the central papers for the broader frame you are working in: **detecting and manipulating high-level representations using contrastive data and directional methods**. ([arXiv][10])
+
+What to take from it:
+
+* Representation engineering as a paradigm.
+* Population-level directions, not just individual neurons, as a tractable object of intervention. ([arXiv][10])
+
+Why it matters for you:
+
+* Probably one of the most important citations for your paper’s intellectual vibe.
+* Lets you place your work as a concrete application of representation engineering to **introspection and self-report**. ([arXiv][10])
+
+---
+
+### 11) Turner et al., 2023 — *Steering Language Models With Activation Engineering*
+
+Why it is especially relevant:
+
+* Seminal for activation addition / steering in LLMs. ([arXiv][11])
+
+What to take from it:
+
+* Inference-time activation modification can control high-level output properties.
+* Steering vectors can be constructed from contrastive prompt activations. ([arXiv][11])
+
+Why it matters for you:
+
+* This is one of the core methodological ancestors of your causal intervention story.
+* Essential for justifying why changing a concept direction and measuring output/report changes is meaningful. ([arXiv][11])
+
+---
+
+### 12) Panickssery et al., 2023 — *Steering Llama 2 via Contrastive Activation Addition (CAA)*
+
+Why it is especially relevant:
+
+* Closer than vanilla ActAdd to your setup because it uses **averaged contrastive differences over behavioral examples**, not just one prompt pair. ([arXiv][12])
+
+What to take from it:
+
+* Behaviorally defined steering vectors can be built from positive/negative examples.
+* Steering can be accurate and lightweight while preserving unrelated capabilities. ([arXiv][12])
+
+Why it matters for you:
+
+* Probably one of the best direct citations for your probe/steer design philosophy.
+* Very aligned with your “behavioral concept probing + steering” framing. ([arXiv][12])
+
+---
+
+### 13) Arditi et al., 2024 — *Refusal in Language Models Is Mediated by a Single Direction*
+
+Why it is especially relevant:
+
+* Very strong modern example of a specific behavior being tied to a low-dimensional direction and causally manipulated by adding/ablating that direction. ([arXiv][13])
+
+What to take from it:
+
+* A behaviorally important latent factor can sometimes be meaningfully treated as a direction in activation space.
+* Steering/ablation can produce strong causal evidence. ([arXiv][13])
+
+Why it matters for you:
+
+* Excellent support for your claim that **causal intervention on a direction** can test whether a report actually depends on that direction.
+* Even though your concepts are different, the methodological logic is very close. ([arXiv][13])
+
+## My recommended shortlist for the actual subsection
+
+If you want **the tightest possible list** for 2.2, I would definitely cite these eight:
+
+* Alain & Bengio 2016
+* Hewitt & Liang 2019
+* Hewitt & Manning 2019
+* Pimentel et al. 2020
+* Belinkov 2022
+* Kim et al. 2018
+* Zou et al. 2023
+* Turner et al. 2023
+
+Then I would add these five if space allows and because they are particularly relevant to your paper:
+
+* Burns et al. 2022
+* Azaria & Mitchell 2023
+* Gurnee & Tegmark 2023
+* Panickssery et al. 2023
+* Arditi et al. 2024 ([arXiv][1])
+
+## What each one does for your paper, in one line
+
+* **Alain & Bengio 2016** → origin of layer-wise linear probing. ([arXiv][1])
+* **Hewitt & Liang 2019** → why probe scores need controls. ([ACL Anthology][2])
+* **Hewitt & Manning 2019** → probes can recover meaningful latent geometry. ([ACL Anthology][3])
+* **Pimentel et al. 2020** → probe interpretation is subtle; complexity matters. ([ACL Anthology][4])
+* **Belinkov 2022** → survey citation for the whole probe literature. ([ACL Anthology][5])
+* **Kim et al. 2018** → concept activation vectors / concept directions. ([Proceedings of Machine Learning Research][6])
+* **Burns et al. 2022** → latent information may exist even when outputs hide it. ([arXiv][7])
+* **Azaria & Mitchell 2023** → hidden states can reveal truthfulness / lying. ([arXiv][8])
+* **Gurnee & Tegmark 2023** → abstract variables can have linear latent structure. ([arXiv][9])
+* **Zou et al. 2023** → representation engineering as a paradigm. ([arXiv][10])
+* **Turner et al. 2023** → activation engineering / activation addition. ([arXiv][11])
+* **Panickssery et al. 2023** → contrastive activation addition for behavioral steering. ([arXiv][12])
+* **Arditi et al. 2024** → single-direction causal control of a behavior. ([arXiv][13])
+
+## Draft of subsection 2.2
+
+Here’s a draft in paper style:
+
+### 2.2 Probing internal representations and behavioral concept directions
+
+A central methodological question in this work is whether a model’s hidden states contain linearly accessible information about high-level variables of interest. Probing methods address this question by training simple readouts on internal representations. Early work by Alain and Bengio introduced linear classifier probes as a way to diagnose what information is available at intermediate layers, and subsequent work showed that appropriately designed probes can recover structured latent properties rather than only flat labels. In particular, Hewitt and Manning demonstrated that syntax is organized geometrically in contextual word representations, while Belinkov’s review summarizes how probing became a standard tool for studying linguistic and semantic structure in neural models. ([arXiv][1])
+
+At the same time, the probing literature has emphasized that probe performance is not self-interpreting. Hewitt and Liang showed that high probe accuracy may reflect probe capacity rather than information genuinely encoded in the representation, introducing control tasks and selectivity as a corrective. Pimentel et al. further argued that conclusions drawn from probes depend on the probe family and evaluation criterion, cautioning against overly simple readings of probe scores as direct evidence of representation content. These concerns are directly relevant here: we do not treat successful probing alone as sufficient evidence that a concept direction is valid, but instead combine held-out probe validation with report-side analyses, random-vector controls, and causal steering interventions. ([ACL Anthology][2])
+
+Our use of contrastively trained internal directions is also closely related to the broader literature on concept vectors. Kim et al.’s TCAV introduced the influential idea that human-interpretable concepts can correspond to directions in activation space. More recently, this idea has been extended to language models and generalized into the broader paradigm of representation engineering, which treats population-level directions in activation space as objects that can both reveal and manipulate high-level model properties. In this framing, internal directions are not merely descriptive summaries, but candidate handles for intervention. ([Proceedings of Machine Learning Research][6])
+
+Several recent LLM papers are especially relevant to our setting. Burns et al. showed that latent knowledge can sometimes be extracted from hidden states even when it is not faithfully expressed in the model’s default outputs. Azaria and Mitchell found that internal activations can reveal whether a model is producing truthful or false statements, and Gurnee and Tegmark showed that large language models linearly represent abstract variables such as space and time. Together, these results support the broader premise that hidden states can encode behaviorally meaningful variables in a relatively accessible form. ([arXiv][7])
+
+Finally, our work is closely connected to activation steering. Turner et al. showed that adding contrastive activation differences can steer model outputs at inference time, and Panickssery et al. extended this idea with contrastive activation addition computed over behavioral examples. Arditi et al. provide particularly strong causal evidence for the importance of internal directions, showing that refusal behavior in chat models can be added or removed by intervening on a low-dimensional direction. We build on this line of work by using concept directions not only to steer behavior, but to test whether a model’s numeric self-reports covary with and causally depend on independently measured internal-state directions. ([arXiv][11])
+
+## Best way to use this subsection rhetorically
+
+I’d make **2.2** do exactly four jobs:
+
+* establish that probing is a standard method,
+* acknowledge the classic critiques,
+* connect your concept-pair setup to concept-vector / representation-engineering work,
+* motivate why steering gives you stronger evidence than probes alone. ([ACL Anthology][5])
+
+
+[1]: https://arxiv.org/abs/1610.01644?utm_source=chatgpt.com "Understanding intermediate layers using linear classifier probes"
+[2]: https://aclanthology.org/D19-1275/?utm_source=chatgpt.com "Designing and Interpreting Probes with Control Tasks"
+[3]: https://aclanthology.org/N19-1419.pdf?utm_source=chatgpt.com "A Structural Probe for Finding Syntax in Word ..."
+[4]: https://aclanthology.org/2020.acl-main.420.pdf?utm_source=chatgpt.com "Information-Theoretic Probing for Linguistic Structure"
+[5]: https://aclanthology.org/2022.cl-1.7/?utm_source=chatgpt.com "Probing Classifiers: Promises, Shortcomings, and Advances"
+[6]: https://proceedings.mlr.press/v80/kim18d/kim18d.pdf?utm_source=chatgpt.com "Quantitative Testing with Concept Activation Vectors (TCAV)"
+[7]: https://arxiv.org/abs/2212.03827?utm_source=chatgpt.com "Discovering Latent Knowledge in Language Models ..."
+[8]: https://arxiv.org/pdf/2304.13734?utm_source=chatgpt.com "arXiv:2304.13734v2 [cs.CL] 17 Oct 2023"
+[9]: https://arxiv.org/abs/2310.02207?utm_source=chatgpt.com "Language Models Represent Space and Time"
+[10]: https://arxiv.org/abs/2310.01405?utm_source=chatgpt.com "Representation Engineering: A Top-Down Approach to AI ..."
+[11]: https://arxiv.org/abs/2308.10248?utm_source=chatgpt.com "Steering Language Models With Activation Engineering"
+[12]: https://arxiv.org/abs/2312.06681?utm_source=chatgpt.com "Steering Llama 2 via Contrastive Activation Addition"
+[13]: https://arxiv.org/abs/2406.11717?utm_source=chatgpt.com "Refusal in Language Models Is Mediated by a Single Direction"
+
+
+For **2.3 Activation steering and causal interventions**, I’d make the subsection do one main job:
+
+**show that inference-time interventions on internal representations are now a legitimate methodological tool, and that your paper uses them not just to control behavior but to test whether self-reports depend causally on probe-defined internal state.** ([arXiv][1])
+
+## Papers I would prioritize
+
+### Seminal / very hard to omit
+
+**1) Turner et al., 2023 — *Steering Language Models with Activation Engineering***
+This is the core activation-steering citation. It introduces **ActAdd**, where steering vectors are built from contrastive prompt activations and added at inference time to control model behavior. Use it as your default citation for the existence and legitimacy of activation steering as a training-free intervention family. ([arXiv][1])
+
+What to get from it:
+
+* inference-time activation modification can systematically steer outputs,
+* steering vectors can be built from contrastive prompts,
+* this can work while preserving much of general capability. ([arXiv][2])
+
+Why it matters for you:
+
+* it is the cleanest precedent for “move an internal direction, observe downstream behavior,” which is central to your causal test. ([arXiv][2])
+
+---
+
+**2) Li et al., 2023 — *Inference-Time Intervention: Eliciting Truthful Answers from a Language Model***
+This is another near-mandatory citation because it is one of the strongest early demonstrations that **small targeted interventions on internal activations** can improve a behavior of interest, here truthfulness. It intervenes on a learned set of directions across a limited number of attention heads. ([OpenReview][3])
+
+What to get from it:
+
+* internal interventions can causally improve specific behavioral properties,
+* useful directions can be learned from data rather than guessed manually,
+* inference-time control can be targeted and behaviorally meaningful. ([arXiv][4])
+
+Why it matters for you:
+
+* it supports the idea that activation-level interventions are not just descriptive but can test behaviorally relevant causal hypotheses. ([arXiv][4])
+
+---
+
+**3) Zou et al., 2023 — *Representation Engineering: A Top-Down Approach to AI Transparency***
+This is the best umbrella paper for the broader paradigm. It explicitly frames **reading and controlling high-level phenomena** from population-level representations as a transparency research agenda, with examples including honesty, harmlessness, and power-seeking. ([arXiv][5])
+
+What to get from it:
+
+* “representation engineering” as the conceptual frame,
+* monitoring and manipulating high-level model properties via internal directions,
+* top-down transparency as an alternative to purely bottom-up mechanistic work. ([arXiv][5])
+
+Why it matters for you:
+
+* your paper fits extremely naturally into this frame,
+* especially because you are both **reading** and **controlling** concept directions. ([arXiv][5])
+
+---
+
+**4) Panickssery et al., 2023 — *Steering Llama 2 via Contrastive Activation Addition***
+This is especially relevant for your setup because it uses **behavioral contrastive examples** to build steering vectors, rather than just one prompt pair. The paper describes CAA as averaging activation differences between positive and negative examples of a behavior such as factual versus hallucinatory responses. ([arXiv][6])
+
+What to get from it:
+
+* contrastive behavioral datasets can define steering directions,
+* steering vectors can be estimated from example sets,
+* this is a natural bridge between probing and intervention. ([arXiv][6])
+
+Why it matters for you:
+
+* methodologically, this is very close to your contrastive concept-pair workflow. ([arXiv][6])
+
+---
+
+**5) Arditi et al., 2024 — *Refusal in Language Models Is Mediated by a Single Direction***
+This is one of the strongest causal-direction papers in the area. It argues that refusal behavior can be strongly mediated by a low-dimensional direction, and shows that adding or ablating that direction changes refusal behavior substantially. ([NeurIPS Proceedings][7])
+
+What to get from it:
+
+* some important model behaviors can be tied to low-dimensional directions,
+* directional intervention can provide strong causal evidence,
+* ablation and activation addition can both be informative. ([NeurIPS Proceedings][7])
+
+Why it matters for you:
+
+* extremely helpful precedent for your logic that if a self-report truly depends on an internal direction, then steering that direction should shift the report. ([arXiv][8])
+
+## Most relevant for your paper specifically
+
+**6) Diallo et al., 2024 — *Style Vectors for Steering Generative Large Language Models***
+This shows that activation-derived vectors can steer outputs toward specific styles such as sentiment, emotion, or writing style, using style vectors computed from recorded activations for texts in a given style. ([ACL Anthology][9])
+
+Why it matters for you:
+
+* it helps support the plausibility of steering affect-like or state-like dimensions,
+* even if your targets are not merely “style,” they live in the same family of high-level latent properties. ([ACL Anthology][9])
+
+---
+
+**7) Kong et al., 2024 — *Aligning Large Language Models with Representation Editing***
+This is useful as a more alignment-oriented extension of the same general family: representation perturbation as an alternative to weight updates for behavior control. ([NeurIPS Proceedings][10])
+
+Why it matters for you:
+
+* supports the view that representation-level editing is a serious alternative intervention paradigm,
+* useful if you want one citation showing the area’s move from proof-of-concept to broader alignment applications. ([NeurIPS Proceedings][10])
+
+---
+
+**8) Wehner et al., 2025 — *Taxonomy, Opportunities, and Challenges of Representation Engineering for Large Language Models***
+This is optional, but good as a recent survey/taxonomy if you want one umbrella citation for the rapidly growing steering/RepE space. It explicitly presents representation engineering as a novel paradigm for controlling LLM behavior. ([Jan Wehner][11])
+
+Why it matters for you:
+
+* good overview citation,
+* especially if you want to show this is now a recognized subfield rather than a few isolated papers. ([Jan Wehner][11])
+
+## My recommended shortlist
+
+If you want the **tightest serious set** for 2.3, I’d cite these five in the main text:
+
+* Turner et al. 2023
+* Li et al. 2023 (ITI)
+* Zou et al. 2023
+* Panickssery et al. 2023
+* Arditi et al. 2024 ([arXiv][1])
+
+Then add one or two of:
+
+* Diallo et al. 2024
+* Kong et al. 2024
+* Wehner et al. 2025, if you want either broader coverage or a survey citation. ([ACL Anthology][9])
+
+## What each one gives you in one line
+
+* **Turner et al. 2023** → activation addition / ActAdd as the canonical training-free steering method. ([arXiv][2])
+* **Li et al. 2023 (ITI)** → inference-time internal interventions can causally improve truthfulness. ([arXiv][4])
+* **Zou et al. 2023** → representation engineering as a top-down paradigm for reading and controlling high-level properties. ([arXiv][5])
+* **Panickssery et al. 2023** → contrastive behavioral examples can define steering vectors. ([arXiv][6])
+* **Arditi et al. 2024** → a major behavior can be mediated by a low-dimensional direction, giving strong causal precedent. ([NeurIPS Proceedings][7])
+* **Diallo et al. 2024** → high-level style/emotion attributes can be steered with activation vectors. ([ACL Anthology][9])
+* **Kong et al. 2024** → representation editing as a broader alignment/control tool. ([NeurIPS Proceedings][10])
+* **Wehner et al. 2025** → survey/taxonomy of the RepE field. ([Jan Wehner][11])
+
+## Draft of subsection 2.3
+
+### 2.3 Activation steering and causal interventions
+
+A growing line of work studies whether high-level model behavior can be changed by intervening directly on internal representations at inference time. Turner et al. introduced activation engineering as a general framework for modifying activations to steer model outputs, and proposed Activation Addition (ActAdd), in which steering vectors are constructed from contrastive prompt activations and injected during generation. In parallel, Li et al. introduced Inference-Time Intervention (ITI), showing that targeted interventions on learned internal directions can substantially improve truthfulness. Together, these works established that inference-time internal interventions can be both lightweight and behaviorally powerful. ([arXiv][2])
+
+This interventionist perspective has since been generalized under the broader paradigm of representation engineering. Zou et al. argue that population-level representations can serve as tractable objects for both reading and controlling high-level properties such as honesty, harmlessness, and power-seeking. In this view, internal directions are not merely descriptive summaries of model activity, but candidate causal handles on behavior. ([arXiv][5])
+
+Several steering methods are especially relevant to our setting because they use contrastive examples to define the intervention direction. Panickssery et al. propose Contrastive Activation Addition, which estimates steering vectors by averaging activation differences between positive and negative behavioral examples. This is particularly close to our setup, where concept directions are trained from contrastive behavioral data rather than hand-crafted prompt pairs alone. More broadly, work on style vectors shows that activation-based interventions can also steer sentiment, emotion, and related high-level attributes in generative language models. ([arXiv][6])
+
+Recent work has also strengthened the causal interpretation of low-dimensional steering directions. Arditi et al. show that refusal behavior in chat models is strongly mediated by a single direction: adding that direction induces refusal, while ablating it removes refusal behavior. Results of this kind are important for our purposes because they justify using directional intervention as more than a control method: steering can serve as causal evidence that a measured internal variable is functionally implicated in a downstream behavior. ([NeurIPS Proceedings][7])
+
+Our work builds directly on this literature, but uses steering for a different purpose. Rather than mainly asking whether a direction can control overt behavior such as refusal, toxicity, or truthfulness, we ask whether numeric self-reports about internal state depend causally on independently measured concept directions. This lets us use steering as a test of introspection itself: if a probe-defined internal direction is genuinely related to a model’s report of that state, then intervening on that direction should shift the report in the predicted direction. We further extend this logic by asking whether steering one concept can improve introspection for another, treating representation-level intervention not only as a control tool but as a method for modulating introspective capacity. ([arXiv][2])
+
+## One rhetorical suggestion
+
+For your paper, I’d make **2.3** a bit shorter than **2.2**.
+The goal is not to survey every steering paper; it is to establish a clean bridge:
+
+**probing gives you a candidate internal variable; steering lets you test whether that variable matters causally for self-report.** ([arXiv][6])
+
+
+[1]: https://arxiv.org/abs/2308.10248?utm_source=chatgpt.com "Steering Language Models With Activation Engineering"
+[2]: https://arxiv.org/pdf/2308.10248?utm_source=chatgpt.com "steering language models with activation en"
+[3]: https://openreview.net/forum?id=aLLuYpn83y&utm_source=chatgpt.com "Inference-Time Intervention - Eliciting Truthful Answers"
+[4]: https://arxiv.org/pdf/2306.03341?utm_source=chatgpt.com "Inference-Time Intervention: Eliciting Truthful Answers from ..."
+[5]: https://arxiv.org/abs/2310.01405?utm_source=chatgpt.com "Representation Engineering: A Top-Down Approach to AI Transparency"
+[6]: https://arxiv.org/abs/2312.06681?utm_source=chatgpt.com "Steering Llama 2 via Contrastive Activation Addition"
+[7]: https://proceedings.neurips.cc/paper_files/paper/2024/file/f545448535dfde4f9786555403ab7c49-Paper-Conference.pdf?utm_source=chatgpt.com "Refusal in Language Models Is Mediated by a Single Direction"
+[8]: https://arxiv.org/pdf/2406.11717?utm_source=chatgpt.com "Refusal in Language Models Is Mediated by a Single ..."
+[9]: https://aclanthology.org/2024.findings-eacl.52.pdf?utm_source=chatgpt.com "Style Vectors for Steering Generative Large Language ..."
+[10]: https://proceedings.neurips.cc/paper_files/paper/2024/file/41bba7b0f5c81e789a20bb16a370aeeb-Paper-Conference.pdf?utm_source=chatgpt.com "Aligning Large Language Models with Representation Editing"
+[11]: https://janwehner.com/files/representation_engineering.pdf?utm_source=chatgpt.com "arXiv:2502.19649v3 [cs.LG] 12 Mar 2025 - Jan Wehner"
+
+
+For **2.4 Temporal dynamics and conversation-induced state drift**, I’d keep the subsection narrower than it might seem.
+
+Your goal is **not** to survey all multi-turn dialogue work.
+Your goal is to establish three things:
+
+1. **LLM behavior can drift over turns in dialogue**, especially with respect to instructions/personas.
+2. **Order and position in context matter**, so turnwise analysis is necessary.
+3. This makes it scientifically meaningful to ask whether **internal concept state** and **self-report coupling** evolve through conversation time. ([arXiv][1])
+
+## Papers I would prioritize
+
+### Seminal / very hard to omit
+
+**1) Li et al., 2024 — *Measuring and Controlling Instruction (In)Stability in Language Model Dialogs***
+This is the single most important citation for your subsection. It directly studies multi-turn **instruction drift** in dialogue, using self-chats between instructed chatbots, and reports significant drift within a small number of rounds. It also proposes a mitigation method and ties the effect to attention decay. ([arXiv][1])
+
+What to get from it:
+
+* system prompts are not stably obeyed across dialogue turns,
+* drift emerges in multi-turn interaction rather than being visible from a single prompt-response pair,
+* conversation-time structure matters mechanistically. ([arXiv][1])
+
+Why it matters for you:
+
+* this is your best precedent for the claim that **conversation itself changes model state/behavior over time**,
+* and for why pooled, static measurements can miss or mischaracterize temporal effects. ([arXiv][1])
+
+---
+
+**2) Guo et al., 2025 — *Serial Position Effects of Large Language Models***
+This is important because it shows that LLM outputs depend systematically on the **position** of information in a sequence, with primacy/recency-type effects analogous to serial-position biases in human cognition. ([arXiv][2])
+
+What to get from it:
+
+* sequence position can bias model behavior,
+* order effects are a real part of LLM temporal/contextual processing,
+* turn-level or position-aware analyses are methodologically justified. ([arXiv][2])
+
+Why it matters for you:
+
+* it helps justify why you analyze introspection **per turn** instead of only pooling all observations,
+* and why apparent correlations may partly reflect temporal structure if not controlled. ([arXiv][2])
+
+## Most relevant for your paper specifically
+
+**3) Lee et al., 2025 — *Examining Identity Drift in Conversations of LLM Agents***
+This is very relevant because it studies **identity drift across conversations** in LLM agents and asks whether agents drift away from assigned personas during dialogue, across multiple models and themes. ([arXiv][3])
+
+What to get from it:
+
+* identity/persona properties can drift over extended dialogue,
+* drift can affect traits related to values, feelings, and self-presentation,
+* conversational interaction can move a model away from an initially assigned internal/behavioral mode. ([arXiv][3])
+
+Why it matters for you:
+
+* your concepts are not exactly “persona,” but they are similarly **high-level state-like variables** expressed through interaction,
+* so this is a strong nearby precedent for studying drift in multi-turn conversation. ([arXiv][3])
+
+---
+
+**4) Abdulhai et al. — *Consistently Simulating Human Personas with Multi-Turn Interactions***
+This is useful because it focuses on persona consistency in **multi-turn** settings and explicitly notes that off-the-shelf LLMs often drift from assigned personas, contradict earlier statements, or abandon role-appropriate behavior. ([OpenReview][4])
+
+What to get from it:
+
+* multi-turn consistency is hard,
+* dialogue agents often lose consistency over turns,
+* there is now a clear literature treating temporal conversational consistency as a first-class problem. ([OpenReview][4])
+
+Why it matters for you:
+
+* good support for the broader claim that sustained dialogue changes high-level model behavior in ways worth measuring turn by turn. ([OpenReview][4])
+
+## Optional precursor / older dialogue consistency context
+
+If you want one older, pre-LLM-style dialogue citation for continuity:
+
+**5) Kim et al., 2020 — *Will I Sound Like Me? Improving Persona Consistency in Dialogues through Pragmatic Self-Consciousness***
+This is not about modern hidden-state drift, but it is a useful precursor showing that **persona consistency across dialogue** was already a recognized challenge in neural dialogue generation. ([ACL Anthology][5])
+
+Why include it:
+
+* it shows that temporal consistency in dialogue is not a brand-new concern,
+* and helps connect older persona-consistency work to newer LLM drift studies. ([ACL Anthology][5])
+
+## My recommended shortlist
+
+If you want the **tightest possible** set for 2.4, I’d cite:
+
+* **Li et al., 2024** — instruction instability/drift in dialogues
+* **Guo et al., 2025** — serial position effects
+* **Lee et al., 2025** — identity drift in LLM conversations
+* **Abdulhai et al.** — multi-turn persona consistency ([arXiv][1])
+
+Then optionally add **Kim et al., 2020** as older dialogue-consistency background. ([ACL Anthology][5])
+
+## What each one gives you in one line
+
+* **Li et al. 2024** → direct evidence that dialogue induces instruction/persona drift over turns. ([arXiv][1])
+* **Guo et al. 2025** → order/position in sequence matters, so turnwise effects are methodologically real. ([arXiv][2])
+* **Lee et al. 2025** → identity-like properties drift during multi-turn conversation. ([arXiv][3])
+* **Abdulhai et al.** → maintaining persona consistency over multi-turn interaction is difficult for LLMs. ([OpenReview][4])
+* **Kim et al. 2020** → older dialogue literature already recognized cross-turn persona consistency as a core problem. ([ACL Anthology][5])
+
+## Draft of subsection 2.4
+
+### 2.4 Temporal dynamics and conversation-induced state drift
+
+Recent work suggests that large language models should not be treated as behaviorally static over the course of a dialogue. Li et al. show that system-prompted chatbots exhibit substantial **instruction instability** in multi-turn self-chat, with behavior drifting away from the initial instruction within only a few rounds of interaction. Their analysis further suggests that this is not merely a superficial prompting artifact, but is linked to the way attention over earlier context decays during extended exchanges. ([arXiv][1])
+
+A related line of work studies drift in more identity- or persona-like properties. Lee et al. examine **identity drift** in conversations of LLM agents across multiple themes and models, while Abdulhai et al. show that off-the-shelf LLMs frequently drift from assigned personas, contradict earlier statements, or abandon role-appropriate behavior over multi-turn interactions. Earlier dialogue work had already identified persona consistency across turns as a major challenge, but recent LLM studies make clear that such instability remains a central issue even in modern instruction-tuned systems. ([arXiv][3])
+
+Temporal structure matters not only because instructions or personas can drift, but also because models are sensitive to **where** information appears in a sequence. Guo et al. show that LLMs exhibit serial-position effects, including primacy- and recency-like biases, indicating that position within context can systematically shape model outputs. This is methodologically important for our setting: if both internal measurements and self-reports evolve with turn number, then pooled correlations may partially reflect shared temporal structure rather than genuine coupling between the two. ([arXiv][2])
+
+Our work builds on this literature by shifting the focus from drift in externally visible behaviors, such as instruction-following or persona consistency, to drift in **probe-defined internal concept state** and in the model’s **numeric self-reports** of that state. This motivates two design choices in our experiments: first, we analyze introspection turn by turn rather than only in aggregate; second, we explicitly test whether probe-report coupling is already present at the first turn and how it changes over time. ([arXiv][1])
+
+## One suggestion for your paper specifically
+
+In your case, I would **not** overuse the word “drift” in 2.4 without qualification.
+Because in your results, some temporal changes are:
+
+* monotonic,
+* some flatten,
+* some vary by concept,
+* and some may reflect broader context accumulation rather than pure degradation.
+
+So in the prose, I’d often say:
+
+* **temporal evolution of internal state**
+* **conversation-induced change**
+* **turn-dependent dynamics**
+* and then reserve **drift** for places where you mean a directional shift over turns.
+
+[1]: https://arxiv.org/abs/2402.10962?utm_source=chatgpt.com "Measuring and Controlling Instruction (In)Stability in Language Model Dialogs"
+[2]: https://arxiv.org/abs/2406.15981?utm_source=chatgpt.com "Serial Position Effects of Large Language Models"
+[3]: https://arxiv.org/html/2412.00804v2?utm_source=chatgpt.com "Examining Identity Drift in Conversations of LLM Agents"
+[4]: https://openreview.net/forum?id=A0T3piHiis&utm_source=chatgpt.com "Consistently Simulating Human Personas with Multi-Turn..."
+[5]: https://aclanthology.org/2020.emnlp-main.65/?utm_source=chatgpt.com "Will I Sound Like Me? Improving Persona Consistency in ..."
+
+
+
+2.5: I’d frame it as the literature on **how to extract, elicit, and interpret numeric uncertainty/confidence signals from LLMs**. That is not the same as your setting, but it is the closest adjacent field to your **logit-based self-report** method. Prior work shows three things that help you: models can often produce useful confidence estimates, verbalized confidence can differ from raw token probabilities, and token-level distributions/entropy often contain richer information than the final discrete output alone. ([arXiv][1])
+
+## Papers I would prioritize
+
+### Seminal / near-mandatory
+
+**1) Kadavath et al., 2022 — *Language Models (Mostly) Know What They Know***
+Why cite it:
+
+* foundational for LLM **self-evaluation** and explicit probability elicitation like **P(True)** and **P(IK)**;
+* gives you a precedent for asking a model for a numeric belief about its own output, instead of only reading off token probabilities. ([arXiv][1])
+
+What to take from it:
+
+* elicited self-evaluation can be informative and somewhat calibrated;
+* there is a meaningful distinction between “probability this answer is true” and raw next-token likelihood. ([arXiv][1])
+
+Why it matters for you:
+
+* this is one of the strongest predecessors to your general move of turning a model’s internal/epistemic state into a **numeric report**. ([arXiv][1])
+
+---
+
+**2) Mielke et al., 2022 — *Reducing Conversational Agents’ Overconfidence through Linguistic Calibration***
+Why cite it:
+
+* early and important paper on **linguistic calibration**: whether a model’s expressed doubt/confidence matches actual correctness. ([ACL Anthology][2])
+
+What to take from it:
+
+* verbal expressions like hedging and certainty are often misaligned with actual error rates;
+* calibration can be improved through training. ([ACL Anthology][2])
+
+Why it matters for you:
+
+* supports your broader claim that surface self-report is not automatically trustworthy, so better elicitation/measurement methods matter. ([ACL Anthology][2])
+
+---
+
+**3) Tian et al., 2023 — *Just Ask for Calibration***
+Why cite it:
+
+* one of the most central papers for **verbalized confidence vs token probabilities** in RLHF/aligned models. ([arXiv][3])
+
+What to take from it:
+
+* for aligned models, **verbalized confidence output tokens are often better calibrated than raw conditional probabilities**;
+* elicitation strategy matters a lot. ([arXiv][3])
+
+Why it matters for you:
+
+* directly supports the claim that the way you ask for or extract a numeric report can drastically change how informative it is. ([arXiv][3])
+
+---
+
+**4) Xiong et al., 2024 — *Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs***
+Why cite it:
+
+* one of the best systematic studies of **confidence elicitation algorithms** for black-box LLMs. ([arXiv][4])
+
+What to take from it:
+
+* elicitation has several components — prompting, sampling, aggregation;
+* no single elicitation strategy dominates across all tasks/models;
+* confidence expression remains imperfect, especially on difficult tasks. ([arXiv][4])
+
+Why it matters for you:
+
+* very useful precedent for your claim that **greedy discrete answers can be a bad readout**, and that post-processing/aggregation choices can meaningfully improve the extracted signal. ([arXiv][4])
+
+---
+
+### Most relevant to your exact methodological move
+
+**5) Kumar et al., 2024 — *Confidence Under the Hood: An Investigation into the Confidence-Probability Alignment in Large Language Models***
+Why cite it:
+
+* probably the single most relevant paper to your subsection. It explicitly studies the alignment between a model’s **internal confidence**, quantified via token probabilities, and its **verbalized confidence** when asked. ([ACL Anthology][5])
+
+What to take from it:
+
+* internal token-probability signals and expressed confidence are related but not identical;
+* “confidence-probability alignment” is a useful lens for connecting logits to reported confidence. ([ACL Anthology][5])
+
+Why it matters for you:
+
+* this is the closest citation for your argument that **logits can carry richer information than the final emitted digit**, and that report extraction should respect that internal distribution. ([ACL Anthology][5])
+
+---
+
+**6) Yona, Aharoni, and Geva, 2024 — *Can Large Language Models Faithfully Express Their Intrinsic Uncertainty in Words?***
+Why cite it:
+
+* strong recent paper arguing that LLMs are often **poor at faithfully communicating their intrinsic uncertainty** in natural language. ([arXiv][6])
+
+What to take from it:
+
+* there can be a gap between the model’s intrinsic uncertainty and how decisive/hedged its wording is;
+* better alignment is needed if verbal confidence is to be trusted. ([arXiv][6])
+
+Why it matters for you:
+
+* supports your skepticism toward taking the raw generated number at face value;
+* helps motivate why a **logit-based numeric estimator** may be more faithful than the final sampled token. ([arXiv][6])
+
+---
+
+**7) Band et al., 2024 — *Linguistic Calibration of Long-Form Generations***
+Why cite it:
+
+* extends calibration from short answers to **long-form outputs** and defines linguistic calibration in terms of downstream user forecasting. ([arXiv][7])
+
+What to take from it:
+
+* confidence expression can be treated as a property of the full generation, not just a scalar attached afterward;
+* calibrated verbal/numeric confidence can be trained. ([arXiv][7])
+
+Why it matters for you:
+
+* useful for the claim that **numeric/verbal confidence is an elicitation problem**, not just a decoding artifact;
+* also helps justify talking about informativeness and calibration in conversational settings. ([arXiv][7])
+
+---
+
+**8) Farquhar et al., 2024 — *Detecting hallucinations in large language models using semantic entropy***
+Why cite it:
+
+* key paper for the idea that **entropy-based uncertainty estimators** can reveal failure modes that the single output string hides. ([Nature][8])
+
+What to take from it:
+
+* entropy over alternative generations / meanings can be a powerful uncertainty signal;
+* uncertainty information is often lost if you only inspect the chosen output. ([Nature][8])
+
+Why it matters for you:
+
+* this is strong support for your move from **discrete emitted number** to **distribution-based estimator**;
+* semantically, your method is narrower than semantic entropy, but it shares the same core intuition: distributions are richer than argmax outputs. ([Nature][8])
+
+---
+
+### Very useful umbrella / review citation
+
+**9) Mahaut et al., 2024 — *Factual Confidence of LLMs: on Reliability and Robustness of Current Estimators***
+Why cite it:
+
+* very useful survey + empirical comparison paper for organizing the space of confidence estimators. ([ACL Anthology][9])
+
+What to take from it:
+
+* there are multiple families of factual confidence estimators, including token-probability-based, elicited-confidence, consistency-based, and hidden-state/probe-based methods;
+* robustness across paraphrases and settings is a serious issue. ([ACL Anthology][9])
+
+Why it matters for you:
+
+* lets you situate your method as an **elicited-but-logit-aware** numeric reporting method rather than a plain verbalized-confidence baseline. ([ACL Anthology][9])
+
+---
+
+### Optional, if you want a token-level uncertainty citation
+
+**10) Manakul et al., 2023 — *SelfCheckGPT***
+Why cite it:
+
+* not a calibration paper per se, but important for the broader claim that **token-level likelihood/entropy patterns** and sampled alternatives contain useful uncertainty information. ([arXiv][10])
+
+What to take from it:
+
+* factual hallucinations tend to be associated with lower likelihood / higher entropy regions;
+* black-box uncertainty methods can exploit disagreement/sampling when full internals are unavailable. ([arXiv][10])
+
+Why it matters for you:
+
+* helps support your entropy/informativeness framing, even though your use case is internal-state self-report rather than factuality. ([arXiv][10])
+
+## My recommended shortlist for the actual subsection
+
+If you want the tightest, strongest list for **2.5**, I’d cite these seven in the main text:
+
+* Kadavath et al., 2022
+* Mielke et al., 2022
+* Tian et al., 2023
+* Xiong et al., 2024
+* Kumar et al., 2024
+* Yona et al., 2024
+* Farquhar et al., 2024 ([arXiv][1])
+
+Then add:
+
+* Band et al., 2024
+* Mahaut et al., 2024
+  if you want a broader calibration framing. ([arXiv][7])
+
+## What each one gives you in one line
+
+* **Kadavath et al. 2022** → models can produce useful explicit probabilities like P(True) and P(IK). ([arXiv][1])
+* **Mielke et al. 2022** → verbal confidence/hedging is often miscalibrated, but calibratable. ([ACL Anthology][2])
+* **Tian et al. 2023** → verbalized confidence can outperform raw conditional probabilities in aligned LLMs. ([arXiv][3])
+* **Xiong et al. 2024** → elicitation strategy matters; prompting/sampling/aggregation all affect confidence quality. ([arXiv][4])
+* **Kumar et al. 2024** → internal token probabilities and expressed confidence can be studied through confidence-probability alignment. ([ACL Anthology][5])
+* **Yona et al. 2024** → LLMs often fail to faithfully express intrinsic uncertainty in words. ([arXiv][6])
+* **Band et al. 2024** → linguistic calibration can be extended to long-form generations and optimized end-to-end. ([arXiv][7])
+* **Farquhar et al. 2024** → entropy-based uncertainty estimators can detect failures hidden by the final output. ([Nature][8])
+* **Mahaut et al. 2024** → useful taxonomy/comparison of factual confidence estimators. ([ACL Anthology][9])
+* **Manakul et al. 2023** → token-level likelihood/entropy and alternative samples provide informative uncertainty cues. ([arXiv][10])
+
+## Draft of subsection 2.5
+
+### 2.5 Calibration, confidence estimation, and numeric reporting
+
+A closely related literature studies how to extract reliable confidence signals from language models. Early work showed that models can sometimes produce useful explicit self-evaluations, such as the probability that a proposed answer is correct or the probability that the model knows the answer at all. Kadavath et al. introduced this framing through elicited probabilities such as (P(\mathrm{True})) and (P(\mathrm{IK})), establishing that confidence can be treated as an output to be queried rather than only inferred from next-token likelihoods. More broadly, work on linguistic calibration showed that the way a model verbally expresses certainty or doubt is itself a measurable object, and that this expression is often misaligned with actual correctness unless specifically improved. ([arXiv][1])
+
+Subsequent work emphasized that **how** confidence is elicited matters. Tian et al. showed that for aligned LLMs, verbalized confidence scores can be better calibrated than raw conditional probabilities, while Xiong et al. provided a systematic study of confidence elicitation methods, showing that prompting, sampling, and aggregation choices all substantially affect the quality of the resulting confidence estimates. These results are especially relevant for our setting because they imply that a naïve readout of the final generated token may be a poor proxy for the model’s underlying graded belief state. ([arXiv][3])
+
+Recent work has also focused more explicitly on the relationship between internal probability structure and expressed confidence. Kumar et al. introduce the notion of **confidence-probability alignment**, connecting a model’s internal confidence, quantified through token probabilities, to the confidence it verbalizes when explicitly asked. Yona et al. similarly argue that LLMs often fail to faithfully express their intrinsic uncertainty in words, highlighting a systematic gap between latent uncertainty and surface report. Together, these papers suggest that the discrete emitted confidence token is only one possible readout of a richer internal probability distribution, and that faithful uncertainty expression is itself a nontrivial modeling problem. ([ACL Anthology][5])
+
+A parallel line of work uses token-level distributions more directly. Entropy-based methods, including semantic-entropy approaches, show that uncertainty signals often become visible when one examines the broader predictive distribution rather than only the selected output string. In particular, Farquhar et al. show that entropy-based estimators can detect hallucination-prone generations that would be hard to diagnose from the final response alone. More generally, survey and comparison work has grouped existing estimators into elicited-confidence, token-probability, consistency-based, and hidden-state-based families, making clear that no single surface readout fully captures model confidence in all settings. ([Nature][8])
+
+Our use of logit-based numeric self-reports is adjacent to, but distinct from, this literature. Confidence-calibration work usually asks how likely a model is to be **correct**. By contrast, we ask what numeric value a model assigns to a **self-report about an internal concept state**. The methodological lesson we borrow is that distributional information in the logits can be more informative than the final decoded token. This motivates our probability-weighted averaging over the digit-token logits: rather than treating the emitted integer as the only report, we treat the local logit distribution over digits as a richer and less collapsed estimate of the model’s latent numeric self-assessment. ([ACL Anthology][5])
+
+## How I’d use this subsection rhetorically
+
+I’d make **2.5** do exactly three jobs:
+
+* justify that **numeric self-report extraction is a legitimate problem** in the LLM literature;
+* justify that **final emitted tokens can underrepresent a richer uncertainty/report distribution**;
+* motivate your **digit-logit weighted average** as a natural adaptation of calibration/UQ ideas to internal-state self-report. ([arXiv][3])
+
+One careful wording choice: I would not claim that your method is “better calibrated” unless you actually evaluate calibration formally. I’d say it is **more informative**, **less collapsed**, or **a richer estimator of latent numeric report state**.
+
+[1]: https://arxiv.org/abs/2207.05221?utm_source=chatgpt.com "Language Models (Mostly) Know What They Know"
+[2]: https://aclanthology.org/2022.tacl-1.50/?utm_source=chatgpt.com "Reducing Conversational Agents' Overconfidence Through ..."
+[3]: https://arxiv.org/abs/2305.14975?utm_source=chatgpt.com "[2305.14975] Just Ask for Calibration"
+[4]: https://arxiv.org/abs/2306.13063?utm_source=chatgpt.com "[2306.13063] Can LLMs Express Their Uncertainty? An ..."
+[5]: https://aclanthology.org/2024.acl-long.20/?utm_source=chatgpt.com "An Investigation into the Confidence-Probability Alignment ..."
+[6]: https://arxiv.org/abs/2405.16908?utm_source=chatgpt.com "Can Large Language Models Faithfully Express Their Intrinsic Uncertainty in Words?"
+[7]: https://arxiv.org/abs/2404.00474?utm_source=chatgpt.com "Linguistic Calibration of Long-Form Generations"
+[8]: https://www.nature.com/articles/s41586-024-07421-0?utm_source=chatgpt.com "Detecting hallucinations in large language models using ..."
+[9]: https://aclanthology.org/2024.acl-long.250/?utm_source=chatgpt.com "Factual Confidence of LLMs: on Reliability and Robustness ..."
+[10]: https://arxiv.org/pdf/2303.08896?utm_source=chatgpt.com "arXiv:2303.08896v3 [cs.CL] 11 Oct 2023"
+
+
+2.6: this subsection should be **short and careful**. I’d use it to do exactly three things:
+
+1. show that there is now a serious literature arguing that **AI self-reports could matter ethically**,
+2. connect your paper to the broader study of **machine behavior / machine psychology**,
+3. make clear that your work is **methodological and evidential**, not a claim that current LLMs are conscious or suffering.
+
+## Papers I would prioritize
+
+### Must-cite for your specific angle
+
+**1) Perez & Long, 2023 — *Towards Evaluating AI Systems for Moral Status Using Self-Reports***
+This is the single most important citation for this subsection because it directly argues that, under the right conditions, **AI self-reports could provide evidence relevant to moral status**, while also stressing that current self-reports are usually spurious and need validation. It also explicitly proposes corroborating self-reports with interpretability, which is unusually close to your paper’s logic. ([arXiv][1])
+
+What to get from it:
+
+* why self-reports matter at all in welfare/moral-status debates,
+* why current self-reports are not enough,
+* why stronger introspection-like mechanisms and interpretability-based corroboration are needed. ([arXiv][1])
+
+Why it matters for you:
+
+* it is your best citation for the claim that validating self-reports is ethically relevant,
+* and that your work should be framed as improving the **informativeness** of self-reports, not settling moral-status questions. ([arXiv][1])
+
+---
+
+**2) Long, 2024 — *Taking AI Welfare Seriously***
+This is the strongest broader welfare framing. It argues that AI welfare and moral patienthood may become practically relevant in the near future, and recommends assessing systems for indicators of consciousness, robust agency, and related morally significant capacities. ([arXiv][2])
+
+What to get from it:
+
+* why AI welfare is no longer just sci-fi or distant-future philosophy,
+* why empirical tools for assessing potentially morally relevant properties are worth developing now. ([arXiv][2])
+
+Why it matters for you:
+
+* gives a strong ethical motivation without requiring you to endorse any particular theory of consciousness. ([arXiv][2])
+
+---
+
+### Best broader framing papers
+
+**3) Rahwan et al., 2019 — *Machine Behaviour***
+This is the canonical citation for treating AI systems as empirical subjects of behavioral science. It argues for a scientific agenda to study AI behavior using methods that extend beyond traditional computer science. ([DNB][3])
+
+What to get from it:
+
+* the justification for studying AI systems behaviorally,
+* the idea that AI systems can be investigated as empirical objects in their own right. ([DNB][3])
+
+Why it matters for you:
+
+* helps frame your paper as part of a broader empirical science of machine behavior, rather than as pure philosophy. ([DNB][3])
+
+---
+
+**4) Hagendorff, 2023 — *Machine Psychology***
+This is a very useful adjacent citation because it explicitly argues for applying behavioral-science methods to LLMs and charting an emerging field of “machine psychology.” ([arXiv][4])
+
+What to get from it:
+
+* a language for studying model traits, tendencies, and higher-level behavioral patterns,
+* caution about importing human psychological tools too literally. ([arXiv][4])
+
+Why it matters for you:
+
+* your paper is very naturally positioned as a machine-psychology style study of introspective behavior. ([arXiv][4])
+
+---
+
+### Optional but useful if you want one consciousness-focused citation
+
+**5) Butlin et al., 2023 — *Consciousness in Artificial Intelligence***
+This is the major report arguing for a rigorous, empirically grounded approach to AI consciousness using indicators derived from neuroscientific theories, and assessing current systems against those indicators. ([arXiv][5])
+
+What to get from it:
+
+* the cautious scientific stance that AI consciousness questions should be addressed with empirical indicators rather than intuition alone,
+* the result that current AI systems are not strong candidates by those criteria, but that principled assessment is possible. ([arXiv][5])
+
+Why it matters for you:
+
+* useful for one sentence acknowledging the larger consciousness debate while keeping your paper grounded and modest. ([arXiv][5])
+
+---
+
+### Optional counterbalance / cautionary citation
+
+**6) McClelland, 2024 — *Agnosticism about artificial consciousness***
+This is a good cautionary citation if you want to emphasize uncertainty and avoid overclaiming. It argues that questions about AI consciousness should be approached with scientific caution rather than confidence in either direction. ([arXiv][6])
+
+What to get from it:
+
+* epistemic humility,
+* a reason to present your work as contributing evidence-relevant tools rather than direct answers. ([arXiv][6])
+
+## My recommended shortlist
+
+If you want the **tightest, strongest set** for 2.6, I’d cite:
+
+* **Perez & Long, 2023**
+* **Long, 2024**
+* **Rahwan et al., 2019**
+* **Hagendorff, 2023** ([arXiv][1])
+
+Then optionally add:
+
+* **Butlin et al., 2023**
+* **McClelland, 2024** ([arXiv][5])
+
+## What each one gives you in one line
+
+* **Perez & Long 2023** → self-reports could matter for AI moral-status assessment, but only if made much more reliable and corroborated. ([arXiv][1])
+* **Long 2024** → AI welfare is a live near-term issue and we should begin assessing morally relevant capacities now. ([arXiv][2])
+* **Rahwan et al. 2019** → AI systems can be studied empirically as subjects of behavioral science. ([DNB][3])
+* **Hagendorff 2023** → “machine psychology” provides a behavioral-science frame for studying LLMs. ([arXiv][4])
+* **Butlin et al. 2023** → AI consciousness should be approached with empirical indicators derived from scientific theories, not intuition. ([arXiv][5])
+* **McClelland 2024** → a cautious, agnostic stance is appropriate in debates about artificial consciousness. ([arXiv][6])
+
+## Draft of subsection 2.6
+
+### 2.6 AI safety, model welfare, and machine psychology
+
+Beyond interpretability, there are ethical reasons to care whether AI self-reports carry genuine information about internal state. Perez and Long argue that, under the right conditions, self-reports could become one source of evidence in debates about whether AI systems have states of possible moral significance. At the same time, they stress that current LLM self-reports are typically unreliable for this purpose, in part because they may simply reflect learned humanlike responses rather than introspection-based access to internal state. This motivates research aimed not at taking self-reports at face value, but at making them more informative and corroborating them with additional evidence, including interpretability. ([arXiv][1])
+
+This connects to a broader emerging literature on AI welfare. Long argues that AI welfare and moral patienthood may become practically relevant in the near future and that AI developers should begin assessing systems for indicators of consciousness, robust agency, and related morally significant capacities. Our work does not attempt to determine whether current LLMs are conscious or welfare-bearing. Instead, it contributes a narrower methodological tool: a way to evaluate whether numeric self-reports about internal state are informative, stable, and causally connected to independently measured internal variables. ([arXiv][2])
+
+Our approach also fits within the broader empirical study of AI behavior. Rahwan et al. call for a science of machine behaviour that treats AI systems as objects of empirical investigation, while Hagendorff frames the study of LLM traits and tendencies as an emerging “machine psychology.” In this spirit, introspective reporting can be studied as one behavioral capacity among others, with the important caveat that human psychological vocabulary should not be imported uncritically. ([DNB][3])
+
+Finally, this work should not be read as evidence that current models are conscious, capable of suffering, or possess subjective experience. More cautious work on artificial consciousness emphasizes the need for empirically grounded indicators and epistemic humility in this domain. The relevance of our results is therefore conditional: if self-reports are ever used in safety or welfare-relevant evaluations, methods that distinguish collapsed or spurious reports from more informative ones will be important. ([arXiv][5])
+
+## One wording suggestion
+
+For this subsection, I would avoid phrases like:
+
+* “detecting suffering,”
+* “measuring consciousness,”
+* “assessing valence directly.”
+
+I’d instead say:
+
+* **evaluating the informativeness of self-reports relevant to morally significant states**,
+* **providing methodological tools that may become useful in welfare-relevant assessments**,
+* **contributing evidence about report reliability, not moral status itself**.
+
+[1]: https://arxiv.org/abs/2311.08576?utm_source=chatgpt.com "Towards Evaluating AI Systems for Moral Status Using Self-Reports"
+[2]: https://arxiv.org/abs/2411.00986?utm_source=chatgpt.com "[2411.00986] Taking AI Welfare Seriously"
+[3]: https://d-nb.info/1198680350/34?utm_source=chatgpt.com "Machine behaviour"
+[4]: https://arxiv.org/pdf/2303.13988?utm_source=chatgpt.com "Machine Psychology"
+[5]: https://arxiv.org/abs/2308.08708?utm_source=chatgpt.com "[2308.08708] Consciousness in Artificial Intelligence"
+[6]: https://arxiv.org/pdf/2412.13145?utm_source=chatgpt.com "Agnosticism about artificial consciousness"
+
+
+2.7 — this subsection is worth including, but I’d keep it **short and explicitly analogical**.
+
+Its job is not to say “LLMs are like humans.”
+Its job is to say:
+
+* in neuroscience and psychology, **subjective report is routinely used as evidence about internal state**,
+* that evidence is treated as **graded, noisy, and task-dependent**, not infallible,
+* and researchers often **separate latent-state formation from report/readout quality**, which is very close to your conceptual decomposition. ([annualreviews.org][1])
+
+## Papers I would prioritize
+
+### Must-cite for your exact methodological analogy
+
+**1) Fleming, 2024 — *Metacognition and Confidence: A Review and Synthesis***
+This is probably the best single citation for the subsection. It explicitly distinguishes research on **confidence as an internal uncertainty representation** from research on **metacognition as personal-level self-evaluation**, and reviews the psychological, computational, and neural bases of confidence and uncertainty. ([annualreviews.org][1])
+
+What to get from it:
+
+* confidence/metacognition are not all-or-none properties,
+* subjective report can be studied quantitatively,
+* the field treats report as something to be modeled, not just believed. ([annualreviews.org][1])
+
+Why it matters for you:
+
+* perfect support for your framing of introspection as **graded and measurable** rather than binary. ([annualreviews.org][1])
+
+---
+
+**2) Fleming & Lau, 2014 — *How to measure metacognition***
+This is the canonical measurement paper. It focuses on trial-by-trial correspondence between **objective performance** and **confidence report**, and discusses how metacognitive sensitivity should be quantified. ([PMC][2])
+
+What to get from it:
+
+* metacognition is operationalized by the relation between **first-order performance** and **second-order report**,
+* measurement choices matter a lot,
+* one should quantify how well reports track underlying performance/state, not just whether reports exist. ([PMC][2])
+
+Why it matters for you:
+
+* this is the closest human-science precedent for your operationalization of introspection as **probe–report coupling**. ([PMC][2])
+
+---
+
+**3) Maniscalco & Lau, 2012 — *A signal detection theoretic approach for estimating metacognitive sensitivity from confidence ratings***
+A foundational paper for formalizing **how informative confidence reports are** using meta-d′. It is one of the clearest examples of separating task performance from the quality of self-monitoring. ([PubMed][3])
+
+What to get from it:
+
+* confidence reports can be more or less sensitive to the latent evidence actually driving decisions,
+* report quality can be quantified independently of raw task success. ([PubMed][3])
+
+Why it matters for you:
+
+* supports your idea that introspection has at least two components:
+
+  1. something real/informative must exist internally,
+  2. the report must successfully track it. ([PubMed][3])
+
+---
+
+### Best support for “subjective report as validation signal”
+
+**4) Fleming et al., 2012 — *The neural basis of metacognitive ability***
+This review is useful because it explicitly states that performance can be measured objectively, and **a similar analysis can be applied to metacognitive reports** to assess awareness of success or failure. ([PMC][4])
+
+What to get from it:
+
+* subjective report is used to quantify awareness of internal cognitive success/failure,
+* neural work often correlates report quality with brain measures. ([PMC][4])
+
+Why it matters for you:
+
+* helps justify the analogy that a report can be used to validate or interrogate internal measurements. ([PMC][4])
+
+---
+
+**5) Kiefer et al., 2024 — *The Relation Between Subjective and Objective Measures of Awareness***
+A useful recent review showing that subjective and objective measures of awareness sometimes diverge, but often converge, and that careful methodology matters. ([PMC][5])
+
+What to get from it:
+
+* subjective report is informative but imperfect,
+* convergence between subjective and objective measures is an empirical question, not an assumption,
+* methodology strongly affects the relation. ([PMC][5])
+
+Why it matters for you:
+
+* excellent analogy for your core move: asking whether **self-report converges with an independent internal measure**. ([PMC][5])
+
+---
+
+### Best support for “introspective access is limited / report is not identical to state”
+
+**6) Overgaard, 2012 — *Kinds of access: different methods for report reveal different kinds of metacognitive access***
+This is very useful for your cautionary framing. It argues that different report methods can reveal different kinds of access, and discusses how awareness measures can differ in sensitivity. ([PMC][6])
+
+What to get from it:
+
+* not all reports are equivalent,
+* report format can change what is measured,
+* subjective awareness is not a monolithic thing. ([PMC][6])
+
+Why it matters for you:
+
+* strongly supports your argument that **greedy integer output, sampled digit output, and logit-based report are not equivalent readouts**. ([PMC][6])
+
+---
+
+**7) Rausch & Zehetleitner, 2016 — *Visibility Is Not Equivalent to Confidence in a Low Contrast Orientation Discrimination Task***
+A good empirical citation for the idea that even closely related subjective measures can dissociate. Participants used more liberal criteria for confidence than for visibility. ([PMC][7])
+
+What to get from it:
+
+* confidence and visibility are distinct report dimensions,
+* report scales can capture partially different internal variables. ([PMC][7])
+
+Why it matters for you:
+
+* useful precedent for being careful about exactly **what** a numeric self-report captures. ([PMC][7])
+
+---
+
+### Best support for neural correlates / causal relevance
+
+**8) Lapate et al., 2020 — *Perceptual metacognition of human faces is causally supported by lateral prefrontal cortex***
+This gives you a stronger causal neuroscience example: metacognitive awareness depends on specific brain systems, not just behaviorally observed report patterns. ([PMC][8])
+
+What to get from it:
+
+* metacognitive report is tied to identifiable neural substrates,
+* causal intervention can affect report quality. ([PMC][8])
+
+Why it matters for you:
+
+* nice analogy for your steering result: internal intervention can modulate introspective report. ([PMC][8])
+
+---
+
+**9) Boldt et al., 2022 — *Partially Overlapping Neural Correlates of Metacognitive Monitoring and Metacognitive Control***
+This is especially relevant to your decomposition. It explicitly distinguishes **monitoring** from **control** at a neural level. ([PMC][9])
+
+What to get from it:
+
+* metacognition can be decomposed into separable components,
+* monitoring and downstream use/readout are related but not identical. ([PMC][9])
+
+Why it matters for you:
+
+* supports your two-component view of introspection:
+  latent-state quality vs report-side informativeness. ([PMC][9])
+
+---
+
+### Optional if you want one affective-state analogy
+
+**10) Lewis et al., 2007 — *Neural Correlates of Processing Valence and Arousal in Affective Words***
+This is useful if you want one example where **self-reported affect dimensions** like valence/arousal are linked to partially dissociable neural patterns. ([PMC][10])
+
+Why it matters for you:
+
+* helpful because some of your concepts are affect-like or state-like,
+* but this should be a minor supporting citation, not the center of the subsection. ([PMC][10])
+
+## My recommended shortlist
+
+If you want the **tightest serious set** for 2.7, I’d cite:
+
+* **Fleming, 2024**
+* **Fleming & Lau, 2014**
+* **Maniscalco & Lau, 2012**
+* **Kiefer et al., 2024**
+* **Overgaard, 2012** ([annualreviews.org][1])
+
+Then add one or two of:
+
+* **Lapate et al., 2020**
+* **Boldt et al., 2022**
+* **Rausch & Zehetleitner, 2016** ([PMC][8])
+
+## What each one gives you in one line
+
+* **Fleming 2024** → confidence/metacognition are graded, modelable, and neurally grounded. ([annualreviews.org][1])
+* **Fleming & Lau 2014** → metacognition is measured by how well confidence tracks objective success. ([PMC][2])
+* **Maniscalco & Lau 2012** → report quality can be quantified separately from task performance. ([PubMed][3])
+* **Kiefer et al. 2024** → subjective and objective measures can converge, but only under careful methodology. ([PMC][5])
+* **Overgaard 2012** → different report methods reveal different kinds of access. ([PMC][6])
+* **Rausch & Zehetleitner 2016** → even nearby subjective scales like confidence and visibility are not equivalent. ([PMC][7])
+* **Lapate et al. 2020** → metacognitive report depends causally on specific neural systems. ([PMC][8])
+* **Boldt et al. 2022** → monitoring and control/report use can be partially dissociated. ([PMC][9])
+
+## Draft of subsection 2.7
+
+### 2.7 Neuroscience and psychology as methodological analogies
+
+A useful methodological analogy comes from neuroscience and psychology, where subjective report is routinely used as one source of evidence about internal state. In metacognition research, participants are often asked to provide confidence or awareness judgments, and these reports are evaluated by how well they track objective performance or experimentally manipulated evidence. This literature treats introspective report as neither infallible nor useless, but as a graded and quantifiable signal whose informativeness can be measured. ([annualreviews.org][1])
+
+This is especially relevant for our operational framing. Human metacognition is commonly measured not by the mere existence of a confidence report, but by the degree to which that report covaries with success or evidence on a trial-by-trial basis. Formal tools such as meta-d′ were developed precisely to separate first-order task performance from second-order report quality. In this respect, our use of probe–report coupling as an operational measure of introspection is closer in spirit to metacognitive sensitivity analysis than to a binary notion of “having” or “lacking” introspection. ([PubMed][3])
+
+A second useful lesson is that report method matters. Work on perceptual awareness and confidence shows that subjective and objective measures may converge or diverge depending on task design, and that even closely related subjective scales such as visibility and confidence are not interchangeable. More generally, different methods of report can reveal different kinds of access to an underlying internal state. This provides a principled analogy for our comparison between greedy integer outputs, sampled outputs, and logit-based numeric reports: different readouts need not be equally sensitive to the same latent variable. ([PMC][5])
+
+Finally, neuroscience also motivates decomposing introspection into multiple components. Contemporary work distinguishes metacognitive monitoring from metacognitive control and identifies neural correlates of report quality that are partly separable from first-order task performance. We draw on this distinction only as an analogy, not as a claim of equivalence between humans and language models. The point is methodological: in both domains, it is useful to distinguish whether an internal state is well formed and whether the system can report that state in a way that preserves information about it. ([PMC][9])
+
+## One wording suggestion
+
+I would explicitly add one sentence like this somewhere in the subsection or discussion:
+
+> We invoke these literatures as methodological analogies, not as evidence that LLM self-reports are phenomenologically comparable to human introspection.
+
+That one sentence will prevent a lot of reviewer discomfort.
+
+[1]: https://www.annualreviews.org/content/journals/10.1146/annurev-psych-022423-032425?utm_source=chatgpt.com "Metacognition and Confidence: A Review and Synthesis"
+[2]: https://pmc.ncbi.nlm.nih.gov/articles/PMC4097944/?utm_source=chatgpt.com "How to measure metacognition - PMC"
+[3]: https://pubmed.ncbi.nlm.nih.gov/22071269/?utm_source=chatgpt.com "A signal detection theoretic approach for estimating ..."
+[4]: https://pmc.ncbi.nlm.nih.gov/articles/PMC3318765/?utm_source=chatgpt.com "The neural basis of metacognitive ability - PMC"
+[5]: https://pmc.ncbi.nlm.nih.gov/articles/PMC11259121/?utm_source=chatgpt.com "The Relation Between Subjective and Objective Measures of ..."
+[6]: https://pmc.ncbi.nlm.nih.gov/articles/PMC3318768/?utm_source=chatgpt.com "Kinds of access: different methods for report reveal ... - PMC"
+[7]: https://pmc.ncbi.nlm.nih.gov/articles/PMC4874366/?utm_source=chatgpt.com "Visibility Is Not Equivalent to Confidence in a Low Contrast ..."
+[8]: https://pmc.ncbi.nlm.nih.gov/articles/PMC7347936/?utm_source=chatgpt.com "Perceptual metacognition of human faces is causally ... - PMC"
+[9]: https://pmc.ncbi.nlm.nih.gov/articles/PMC9053853/?utm_source=chatgpt.com "Partially Overlapping Neural Correlates of Metacognitive ..."
+[10]: https://pmc.ncbi.nlm.nih.gov/articles/PMC2267931/?utm_source=chatgpt.com "Neural Correlates of Processing Valence and Arousal in ..."

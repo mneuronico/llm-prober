@@ -661,31 +661,77 @@ def plot_line_with_ci(ax, x, y_mean, y_ci_low, y_ci_high, color, label=None,
     ax.fill_between(x, y_ci_low, y_ci_high, color=color, alpha=alpha_fill)
 
 
+def cluster_bootstrap_mean(cluster_ids, values, n_bootstrap=1000, ci=0.95, seed=42):
+    """
+    Bootstrap a mean by resampling clusters rather than individual observations.
+    Returns (point_estimate, ci_low, ci_high).
+    """
+    cluster_ids = np.asarray(cluster_ids)
+    values = np.asarray(values, dtype=float)
+    mask = np.isfinite(values)
+    cluster_ids = cluster_ids[mask]
+    values = values[mask]
+    if len(values) == 0:
+        return np.nan, np.nan, np.nan
+    unique_clusters = np.unique(cluster_ids)
+    if len(unique_clusters) == 0:
+        return np.nan, np.nan, np.nan
+    point = float(np.mean(values))
+    if len(unique_clusters) == 1:
+        return point, point, point
+
+    rng = np.random.RandomState(seed)
+    boot_vals = []
+    for _ in range(n_bootstrap):
+        sampled_clusters = rng.choice(unique_clusters, len(unique_clusters), replace=True)
+        idx = []
+        for cluster in sampled_clusters:
+            idx.extend(np.where(cluster_ids == cluster)[0].tolist())
+        if idx:
+            boot_vals.append(float(np.mean(values[np.array(idx, dtype=int)])))
+    if not boot_vals:
+        return point, np.nan, np.nan
+    alpha_ci = (1 - ci) / 2
+    ci_low = np.nanpercentile(boot_vals, 100 * alpha_ci)
+    ci_high = np.nanpercentile(boot_vals, 100 * (1 - alpha_ci))
+    return point, float(ci_low), float(ci_high)
+
+
+def compute_grouped_cluster_means(df, group_col, value_col, cluster_col='conversation_index'):
+    """
+    Compute grouped means and cluster-bootstrap CIs.
+    Returns DataFrame with columns: group_col, mean, ci_low, ci_high, std, count, n_clusters.
+    """
+    rows = []
+    for group_value in sorted(df[group_col].dropna().unique()):
+        sub = df[df[group_col] == group_value].dropna(subset=[value_col]).copy()
+        if sub.empty:
+            continue
+        point, ci_low, ci_high = cluster_bootstrap_mean(
+            sub[cluster_col].values,
+            sub[value_col].values,
+        )
+        rows.append({
+            group_col: group_value,
+            'mean': float(np.mean(sub[value_col].values)),
+            'ci_low': ci_low,
+            'ci_high': ci_high,
+            'std': float(np.std(sub[value_col].values, ddof=1)) if len(sub) > 1 else np.nan,
+            'count': int(len(sub)),
+            'n_clusters': int(sub[cluster_col].nunique()),
+        })
+    return pd.DataFrame(rows)
+
+
 def compute_per_turn_means(df, value_col, alpha_val=0.0):
     """
     Compute mean, CI of a value column per turn from a results DataFrame.
     Returns DataFrame with columns: turn, mean, ci_low, ci_high, std.
     """
     sub = df[np.isclose(df['alpha'], alpha_val)]
-    grouped = sub.groupby('turn')[value_col]
-    result = grouped.agg(['mean', 'std', 'count']).reset_index()
-    # Bootstrap CI
-    ci_low_list, ci_high_list = [], []
-    for t in result['turn']:
-        vals = sub[sub['turn'] == t][value_col].dropna().values
-        if len(vals) < 2:
-            ci_low_list.append(np.nan)
-            ci_high_list.append(np.nan)
-            continue
-        boots = []
-        rng = np.random.RandomState(42)
-        for _ in range(1000):
-            boots.append(np.mean(rng.choice(vals, len(vals), replace=True)))
-        ci_low_list.append(np.percentile(boots, 2.5))
-        ci_high_list.append(np.percentile(boots, 97.5))
-    result['ci_low'] = ci_low_list
-    result['ci_high'] = ci_high_list
-    return result
+    if sub.empty:
+        return pd.DataFrame(columns=['turn', 'mean', 'std', 'count', 'ci_low', 'ci_high', 'n_clusters'])
+    return compute_grouped_cluster_means(sub, 'turn', value_col, cluster_col='conversation_index')
 
 
 def compute_per_turn_unique_counts(df, value_col, alpha_val=0.0):
@@ -758,6 +804,108 @@ def exact_permutation_spearman_p(x, y, alternative='two-sided'):
                 count_extreme += 1
     p_exact = count_extreme / total
     return float(observed_rho), float(p_exact)
+
+
+def linear_regression_stats(x, y):
+    """
+    OLS summary from scipy.stats.linregress.
+    Returns slope, intercept, Pearson r, p, stderr, and R^2.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    mask = np.isfinite(x) & np.isfinite(y)
+    x = x[mask]
+    y = y[mask]
+    if len(x) < 2 or np.std(x) == 0:
+        return {
+            'slope': np.nan,
+            'intercept': np.nan,
+            'pearson_r': np.nan,
+            'pearson_p': np.nan,
+            'stderr': np.nan,
+            'r_squared': np.nan,
+            'n': len(x),
+        }
+    slope, intercept, r_val, p_val, stderr = stats.linregress(x, y)
+    return {
+        'slope': float(slope),
+        'intercept': float(intercept),
+        'pearson_r': float(r_val),
+        'pearson_p': float(p_val),
+        'stderr': float(stderr),
+        'r_squared': float(r_val ** 2),
+        'n': len(x),
+    }
+
+
+def paired_difference_test(values_a, values_b, alternative='two-sided'):
+    """
+    Paired tests on value_a - value_b.
+    Returns paired t-test and Wilcoxon results.
+    """
+    a = np.asarray(values_a, dtype=float)
+    b = np.asarray(values_b, dtype=float)
+    mask = np.isfinite(a) & np.isfinite(b)
+    a = a[mask]
+    b = b[mask]
+    diffs = a - b
+    result = {
+        'n': int(len(diffs)),
+        'mean_difference': float(np.mean(diffs)) if len(diffs) else np.nan,
+        'std_difference': float(np.std(diffs, ddof=1)) if len(diffs) > 1 else np.nan,
+    }
+    if len(diffs) < 3:
+        result['t_stat'] = np.nan
+        result['t_p'] = np.nan
+        result['wilcoxon_stat'] = np.nan
+        result['wilcoxon_p'] = np.nan
+        return result
+    t_stat, t_p = stats.ttest_rel(a, b)
+    result['t_stat'] = float(t_stat)
+    result['t_p'] = float(t_p)
+    try:
+        w_stat, w_p = stats.wilcoxon(diffs, alternative=alternative)
+        result['wilcoxon_stat'] = float(w_stat)
+        result['wilcoxon_p'] = float(w_p)
+    except Exception:
+        result['wilcoxon_stat'] = np.nan
+        result['wilcoxon_p'] = np.nan
+    return result
+
+
+def exact_permutation_slope_test(x, y, alternative='two-sided'):
+    """
+    Exact permutation test for an OLS slope on small sets of aggregated points.
+    Keeps x fixed and permutes y across x.
+    """
+    from itertools import permutations
+
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    mask = np.isfinite(x) & np.isfinite(y)
+    x = x[mask]
+    y = y[mask]
+    if len(x) < 3 or np.std(x) == 0:
+        return {'slope': np.nan, 'exact_permutation_p': np.nan, 'n': len(x)}
+    observed = linear_regression_stats(x, y)
+    observed_slope = observed['slope']
+    count_extreme = 0
+    total = 0
+    for perm in permutations(range(len(y))):
+        perm_y = y[list(perm)]
+        perm_slope = linear_regression_stats(x, perm_y)['slope']
+        total += 1
+        if alternative == 'two-sided':
+            if abs(perm_slope) >= abs(observed_slope) - 1e-12:
+                count_extreme += 1
+        elif alternative == 'greater':
+            if perm_slope >= observed_slope - 1e-12:
+                count_extreme += 1
+        elif alternative == 'less':
+            if perm_slope <= observed_slope + 1e-12:
+                count_extreme += 1
+    observed['exact_permutation_p'] = float(count_extreme / total) if total else np.nan
+    return observed
 
 
 def cluster_bootstrap_stat(conv_ids, x, y, stat_fn, n_bootstrap=1000, ci=0.95, seed=42):

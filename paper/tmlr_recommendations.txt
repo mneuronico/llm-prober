@@ -1,0 +1,114 @@
+For **Transactions on Machine Learning Research**, the paper format is **not rigidly fixed like NeurIPS/ICLR**, but there are **strong expectations**. Here’s the practical answer researchers follow.
+
+---
+
+## 1. Is there a required format?
+
+**Short answer:**
+
+* **No strict mandatory format.**
+* **LaTeX is strongly recommended.**
+* Most submissions use the **TMLR LaTeX template** provided by OpenReview (already here in repo).
+
+TMLR explicitly allows:
+
+* LaTeX
+* Word
+* other formats
+
+But **almost everyone submits LaTeX PDFs**.
+
+---
+
+## 2. The standard template (what reviewers expect)
+
+Most papers use the official template
+
+Typical structure expected:
+
+```
+Title
+Authors
+
+Abstract
+
+1 Introduction
+2 Related Work
+3 Method
+4 Experiments
+5 Discussion
+6 Limitations
+7 Conclusion
+
+References
+Appendix
+```
+
+---
+
+## 3. Page limits
+
+**No strict page limit.**
+
+However:
+
+Typical norms:
+
+| Section    | Typical length    |
+| ---------- | ----------------- |
+| Main paper | 8–20 pages        |
+| Appendix   | unlimited         |
+| Total PDF  | often 20–40 pages |
+
+Because TMLR is **journal-style**, not conference-style.
+
+---
+
+## 4. Single vs double column
+
+TMLR template uses:
+
+**single column**
+
+Advantages:
+
+* easier reviewing
+* easier reading
+
+This is different from NeurIPS/ICLR which are **two column**.
+
+---
+
+## 5. Review model
+
+Important difference:
+
+TMLR uses **OpenReview + public discussion**.
+
+Papers can be:
+
+* **anonymous** (optional)
+* **non-anonymous**
+
+Many people submit **non-anonymous**.
+
+---
+
+## 6. What reviewers care about
+
+More than formatting, TMLR reviewers care about:
+
+* **clarity of claims**
+* **experimental rigor**
+* **reproducibility**
+* **code availability**
+* **detailed appendices**
+
+So typically you see:
+
+```
+Appendix A: Implementation details
+Appendix B: Additional experiments
+Appendix C: Ablations
+Appendix D: Dataset descriptions
+```
