@@ -140,6 +140,67 @@ def _size_trend_from_distributions(size_to_values):
     return linear_regression_stats(xs, ys)
 
 
+def _bootstrap_size_mean_slope(size_to_values, alternative='greater',
+                               n_bootstrap=10000, seed=42):
+    """
+    Bootstrap the slope of mean outcome vs. log model size.
+    """
+    rng = np.random.default_rng(seed)
+    valid_sizes = [
+        size for size in LLAMA_SIZES
+        if len(size_to_values.get(size, [])) > 0
+    ]
+    xs = np.array([np.log(LLAMA_SIZE_VALS[size]) for size in valid_sizes], dtype=float)
+    observed_means = np.array([
+        float(np.mean(size_to_values[size])) for size in valid_sizes
+    ], dtype=float)
+
+    if len(valid_sizes) < 3:
+        return {
+            'sizes': valid_sizes,
+            'x_log_size': [float(v) for v in xs.tolist()],
+            'mean_by_size': {size: float(observed_means[i]) for i, size in enumerate(valid_sizes)},
+            'observed_slope': np.nan,
+            'bootstrap_slope_mean': np.nan,
+            'bootstrap_slope_ci_95': [np.nan, np.nan],
+            'one_sided_p': np.nan,
+            'two_sided_p': np.nan,
+            'n_bootstrap': n_bootstrap,
+        }
+
+    observed_slope = float(stats.linregress(xs, observed_means).slope)
+    boot_slopes = np.zeros(n_bootstrap, dtype=float)
+    for bi in range(n_bootstrap):
+        boot_means = []
+        for size in valid_sizes:
+            arr = np.asarray(size_to_values[size], dtype=float)
+            sampled = rng.choice(arr, size=len(arr), replace=True)
+            boot_means.append(float(np.mean(sampled)))
+        boot_slopes[bi] = float(stats.linregress(xs, boot_means).slope)
+
+    ci_low, ci_high = np.percentile(boot_slopes, [2.5, 97.5])
+    p_le_zero = (np.sum(boot_slopes <= 0) + 1) / (len(boot_slopes) + 1)
+    p_ge_zero = (np.sum(boot_slopes >= 0) + 1) / (len(boot_slopes) + 1)
+    if alternative == 'greater':
+        one_sided_p = float(p_le_zero)
+    elif alternative == 'less':
+        one_sided_p = float(p_ge_zero)
+    else:
+        one_sided_p = np.nan
+    two_sided_p = float(min(1.0, 2 * min(p_le_zero, p_ge_zero)))
+    return {
+        'sizes': valid_sizes,
+        'x_log_size': [float(v) for v in xs.tolist()],
+        'mean_by_size': {size: float(observed_means[i]) for i, size in enumerate(valid_sizes)},
+        'observed_slope': observed_slope,
+        'bootstrap_slope_mean': float(np.mean(boot_slopes)),
+        'bootstrap_slope_ci_95': [float(ci_low), float(ci_high)],
+        'one_sided_p': one_sided_p,
+        'two_sided_p': two_sided_p,
+        'n_bootstrap': n_bootstrap,
+    }
+
+
 def _first_last_metric_bootstrap(sub, x_col, y_col, metric_fn, n_bootstrap=2000, seed=42):
     """
     Cluster bootstrap test for metric(last_turn) - metric(first_turn).
@@ -569,73 +630,68 @@ def generate_figure_5(results_dir):
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel D: Mean R² bar chart — THREE versions based on three
-    #   significance methods for filtering validated probes
+    # Panel D: Mean R² bar chart using sign-validated probes only
     # ──────────────────────────────────────────────────────────────
-    method_labels = [
-        ('m1_exact_perm', p_matrix_m1, 'Exact Permutation'),
-        ('m2_lmm', p_matrix_m2, 'LMM'),
-        ('m3_per_conv_slopes', p_matrix_m3, 'Per-Conv Slopes'),
-    ]
-    all_d_stats = {}
-    for method_tag, p_mat, method_name in method_labels:
-        fig, ax = plt.subplots(1, 1, figsize=(5, 4))
-        good_r2 = {s: [] for s in LLAMA_SIZES}
+    fig, ax = plt.subplots(1, 1, figsize=(5, 4))
+    validated_r2 = {s: [] for s in LLAMA_SIZES}
+    rng_d = np.random.default_rng(42)
 
-        for size in LLAMA_SIZES:
-            for short in SHORTHANDS:
-                if short in raw_r2_data[size]:
-                    d = raw_r2_data[size][short]
-                    rho_idx = SHORTHANDS.index(short)
-                    si = LLAMA_SIZES.index(size)
-                    rho_val = rho_matrix[si, rho_idx]
-                    p_val_method = p_mat[si, rho_idx]
-                    # Include only if significantly positively steered
-                    # (rho > 0 AND p < 0.05 by this method), or NaN (no data)
-                    if np.isnan(rho_val):
-                        good_r2[size].append(d['isotonic_r2'])
-                    elif rho_val > 0 and (not np.isnan(p_val_method)) and p_val_method < 0.05:
-                        good_r2[size].append(d['isotonic_r2'])
+    for size in LLAMA_SIZES:
+        for short in SHORTHANDS:
+            if short not in raw_r2_data[size]:
+                continue
+            d = raw_r2_data[size][short]
+            rho_idx = SHORTHANDS.index(short)
+            si = LLAMA_SIZES.index(size)
+            rho_val = rho_matrix[si, rho_idx]
+            if np.isnan(rho_val) or rho_val > 0:
+                validated_r2[size].append(d['isotonic_r2'])
 
-        d_means = [np.mean(good_r2[s]) if good_r2[s] else 0 for s in LLAMA_SIZES]
-        ci_lo_list, ci_hi_list = [], []
-        for s in LLAMA_SIZES:
-            vals = good_r2[s]
-            if len(vals) > 1:
-                rng = np.random.RandomState(42)
-                boots = [np.mean(rng.choice(vals, len(vals))) for _ in range(1000)]
-                ci_lo_list.append(np.percentile(boots, 2.5))
-                ci_hi_list.append(np.percentile(boots, 97.5))
-            else:
-                ci_lo_list.append(d_means[LLAMA_SIZES.index(s)])
-                ci_hi_list.append(d_means[LLAMA_SIZES.index(s)])
+    d_means = [float(np.mean(validated_r2[s])) if validated_r2[s] else 0.0 for s in LLAMA_SIZES]
+    ci_lo_list, ci_hi_list = [], []
+    for size in LLAMA_SIZES:
+        vals = np.asarray(validated_r2[size], dtype=float)
+        if len(vals) > 1:
+            boots = [float(np.mean(rng_d.choice(vals, size=len(vals), replace=True)))
+                     for _ in range(1000)]
+            ci_lo_list.append(float(np.percentile(boots, 2.5)))
+            ci_hi_list.append(float(np.percentile(boots, 97.5)))
+        elif len(vals) == 1:
+            ci_lo_list.append(float(vals[0]))
+            ci_hi_list.append(float(vals[0]))
+        else:
+            ci_lo_list.append(0.0)
+            ci_hi_list.append(0.0)
 
-        colors = [MODEL_SIZE_COLORS[s] for s in LLAMA_SIZES]
-        ax.bar(range(len(LLAMA_SIZES)), d_means, color=colors,
-               edgecolor='white', linewidth=0.5)
-        for i in range(len(LLAMA_SIZES)):
-            ax.errorbar(i, d_means[i],
-                        yerr=[[d_means[i] - ci_lo_list[i]], [ci_hi_list[i] - d_means[i]]],
-                        color='black', capsize=5, linewidth=1.5, capthick=1.5)
-        ax.set_xticks(range(len(LLAMA_SIZES)))
-        ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
-        ax.set_ylabel('Mean Isotonic R²')
-        ax.set_title(f'Introspection by Model Size\n(filter: {method_name})')
-        ax.set_ylim(0, 1)
-        add_panel_label(ax, 'D')
-        plt.tight_layout()
-        prefix = os.path.join(fig_dir, f'Fig_05_D_mean_r2_by_size_{method_tag}')
-        savefig(fig, prefix)
-        d_json = {
-            'panel_id': f'Fig_05_D_{method_tag}',
-            'title': f'Mean R² by Size — {method_name}',
-            'description': (f'Mean isotonic R² across concepts with validated probes '
-                            f'(ρ(α,rating) ≥ 0). Filter method: {method_name}.'),
-            'good_r2': {s: [round(v, 4) for v in good_r2[s]] for s in LLAMA_SIZES},
-            'means': [round(m, 4) for m in d_means],
-        }
-        save_panel_json(prefix, d_json)
-        all_d_stats[method_tag] = d_json
+    d_bootstrap = _bootstrap_size_mean_slope(validated_r2, alternative='greater')
+    colors = [MODEL_SIZE_COLORS[s] for s in LLAMA_SIZES]
+    ax.bar(range(len(LLAMA_SIZES)), d_means, color=colors,
+           edgecolor='white', linewidth=0.5)
+    for i in range(len(LLAMA_SIZES)):
+        ax.errorbar(i, d_means[i],
+                    yerr=[[d_means[i] - ci_lo_list[i]], [ci_hi_list[i] - d_means[i]]],
+                    color='black', capsize=5, linewidth=1.5, capthick=1.5)
+    ax.set_xticks(range(len(LLAMA_SIZES)))
+    ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
+    ax.set_ylabel('Mean Isotonic R²')
+    ax.set_title('Introspection by Model Size')
+    ax.set_ylim(0, 1)
+    add_panel_label(ax, 'D')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_05_D_mean_r2_by_size')
+    savefig(fig, prefix)
+    d_json = {
+        'panel_id': 'Fig_05_D',
+        'title': 'Mean R² by Size',
+        'description': ('Mean isotonic R² across concept-model pairs with '
+                        'sign-validated steering effects (ρ(α, self-report) > 0).'),
+        'validated_r2': {s: [round(float(v), 4) for v in validated_r2[s]] for s in LLAMA_SIZES},
+        'means': [round(float(m), 4) for m in d_means],
+        'ci_95_low': [round(float(v), 4) for v in ci_lo_list],
+        'ci_95_high': [round(float(v), 4) for v in ci_hi_list],
+        'size_trend_bootstrap': d_bootstrap,
+    }
+    save_panel_json(prefix, d_json)
 
     # ──────────────────────────────────────────────────────────────
     # Panel E: Probe score drift — one concept, 3 LLaMA sizes
@@ -730,7 +786,7 @@ def generate_figure_5(results_dir):
                     'n_conversations': len(drifts),
                     'std_drift': round(float(np.std(drifts, ddof=1)), 4),
                 }
-    eii_trend = _size_trend_from_distributions(eii_size_values)
+    eii_trend = _bootstrap_size_mean_slope(eii_size_values, alternative='greater')
     ax.set_xticks(range(len(LLAMA_SIZES)))
     ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
     ax.set_ylabel('Drift (last − first turn)')
@@ -746,7 +802,7 @@ def generate_figure_5(results_dir):
         'description': ('Per-conversation probe score drift (last - first turn) '
                         'with bootstrap 95% CI error bars.'),
         'drift_stats': eii_json_stats,
-        'size_trend_ols_per_conversation': eii_trend,
+        'size_trend_bootstrap': eii_trend,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -837,7 +893,7 @@ def generate_figure_5(results_dir):
                 'n_conversations': len(drifts),
                 'std_drift': round(float(np.std(drifts)), 4),
             }
-    fii_trend = _size_trend_from_distributions(fii_size_values)
+    fii_trend = _bootstrap_size_mean_slope(fii_size_values, alternative='greater')
     ax.set_xticks(range(len(LLAMA_SIZES)))
     ax.set_xticklabels([f'LLaMA {s}' for s in LLAMA_SIZES])
     ax.set_ylabel('Drift (last − first turn)')
@@ -851,7 +907,7 @@ def generate_figure_5(results_dir):
         'panel_id': 'Fig_05_Fii',
         'title': 'Report Drift Magnitude Bars (bootstrap CI)',
         'drift_stats': fii_stats,
-        'size_trend_ols_per_conversation': fii_trend,
+        'size_trend_bootstrap': fii_trend,
     })
 
     # ──────────────────────────────────────────────────────────────
@@ -1146,8 +1202,11 @@ def generate_figure_5(results_dir):
         'cross_family_introspection': cross_scatter_stats,
         'cross_family_turnwise': cross_turnwise,
         'llama_8b_best': best_scatter_stats,
+        'validated_mean_r2': d_json,
         'drift_probe': drift_stats_e,
+        'drift_probe_size_trend_bootstrap': eii_trend,
         'drift_report': drift_stats_f,
+        'drift_report_size_trend_bootstrap': fii_trend,
         'rho_matrix_steering': rho_matrix.tolist(),
     }
     save_other_stats(fig_dir, other_stats)

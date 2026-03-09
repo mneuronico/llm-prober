@@ -1,0 +1,21 @@
+Topic:
+AI safety, model welfare, and machine psychology
+
+Why this matters to the paper:
+This bucket gives the broader stakes for why introspective self-report matters without overclaiming that the paper measures consciousness, suffering, or genuine subjective experience. These works support the position that self-reports may matter ethically or for safety, but that they need validation before they can be trusted. In your paper, this section should stay bounded: the contribution is a methodological tool for evaluating whether self-reports are informative, not a resolution of welfare or consciousness debates.
+
+Papers:
+- 2019 - Machine Behaviour - Rahwan et al.
+- 2023 - Consciousness in Artificial Intelligence: Insights from the Science of Consciousness - Butlin et al.
+- 2023 - Towards Evaluating AI Systems for Moral Status Using Self-Reports - Perez and Long
+- 2024 - Agnosticism about Artificial Consciousness - McClelland
+- 2024 - Machine Psychology - Hagendorff et al.
+- 2024 - Taking AI Welfare Seriously - Long et al.
+- 2025 - Explicit vs. Implicit: Investigating Social Bias in Large Language Models through Self-Reflection - Zhao et al.
+- 2025 - JULI: Jailbreak Large Language Models by Self-Introspection - Wang, Hu, and Wagner
+- 2025 - Measuring Language Model Welfare Based on Verbal Report: An Analogical-Abductive Approach - Dung and Tagliabue
+- 2025 - Probing the Preferences of a Language Model: Integrating Verbal and Behavioral Tests of AI Welfare - Tagliabue and Dung
+- 2025 - SELF-PERCEPT: Introspection Improves Large Language Models' Detection of Multi-Person Mental Manipulation in Conversations - Khanna et al.
+- 2025 - Large Language Models Report Subjective Experience Under Self-Referential Processing - Berg, de Lucena, and Rosenblatt
+- 2025 - Spilling the Beans: Teaching LLMs to Self-Report Their Hidden Objectives - Li, Phuong, and Tan
+- 2025 - The Personality Illusion: Revealing Dissociation Between Self-Reports and Behavior in LLMs - Han et al.

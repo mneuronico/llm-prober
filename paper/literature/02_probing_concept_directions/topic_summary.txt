@@ -1,0 +1,17 @@
+Topic:
+Probing internal representations and behavioral concept directions
+
+Why this matters to the paper:
+This folder supports your measurement apparatus. These papers justify the use of linear probes and concept directions while also making clear that probe scores alone do not settle what a model "really" represents. For your paper, the right framing is that probes are operational tools that need validation, and that self-report plus steering provide convergent evidence for whether a direction is scientifically meaningful.
+
+Papers:
+- 2018 - Interpretability Beyond Feature Attribution: Quantitative Testing with Concept Activation Vectors (TCAV) - Kim et al.
+- 2018 - Understanding Intermediate Layers Using Linear Classifier Probes - Alain and Bengio
+- 2019 - A Structural Probe for Finding Syntax in Word Representations - Hewitt and Manning
+- 2019 - Designing and Interpreting Probes with Control Tasks - Hewitt and Liang
+- 2020 - Information-Theoretic Probing for Linguistic Structure - Pimentel et al.
+- 2022 - Discovering Latent Knowledge in Language Models Without Supervision - Burns et al.
+- 2022 - Probing Classifiers: Promises, Shortcomings, and Advances - Belinkov
+- 2023 - Language Models Represent Space and Time - Gurnee and Tegmark
+- 2023 - The Internal State of an LLM Knows When It's Lying - Azaria and Mitchell
+- 2025 - Detecting High-Stakes Interactions with Activation Probes - McKenzie et al.

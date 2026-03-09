@@ -1,0 +1,13 @@
+Topic:
+Temporal dynamics and conversation-induced state drift in LLMs
+
+Why this matters to the paper:
+This subsection grounds the "through time" dimension of your experiments. The papers here show that model behavior, persona, instruction following, and confidence can drift across turns, which supports your claim that introspection should be measured turn by turn rather than only in pooled or single-shot settings. In your paper, this literature motivates per-turn analysis and the need to separate genuine probe-report coupling from correlations driven only by conversation time.
+
+Papers:
+- 2020 - Will I Sound Like Me? Improving Persona Consistency in Dialogues through Pragmatic Self-Consciousness - Kim et al.
+- 2024 - Examining Identity Drift in Conversations of LLM Agents - Choi et al.
+- 2024 - Measuring and Controlling Instruction (In)Stability in Language Model Dialogs - Li et al.
+- 2024 - Serial Position Effects of Large Language Models - Guo and Vosoughi
+- 2025 - Consistently Simulating Human Personas with Multi-Turn Reinforcement Learning - Abdulhai et al.
+- 2026 - Confidence Estimation for LLMs in Multi-turn Interactions - Zhang et al.

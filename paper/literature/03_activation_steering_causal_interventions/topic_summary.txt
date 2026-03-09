@@ -1,0 +1,16 @@
+Topic:
+Activation steering and causal interventions on internal representations
+
+Why this matters to the paper:
+These papers motivate the causal side of your argument. Prior steering work mainly uses internal interventions to change behavior, style, refusal, or truthfulness, whereas your paper uses steering as a test of whether self-report depends on probe-defined state and whether introspection quality itself can be improved. This subsection is therefore where you connect intervention methods to causal validation of your operational introspection measure.
+
+Papers:
+- 2023 - Inference-Time Intervention: Eliciting Truthful Answers from a Language Model - Li et al.
+- 2023 - Representation Engineering: A Top-Down Approach to AI Transparency - Zou et al.
+- 2023 - Steering Llama 2 via Contrastive Activation Addition - Panickssery et al.
+- 2024 - Aligning Large Language Models with Representation Editing: A Control Perspective - Kong et al.
+- 2024 - Refusal in Language Models Is Mediated by a Single Direction - Arditi et al.
+- 2024 - Steering Language Models with Activation Engineering - Turner et al.
+- 2024 - Style Vectors for Steering Generative Large Language Models - Konen et al.
+- 2025 - Linear Personality Probing and Steering in LLMs: A Big Five Study - Frising and Balcells
+- 2025 - Taxonomy, Opportunities, and Challenges of Representation Engineering for Large Language Models - Wehner et al.

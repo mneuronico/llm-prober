@@ -712,12 +712,12 @@ def generate_figure_4(results_dir):
     ax.set_title('Report Informativeness vs. Steering')
     ax.legend(fontsize=8)
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
-    add_panel_label(ax, 'K')
+    add_panel_label(ax, 'L')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_04_K_report_variance_vs_alpha')
+    prefix = os.path.join(fig_dir, 'Fig_04_L_report_variance_vs_alpha')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_04_K',
+        'panel_id': 'Fig_04_L',
         'title': 'Self-Report Variance vs. Display-Corrected Alpha',
         'description': ('Variance of logit self-reports vs display-corrected alpha. '
                         'Alpha sign-flipped for impulsive_vs_planning steering. '
@@ -730,7 +730,7 @@ def generate_figure_4(results_dir):
     })
 
     # ──────────────────────────────────────────────────────────────
-    # Panel L: Drift magnitude vs display alpha
+    # Panel K: Drift magnitude vs display alpha
     # ──────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
     l_stats = {}
@@ -760,11 +760,17 @@ def generate_figure_4(results_dir):
                 else:
                     ci_lo_l.append(mean_d)
                     ci_hi_l.append(mean_d)
-            yerr_lo = [drift_vals[j] - ci_lo_l[j] for j in range(len(drift_vals))]
-            yerr_hi = [ci_hi_l[j] - drift_vals[j] for j in range(len(drift_vals))]
-            ax.errorbar(da_sorted, drift_vals, yerr=[yerr_lo, yerr_hi],
-                        fmt='o-', color=color, label=data['label'],
-                        linewidth=1.5, markersize=6, capsize=3)
+            plot_line_with_ci(
+                ax,
+                da_sorted,
+                drift_vals,
+                ci_lo_l,
+                ci_hi_l,
+                color=color,
+                label=data['label'],
+                marker='o',
+                markersize=6,
+            )
             # Trend test: exact permutation Spearman of drift magnitude vs display alpha
             rho_dl, p_dl = exact_permutation_spearman_p(da_sorted, drift_vals)
             # Per-conversation drift approach: each conv has 5 drift values (one per alpha)
@@ -824,12 +830,12 @@ def generate_figure_4(results_dir):
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
     ax.legend(fontsize=8)
-    add_panel_label(ax, 'L')
+    add_panel_label(ax, 'K')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_04_L_drift_magnitude_vs_alpha')
+    prefix = os.path.join(fig_dir, 'Fig_04_K_drift_magnitude_vs_alpha')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_04_L',
+        'panel_id': 'Fig_04_K',
         'title': 'Drift Magnitude vs. Display-Corrected Alpha',
         'description': ('Probe score drift (last−first turn) vs display-corrected alpha. '
                         'Alpha flipped for impulsive_vs_planning steering. Includes Spearman '

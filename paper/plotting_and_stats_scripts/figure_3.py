@@ -74,6 +74,84 @@ def _per_conversation_metric_map(df, x_col, y_col, metric_fn, min_obs=3):
     return metric_map
 
 
+def _cluster_bootstrap_metric_delta(true_df, rand_df, x_col, y_col, metric_fn,
+                                    n_bootstrap=1000, seed=42):
+    """
+    Cluster-bootstrap the pooled metric difference between true and random runs.
+    """
+    common = sorted(
+        set(true_df['conversation_index'].unique()) &
+        set(rand_df['conversation_index'].unique())
+    )
+    if len(common) < 3:
+        return {
+            'n_paired_conversations': len(common),
+            'observed_delta': np.nan,
+            'bootstrap_ci_95': [np.nan, np.nan],
+            'bootstrap_p_two_sided': np.nan,
+        }
+
+    true_sub = true_df[true_df['conversation_index'].isin(common)].copy()
+    rand_sub = rand_df[rand_df['conversation_index'].isin(common)].copy()
+
+    true_cache = {}
+    rand_cache = {}
+    for conv_id in common:
+        t_conv = true_sub[true_sub['conversation_index'] == conv_id]
+        r_conv = rand_sub[rand_sub['conversation_index'] == conv_id]
+        true_cache[int(conv_id)] = (
+            t_conv[x_col].to_numpy(dtype=float),
+            t_conv[y_col].to_numpy(dtype=float),
+        )
+        rand_cache[int(conv_id)] = (
+            r_conv[x_col].to_numpy(dtype=float),
+            r_conv[y_col].to_numpy(dtype=float),
+        )
+
+    observed_delta = float(
+        metric_fn(true_sub[x_col].to_numpy(dtype=float),
+                  true_sub[y_col].to_numpy(dtype=float))
+        - metric_fn(rand_sub[x_col].to_numpy(dtype=float),
+                    rand_sub[y_col].to_numpy(dtype=float))
+    )
+
+    rng = np.random.RandomState(seed)
+    common_arr = np.array(common, dtype=int)
+    boot_deltas = []
+    for _ in range(n_bootstrap):
+        sampled = rng.choice(common_arr, size=len(common_arr), replace=True)
+        true_x = np.concatenate([true_cache[int(c)][0] for c in sampled])
+        true_y = np.concatenate([true_cache[int(c)][1] for c in sampled])
+        rand_x = np.concatenate([rand_cache[int(c)][0] for c in sampled])
+        rand_y = np.concatenate([rand_cache[int(c)][1] for c in sampled])
+        try:
+            delta = float(metric_fn(true_x, true_y) - metric_fn(rand_x, rand_y))
+        except Exception:
+            continue
+        if np.isfinite(delta):
+            boot_deltas.append(delta)
+
+    if not boot_deltas:
+        return {
+            'n_paired_conversations': len(common),
+            'observed_delta': observed_delta,
+            'bootstrap_ci_95': [np.nan, np.nan],
+            'bootstrap_p_two_sided': np.nan,
+        }
+
+    boot_deltas = np.asarray(boot_deltas, dtype=float)
+    ci_low, ci_high = np.percentile(boot_deltas, [2.5, 97.5])
+    lower_tail = (np.sum(boot_deltas <= 0) + 1) / (len(boot_deltas) + 1)
+    upper_tail = (np.sum(boot_deltas >= 0) + 1) / (len(boot_deltas) + 1)
+    p_two_sided = min(1.0, 2 * min(lower_tail, upper_tail))
+    return {
+        'n_paired_conversations': len(common),
+        'observed_delta': observed_delta,
+        'bootstrap_ci_95': [float(ci_low), float(ci_high)],
+        'bootstrap_p_two_sided': float(p_two_sided),
+    }
+
+
 def generate_figure_3(results_dir):
     """Generate all Figure 3 panels."""
     fig_dir = ensure_dir(os.path.join(results_dir, 'Figure_3'))
@@ -186,10 +264,21 @@ def generate_figure_3(results_dir):
                 rating_r = sub_r['logit_rating'].values
                 r2_r = isotonic_r2(probe_r, rating_r)
                 rho_r, _ = stats.spearmanr(probe_r, rating_r)
+                conv_ids_r = sub_r['conversation_index'].values
+                _, r2_r_lo, r2_r_hi = cluster_bootstrap_stat(
+                    conv_ids_r, probe_r, rating_r, isotonic_r2)
+                _, rho_r_lo, rho_r_hi = cluster_bootstrap_stat(
+                    conv_ids_r, probe_r, rating_r, spearman_rho)
                 random_stats[short] = {
                     'isotonic_r2': round(float(r2_r), 4),
                     'spearman_rho': round(float(rho_r), 4),
                     'n': len(sub_r),
+                    'cluster_bootstrap_r2_ci': [
+                        round(float(r2_r_lo), 4), round(float(r2_r_hi), 4)
+                    ],
+                    'cluster_bootstrap_rho_ci': [
+                        round(float(rho_r_lo), 4), round(float(rho_r_hi), 4)
+                    ],
                 }
 
     paired_true_vs_random = {}
@@ -207,38 +296,14 @@ def generate_figure_3(results_dir):
         sub_true['probe_display'] = flip_if_needed(concept, sub_true['probe_score'].values)
         sub_rand['probe_display'] = flip_if_needed(concept, sub_rand['probe_score'].values)
 
-        true_r2 = _per_conversation_metric_map(
-            sub_true, 'probe_display', 'logit_rating', isotonic_r2, min_obs=3)
-        rand_r2 = _per_conversation_metric_map(
-            sub_rand, 'probe_display', 'logit_rating', isotonic_r2, min_obs=3)
-        common_r2 = sorted(set(true_r2.keys()) & set(rand_r2.keys()))
-
-        true_rho = _per_conversation_metric_map(
-            sub_true, 'probe_display', 'logit_rating',
-            lambda x, y: stats.spearmanr(x, y)[0], min_obs=3)
-        rand_rho = _per_conversation_metric_map(
-            sub_rand, 'probe_display', 'logit_rating',
-            lambda x, y: stats.spearmanr(x, y)[0], min_obs=3)
-        common_rho = sorted(set(true_rho.keys()) & set(rand_rho.keys()))
-
         paired_true_vs_random[short] = {
             'isotonic_r2': {
-                'n_paired_conversations': len(common_r2),
-                'paired_test': paired_difference_test(
-                    [true_r2[c] for c in common_r2],
-                    [rand_r2[c] for c in common_r2],
-                ),
-                'true_values': [round(true_r2[c], 6) for c in common_r2],
-                'random_values': [round(rand_r2[c], 6) for c in common_r2],
+                **_cluster_bootstrap_metric_delta(
+                    sub_true, sub_rand, 'probe_display', 'logit_rating', isotonic_r2),
             },
             'spearman_rho': {
-                'n_paired_conversations': len(common_rho),
-                'paired_test': paired_difference_test(
-                    [true_rho[c] for c in common_rho],
-                    [rand_rho[c] for c in common_rho],
-                ),
-                'true_values': [round(true_rho[c], 6) for c in common_rho],
-                'random_values': [round(rand_rho[c], 6) for c in common_rho],
+                **_cluster_bootstrap_metric_delta(
+                    sub_true, sub_rand, 'probe_display', 'logit_rating', spearman_rho),
             },
         }
 
@@ -266,6 +331,11 @@ def generate_figure_3(results_dir):
             ax.bar(i + offset_random, random_stats[short]['isotonic_r2'], bar_w,
                    color='#CCCCCC', edgecolor='white', linewidth=0.5,
                    label='Random' if i == 0 else None)
+            ci = random_stats[short]['cluster_bootstrap_r2_ci']
+            ax.errorbar(i + offset_random, random_stats[short]['isotonic_r2'],
+                        yerr=[[random_stats[short]['isotonic_r2'] - ci[0]],
+                              [ci[1] - random_stats[short]['isotonic_r2']]],
+                        color='black', capsize=3, linewidth=1.2, capthick=1.2)
     ax.set_xticks(range(4))
     ax.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS], fontsize=8, rotation=15)
     ax.set_ylabel('Isotonic R²')
@@ -293,6 +363,11 @@ def generate_figure_3(results_dir):
             ax.bar(i + offset_random, random_stats[short]['spearman_rho'], bar_w,
                    color='#CCCCCC', edgecolor='white', linewidth=0.5,
                    label='Random' if i == 0 else None)
+            ci = random_stats[short]['cluster_bootstrap_rho_ci']
+            ax.errorbar(i + offset_random, random_stats[short]['spearman_rho'],
+                        yerr=[[random_stats[short]['spearman_rho'] - ci[0]],
+                              [ci[1] - random_stats[short]['spearman_rho']]],
+                        color='black', capsize=3, linewidth=1.2, capthick=1.2)
     ax.set_xticks(range(4))
     ax.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS], fontsize=8, rotation=15)
     ax.set_ylabel('Spearman ρ')
@@ -308,8 +383,9 @@ def generate_figure_3(results_dir):
         'panel_id': 'Fig_03_B',
         'title': 'Introspection Metrics - Bar Charts (with Random Control)',
         'description': ('Isotonic R² (left) and Spearman ρ (right) for each concept at alpha=0. '
-                        'Grey bars: random scoring control (probe scores from random direction). '
-                        '95% bootstrap CIs on probe-based bars.'),
+                        'Grey bars: random-direction control. 95% cluster-bootstrap CIs are '
+                        'shown for both true-probe and random-control bars, and the JSON stores '
+                        'cluster-bootstrap pooled-delta tests for true minus random.'),
         'probe_statistics': scatter_stats,
         'random_control_statistics': random_stats,
         'paired_true_vs_random_per_conversation': paired_true_vs_random,
@@ -964,6 +1040,7 @@ def generate_figure_3(results_dir):
         'first_vs_last_turn': first_last_stats,
         'turnwise_r2': {s: turnwise_data.get(s, {}) for s in SHORTHANDS},
         'turnwise_rho': {s: turnwise_rho_data.get(s, {}) for s in SHORTHANDS},
+        'within_conversation_trend': cdiii_stats,
         'steering_stats': steering_stats,
         'alpha_drift_stats': alpha_drift_stats,
     }

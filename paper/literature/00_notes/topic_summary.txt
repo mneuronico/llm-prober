@@ -1,0 +1,8 @@
+Folder role:
+This folder stores working notes rather than papers mapped to a related-work subsection.
+
+Why this matters to the paper:
+The notes here are useful as local research scaffolding, but they are not part of the seven related-work buckets from `detailed_structure.md`. They can support drafting and triage, but they should not be treated as a literature subsection on their own.
+
+Files:
+- introspection_info.txt - local notes / supporting research material.

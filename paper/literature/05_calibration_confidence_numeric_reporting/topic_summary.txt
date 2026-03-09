@@ -1,0 +1,29 @@
+Topic:
+Calibration, confidence estimation, and numeric reporting
+
+Why this matters to the paper:
+This literature is adjacent but methodologically central. It gives you precedent for eliciting confidence numerically or verbally, comparing expressed confidence with latent model signals, and recovering richer uncertainty estimates than naive greedy outputs provide. For your paper, the key contrast is that you are not only asking whether a model is confident or correct; you are asking whether a numeric self-report about an internal concept state tracks a probe-defined internal measurement and whether a logit-based estimator can recover that signal more faithfully.
+
+Papers:
+- 2022 - Reducing Conversational Agents' Overconfidence Through Linguistic Calibration - Mielke et al.
+- 2023 - Just Ask for Calibration: Strategies for Eliciting Calibrated Confidence Scores from Language Models Fine-Tuned with Human Feedback - Tian et al.
+- 2023 - SELF-CHECK GPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models - Manakul et al.
+- 2024 - Calibrating the Confidence of Large Language Models by Eliciting Fidelity - Zhang et al.
+- 2024 - Calibrating Reasoning in Language Models with Internal Consistency - Xie et al.
+- 2024 - Calibrating Verbalized Probabilities for Large Language Models - Wang et al.
+- 2024 - Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs - Xiong et al.
+- 2024 - Confidence Under the Hood: An Investigation into the Confidence-Probability Alignment in Large Language Models - Kumar et al.
+- 2024 - Detecting Hallucinations in Large Language Models Using Semantic Entropy - Farquhar et al.
+- 2024 - Can Large Language Models Faithfully Express Their Intrinsic Uncertainty in Words? - Yona, Aharoni, and Geva
+- 2024 - Linguistic Calibration of Long-Form Generations - Band et al.
+- 2024 - Large Language Models Lack Essential Metacognition for Reliable Medical Reasoning - Griot et al.
+- 2024 - A Survey of Confidence Estimation and Calibration in Large Language Models - Geng et al.
+- 2025 - A Calibrated Reflection Approach for Enhancing Confidence Estimation in LLMs - Bodhwani et al.
+- 2025 - ConfTuner: Training Large Language Models to Express Their Confidence Verbally - Li et al.
+- 2025 - Direct Confidence Alignment: Aligning Verbalized Confidence with Internal Confidence in Large Language Models - Zhang et al.
+- 2025 - Improving Metacognition and Uncertainty Communication in Language Models - Steyvers, Belem, and Smyth
+- 2025 - QA-Calibration of Language Model Confidence Scores - Manggala et al.
+- 2025 - Semantic-Level Confidence Calibration of Language Models via Temperature Scaling - Lamb et al.
+- 2025 - Thought Calibration: Efficient and Confident Test-Time Scaling - Wu et al.
+- 2026 - Calibrating Verbalized Confidence with Self-Generated Distractors - Wang and Stengel-Eskin
+- 2026 - Are LLM Decisions Faithful to Verbal Confidence? - Wang et al.

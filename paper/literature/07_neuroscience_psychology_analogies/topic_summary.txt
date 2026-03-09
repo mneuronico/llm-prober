@@ -1,0 +1,13 @@
+Topic:
+Neuroscience and psychology as methodological analogies
+
+Why this matters to the paper:
+These papers justify the analogy behind your operational framework: subjective report can be noisy, graded, and imperfect, yet still useful when linked to internal measurements. They help you frame introspection as a measurement problem rather than an all-or-none property, and they support the decomposition between internal state formation, report readout, and metacognitive accuracy. The key caution for your paper is to use this literature as analogy, not as a claim that human and model introspection are equivalent.
+
+Papers:
+- 2012 - The Neural Basis of Metacognitive Ability - Fleming and Dolan
+- 2014 - How to Measure Metacognition - Fleming and Lau
+- 2020 - Perceptual Metacognition of Human Faces is Causally Supported by Function of the Lateral Prefrontal Cortex - Lapate et al.
+- 2022 - Partially Overlapping Neural Correlates of Metacognitive Monitoring and Metacognitive Control - Boldt and Gilbert
+- 2024 - Metacognition and Confidence: A Review and Synthesis - Fleming
+- 2024 - The Relation Between Subjective and Objective Measures of Visual Awareness: Current Evidence, Attempt of a Synthesis and Future Research Directions - Kiefer and Kammer

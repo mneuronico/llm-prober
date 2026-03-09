@@ -1,0 +1,26 @@
+Topic:
+Introspection and self-report in language models
+
+Why this matters to the paper:
+This is the core related-work bucket for the project. It establishes that LLM self-report, self-evaluation, and metacognition are active research areas, but most prior work stays close to correctness, confidence, or benchmark-style self-assessment. Relative to that literature, the paper's main distinction is the operational test of whether numeric self-reports track probe-defined internal state in natural multi-turn conversations, from early turns onward, and whether that coupling can be shown to change over time and respond to interventions.
+
+Papers:
+- 2022 - Language Models (Mostly) Know What They Know - Kadavath et al.
+- 2023 - Do LLMs Know What They Don't Know? - Yin et al.
+- 2023 - Reflexion: Language Agents with Verbal Reinforcement Learning - Shinn et al.
+- 2023 - Self-Evaluation Improves Selective Generation in Large Language Models - Ren et al.
+- 2023 - Self-Refine: Iterative Refinement with Self-Feedback - Madaan et al.
+- 2024 - Self-Alignment for Factuality: Mitigating Hallucinations in LLMs via Self-Evaluation - Zhang et al.
+- 2025 - Does It Make Sense to Speak of Introspection in Large Language Models? - Comsa and Shanahan
+- 2025 - Evidence for Limited Metacognition in LLMs - Ackerman
+- 2025 - From Imitation to Introspection: Probing Self-Consciousness in Language Models - Chen et al.
+- 2025 - Introspection of Thought Helps AI Agents - Sun and Zeng
+- 2025 - Language Models Fail to Introspect About Their Knowledge of Language - Song, Hu, and Mahowald
+- 2025 - Looking Inward: Language Models Can Learn About Themselves by Introspection - Binder et al.
+- 2025 - Language Models Are Capable of Metacognitive Monitoring and Control of Their Internal Activations - Ji-An et al.
+- 2025 - Self-Interpretability: LLMs Can Describe Complex Internal Processes that Drive Their Decisions - Plunkett et al.
+- 2025 - Self-reflection Enhances Large Language Models Towards Substantial Academic Response - Li and Zhao
+- 2025 - Simulated Self-Assessment in Large Language Models: A Psychometric Approach to AI Self-Efficacy - Jackson et al.
+- 2025 - Simulated Selfhood in LLMs: A Behavioral Analysis of Introspective Coherence - Prestes
+- 2025 - Training Introspective Behavior: Fine-Tuning Induces Reliable Internal State Detection in a 7B Model - Rivera
+- 2026 - Emergent Introspective Awareness in Large Language Models
