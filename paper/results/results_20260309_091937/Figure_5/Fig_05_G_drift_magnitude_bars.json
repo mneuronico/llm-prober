@@ -1,0 +1,60 @@
+{
+  "panel_id": "Fig_05_G",
+  "title": "Probe Drift Magnitude Bars (with 95% CI)",
+  "description": "Per-conversation probe score drift (last - first turn) with bootstrap 95% CI error bars.",
+  "drift_stats": {
+    "1B": {
+      "mean_drift": 0.0403,
+      "ci_95": [
+        0.0224,
+        0.058
+      ],
+      "n_conversations": 40,
+      "std_drift": 0.0568
+    },
+    "3B": {
+      "mean_drift": 0.0708,
+      "ci_95": [
+        0.048,
+        0.0947
+      ],
+      "n_conversations": 40,
+      "std_drift": 0.0742
+    },
+    "8B": {
+      "mean_drift": 0.1269,
+      "ci_95": [
+        0.0993,
+        0.1565
+      ],
+      "n_conversations": 40,
+      "std_drift": 0.089
+    }
+  },
+  "size_trend_bootstrap": {
+    "sizes": [
+      "1B",
+      "3B",
+      "8B"
+    ],
+    "x_log_size": [
+      0.0,
+      1.0986122886681098,
+      2.0794415416798357
+    ],
+    "mean_by_size": {
+      "1B": 0.040316639747470615,
+      "3B": 0.07081865221261978,
+      "8B": 0.1268665049225092
+    },
+    "observed_slope": 0.04134552438026314,
+    "bootstrap_slope_mean": 0.04130124484505322,
+    "bootstrap_slope_ci_95": [
+      0.026053653936242115,
+      0.05645504265285288
+    ],
+    "one_sided_p": 9.999000099990002e-05,
+    "two_sided_p": 0.00019998000199980003,
+    "n_bootstrap": 10000
+  }
+}

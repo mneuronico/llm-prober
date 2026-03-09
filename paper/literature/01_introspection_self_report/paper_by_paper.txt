@@ -1,0 +1,548 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 01 Introspection and Self-Report
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Kadavath et al. (2022) — Language Models (Mostly) Know What They Know
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can be trained to evaluate P(True) (probability a proposed answer is
+  correct) and P(IK) (probability they can answer a question). Larger models
+  are better calibrated about their own knowledge boundaries.
+
+- Methodology:
+  Prompted self-evaluation on closed-ended QA tasks; calibration curves
+  comparing predicted confidence vs. actual accuracy; scaling analysis across
+  model sizes.
+
+- Relevance to my work:
+  Establishes the foundational idea that LLMs have some metacognitive access
+  to their own competence. My work inherits this premise but applies it to
+  emotive internal states rather than factual correctness.
+
+- What it lacks relative to my work:
+  Focuses exclusively on factual correctness and single-shot QA settings, not
+  on emotive or affective concept states. No multi-turn conversation analysis.
+  No comparison of self-report with independently measured internal
+  representations (probes). No temporal dynamics. No causal interventions.
+
+- Overall takeaway:
+  Foundational reference for the claim that LLMs possess basic self-knowledge.
+  Cite as the starting point from which your work departs by testing richer,
+  non-factual, temporally evolving self-reports.
+
+--------------------------------------------------------------------------------
+2. Yin et al. (2023) — Do LLMs Know What They Don't Know?
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can identify some questions they cannot answer, but this ability is
+  limited and inconsistent. Models often fail to abstain when they should.
+
+- Methodology:
+  Probing LLM responses across answerable and unanswerable question sets;
+  evaluating refusal and abstention behavior; comparisons across model sizes
+  and prompting strategies.
+
+- Relevance to my work:
+  Confirms that self-knowledge in LLMs is partial and variable, motivating the
+  need for better measurement tools like my probe-report framework.
+
+- What it lacks relative to my work:
+  Restricted to factual knowledge boundaries. Single-turn, benchmark-style
+  evaluation. No internal state measurement. No emotive concepts. No temporal
+  or conversational structure.
+
+- Overall takeaway:
+  Use to argue that even basic metacognitive access is imperfect, reinforcing
+  why a rigorous operational framework (like yours) is needed.
+
+--------------------------------------------------------------------------------
+3. Shinn et al. (2023) — Reflexion: Language Agents with Verbal Reinforcement
+   Learning
+--------------------------------------------------------------------------------
+- Central finding:
+  LLM agents can learn from prior mistakes by generating verbal self-feedback
+  (reflections) stored in episodic memory, improving performance across
+  sequential trials without weight updates.
+
+- Methodology:
+  Agentic framework with trial-based task execution; verbal reflections stored
+  as text; evaluated on decision-making, reasoning, and coding benchmarks.
+
+- Relevance to my work:
+  Shows that models can generate meaningful self-evaluative text that guides
+  future behavior, a form of functional metacognition.
+
+- What it lacks relative to my work:
+  Reflexion is benchmark-style output optimization, not measurement of
+  internal state. No numeric self-reports. No probes. No multi-turn
+  conversation with users. No emotive or affective concepts. No causal
+  connection to internal representations.
+
+- Overall takeaway:
+  Cite as an example of "self-reflection for task improvement" paradigm that
+  your work fundamentally differs from: you test whether self-reports track
+  internal states, not whether they improve task performance.
+
+--------------------------------------------------------------------------------
+4. Ren et al. (2023) — Self-Evaluation Improves Selective Generation in LLMs
+--------------------------------------------------------------------------------
+- Central finding:
+  Token-level self-evaluation allows LLMs to estimate response quality and
+  selectively abstain from answering when uncertain, improving reliability.
+
+- Methodology:
+  Models generate responses and then self-evaluate using token probabilities;
+  selective generation where low-confidence outputs are suppressed.
+
+- Relevance to my work:
+  Demonstrates that internal token-level signals carry meaningful information
+  about output quality, analogous to my use of logit-based self-report
+  estimators.
+
+- What it lacks relative to my work:
+  Purely about factual correctness and selective generation. No emotive
+  concepts. No multi-turn interaction. No comparison with probe-defined
+  internal state. No temporal evolution of self-assessment.
+
+- Overall takeaway:
+  Useful as precedent for using token-level signals for metacognition, but
+  clearly distinct from your application to emotive state tracking.
+
+--------------------------------------------------------------------------------
+5. Madaan et al. (2023) — Self-Refine: Iterative Refinement with Self-Feedback
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can iteratively improve their outputs by generating natural language
+  feedback to themselves and refining accordingly, without supervised training.
+
+- Methodology:
+  Generate → self-critique → refine loop; evaluated on code generation,
+  reasoning, sentiment, and dialogue tasks.
+
+- Relevance to my work:
+  Another demonstration that models can produce self-evaluative information.
+  Establishes the broader "self-feedback" paradigm.
+
+- What it lacks relative to my work:
+  This is output optimization, not introspection about internal state. No
+  internal measurements. No numeric self-reports about affect or emotive
+  concepts. No probes, no steering, no temporal dynamics, no multi-turn
+  naturalistic conversations.
+
+- Overall takeaway:
+  Cite briefly as part of the "self-correction/refinement" paradigm that
+  precedes your more specific question about whether reports actually track
+  internal state.
+
+--------------------------------------------------------------------------------
+6. Zhang et al. (2024) — Self-Alignment for Factuality: Mitigating
+   Hallucinations in LLMs via Self-Evaluation
+--------------------------------------------------------------------------------
+- Central finding:
+  Self-evaluation scores can be used as reward signals for factuality
+  alignment, reducing hallucinations without external supervision.
+
+- Methodology:
+  Self-evaluation generates quality scores; these are used as rewards for
+  alignment fine-tuning; evaluated on factuality benchmarks.
+
+- Relevance to my work:
+  Shows that models' self-generated numeric signals can serve as training
+  signals, connecting to the idea that self-reports carry real information.
+
+- What it lacks relative to my work:
+  Factuality-focused. No emotive concepts. No comparison with independently
+  measured internal state. Single-turn evaluations. No naturalistic
+  conversation setting.
+
+- Overall takeaway:
+  Background reference for self-evaluation as a useful signal; your work asks
+  a fundamentally different question about what those signals index.
+
+--------------------------------------------------------------------------------
+7. Comsa and Shanahan (2025) — Does It Make Sense to Speak of Introspection
+   in Large Language Models?
+--------------------------------------------------------------------------------
+- Central finding:
+  True introspection requires a causal connection between an internal state
+  and the self-report about that state; mere mimicry of introspective
+  language is not sufficient. LLMs may confabulate rather than genuinely
+  introspect.
+
+- Methodology:
+  Philosophical and conceptual analysis; definition of criteria for genuine
+  introspection (causal dependence on internal state, not just pattern
+  matching).
+
+- Relevance to my work:
+  Directly motivates your operational definition of introspection and your
+  causal testing approach. Your work is essentially an empirical response to
+  the criteria they articulate.
+
+- What it lacks relative to my work:
+  Purely conceptual, no empirical data. Does not test whether introspection
+  actually occurs under any operational definition. No experiments, no probes,
+  no steering, no numeric self-reports.
+
+- Overall takeaway:
+  Essential conceptual reference. Cite when introducing your operational
+  definition of introspection and when justifying why causal tests (steering)
+  are necessary. Your paper provides the empirical evidence they call for.
+
+--------------------------------------------------------------------------------
+8. Ackerman (2025) — Evidence for Limited Metacognition in LLMs
+--------------------------------------------------------------------------------
+- Central finding:
+  LLM metacognition is limited and qualitatively different from human
+  metacognition; models rely on external cues rather than genuine internal
+  signals.
+
+- Methodology:
+  Review and analysis of existing metacognitive evidence; comparison with
+  human metacognitive processes.
+
+- Relevance to my work:
+  Supports the view that default LLM self-assessment may be unreliable,
+  motivating your finding that greedy reports collapse and that logit-based
+  methods are needed to recover meaningful variation.
+
+- What it lacks relative to my work:
+  Does not propose or test an operational measure of metacognition. No
+  probing, no steering, no numeric self-report analysis. No multi-turn
+  conversation paradigm.
+
+- Overall takeaway:
+  Cite as motivation for why simple prompting may not reveal true
+  metacognitive capacity, and why your richer extraction methods are
+  necessary.
+
+--------------------------------------------------------------------------------
+9. Chen et al. (2025) — From Imitation to Introspection: Probing
+   Self-Consciousness in Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  Uses structural causal games (SCGs) to formally define and probe concepts
+  like belief, intention, and self-reflection in LLMs. Finds that models
+  weakly represent these concepts but they are difficult to edit.
+
+- Methodology:
+  SCG-based framework with linear probes on internal representations;
+  counterfactual interventions to test editability of self-consciousness
+  concepts.
+
+- Relevance to my work:
+  Closely related methodology (probing internal representations for abstract
+  concepts). Shows that abstract cognitive concepts can be linearly probed.
+
+- What it lacks relative to my work:
+  Uses philosophical/cognitive concepts (belief, intention) rather than
+  emotive states. Single-turn probing, not naturalistic multi-turn
+  conversations. No turn-by-turn temporal analysis. No numeric self-reports.
+  No direct comparison of self-report with internal state. Focuses on
+  editability rather than tracking fidelity over time.
+
+- Overall takeaway:
+  Good methodological parallel. Cite to show that probing abstract cognitive
+  concepts is established, and contrast by noting that your work focuses on
+  emotive states in naturalistic settings with temporal structure.
+
+--------------------------------------------------------------------------------
+10. Sun and Zeng (2025) — Introspection of Thought Helps AI Agents
+--------------------------------------------------------------------------------
+- Central finding:
+  Multi-agent logical reasoning within a single LLM (Introspection of
+  Thought, INoT) outperforms chain-of-thought by 7-8% on classic reasoning
+  benchmarks.
+
+- Methodology:
+  PromptCode-based framework with virtual debate agents inside a single model;
+  evaluated on logical reasoning benchmarks.
+
+- Relevance to my work:
+  Demonstrates value of self-reflective reasoning architectures, tangentially
+  related to the question of what models know about themselves.
+
+- What it lacks relative to my work:
+  Task-optimization focused (reasoning benchmarks). No emotive concepts. No
+  internal state measurement. No probes or steering. No numeric self-reports.
+  No multi-turn conversational setting with users.
+
+- Overall takeaway:
+  Minor citation. Useful to show that "introspection" is being used broadly
+  in the field, while your work uses a specific operational definition tied
+  to internal state tracking.
+
+--------------------------------------------------------------------------------
+11. Song, Hu, and Mahowald (2025) — Language Models Fail to Introspect About
+    Their Knowledge of Language
+--------------------------------------------------------------------------------
+- Central finding:
+  Prompted metalinguistic judgments do not tap into privileged self-knowledge;
+  LLMs fail to introspect on their own grammatical knowledge. Within-model
+  effects vanish when model similarity is controlled.
+
+- Methodology:
+  Metalinguistic prompting; comparison of model self-reports with actual
+  probability distributions over linguistic structures; cross-model
+  comparisons to test for privileged access.
+
+- Relevance to my work:
+  Important negative result showing limits of prompted introspection for
+  linguistic knowledge. Contrasts with your positive results for emotive
+  concepts, possibly because emotive states are represented differently than
+  linguistic knowledge.
+
+- What it lacks relative to my work:
+  Tests linguistic/grammatical introspection, not emotive or affective states.
+  No probes for internal concept directions. No steering. No multi-turn
+  conversation. No temporal dynamics. No logit-based estimators.
+
+- Overall takeaway:
+  Cite as evidence that introspection is not uniformly available across all
+  domains, and to position your finding that emotive states may be more
+  accessible to self-report than linguistic knowledge.
+
+--------------------------------------------------------------------------------
+12. Binder et al. (2025) — Looking Inward: Language Models Can Learn About
+    Themselves by Introspection
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs possess a degree of "privileged access" — they can predict their own
+  hypothetical behaviors better than other models can predict them,
+  demonstrating genuine self-knowledge.
+
+- Methodology:
+  Self-prediction vs. cross-prediction paradigm; train models to predict
+  their own output distributions on hypothetical queries; compare self-
+  prediction accuracy to cross-model prediction.
+
+- Relevance to my work:
+  Strong precedent showing that LLMs have some form of genuine self-access
+  beyond pattern matching. Supports the premise that self-reports may contain
+  real information about internal states.
+
+- What it lacks relative to my work:
+  Tests behavioral self-prediction (output distributions), not internal
+  emotive state tracking. Single-shot evaluation, not multi-turn. No probes.
+  No steering. No numeric self-reports of emotive concepts. No temporal
+  dynamics. Uses very large models.
+
+- Overall takeaway:
+  Key citation for establishing that privileged self-access exists. Your work
+  extends this by testing whether that access extends to tracking emotive
+  internal states through time in conversation.
+
+--------------------------------------------------------------------------------
+13. Ji-An et al. (2025) — Language Models Are Capable of Metacognitive
+    Monitoring and Control of Their Internal Activations
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can be taught via in-context learning to report and implicitly control
+  specific target axes in their neural activation space, analogous to a
+  neurofeedback paradigm.
+
+- Methodology:
+  In-context learning with labeled examples of activation-report pairs;
+  models learn to report numeric values corresponding to activation
+  projections along target directions; also tests implicit control (steering
+  activations by intention).
+
+- Relevance to my work:
+  Most closely related prior work. Also correlates self-reports with internal
+  activation state and tests for control. Uses the term "metacognition"
+  which your work relates to. Demonstrates that reporting and control are
+  possible in principle.
+
+- What it lacks relative to my work:
+  Constrained paradigm with in-context learning of labeled examples (not
+  naturalistic conversation). Models are taught what to report via examples,
+  rather than spontaneously reporting. Not emotive concepts but arbitrary
+  activation directions. No multi-turn conversation with a simulated user.
+  No temporal evolution analysis (turn-by-turn coupling). No greedy vs.
+  logit-based comparison of report quality. No cross-concept steering
+  interactions. Limited analysis of model scale effects.
+
+- Overall takeaway:
+  Essential citation, closest methodological relative. Frame your work as
+  extending this by removing the in-context learning scaffold, using
+  naturalistic conversations, emotive concepts, temporal analysis, and richer
+  report extraction methods. Your paradigm tests introspection "in the wild"
+  rather than in a constrained learned task.
+
+--------------------------------------------------------------------------------
+14. Plunkett et al. (2025) — Self-Interpretability: LLMs Can Describe Complex
+    Internal Processes that Drive Their Decisions
+--------------------------------------------------------------------------------
+- Central finding:
+  Fine-tuned models can accurately self-report the internal attribute weights
+  driving multi-attribute choices (r ≈ 0.74–0.75 post-training), and this
+  capability generalizes to novel contexts.
+
+- Methodology:
+  Train models to make decisions based on specific quantitative attribute
+  weights; then test whether models can report those weights in natural
+  language; measure correlation between actual weights and reported weights.
+
+- Relevance to my work:
+  Demonstrates that models can report quantitative internal decision variables,
+  which directly parallels your numeric self-report framework. Shows that
+  self-report can be numerically precise.
+
+- What it lacks relative to my work:
+  Requires fine-tuning to establish the introspective capability. Tests
+  static, trained attribute weights, not dynamic emotive states that emerge
+  naturally. Single-shot evaluation. No multi-turn conversation. No
+  temporal dynamics. No probe-defined independent internal measurement.
+  No causal steering tests. Only very large models (GPT-4-level).
+
+- Overall takeaway:
+  Cite for precedent on numeric self-report of internal variables. Contrast
+  by noting your work tests naturally emergent (not fine-tuned) emotive
+  states in small models across multi-turn conversations.
+
+--------------------------------------------------------------------------------
+15. Li and Zhao (2025) — Self-Reflection Enhances LLMs Towards Substantial
+    Academic Response
+--------------------------------------------------------------------------------
+- Central finding:
+  A dual-loop reflection framework (extrospection + introspection) improves
+  academic response quality by helping models iterate on their outputs.
+
+- Methodology:
+  Two-step reflection: extrospection (external feedback integration) and
+  introspection (internal self-assessment); evaluated on academic writing
+  quality benchmarks.
+
+- Relevance to my work:
+  Another example of the self-reflection for improvement paradigm.
+
+- What it lacks relative to my work:
+  Output quality optimization, not internal state measurement. No probes, no
+  steering, no numeric self-reports of internal concept states. No multi-turn
+  conversational setting. No temporal dynamics.
+
+- Overall takeaway:
+  Minor citation in the "self-refinement" family. Clearly distinct from your
+  internal-state-tracking paradigm.
+
+--------------------------------------------------------------------------------
+16. Jackson et al. (2025) — Simulated Self-Assessment in LLMs: A Psychometric
+    Approach to AI Self-Efficacy
+--------------------------------------------------------------------------------
+- Central finding:
+  LLM self-assessments on the General Self-Efficacy Scale (GSES) are highly
+  stable but do not reliably reflect actual task abilities. Self-reports
+  appear to be learned communication postures rather than genuine assessments.
+
+- Methodology:
+  Administer standardized psychometric questionnaires (GSES) to LLMs; compare
+  self-reported self-efficacy with actual task performance across domains.
+
+- Relevance to my work:
+  Shows that model self-reports can be decoupled from actual capabilities,
+  motivating the need for independent validation of self-reports against
+  internal measurements, exactly what your probe-based framework provides.
+
+- What it lacks relative to my work:
+  Uses standardized questionnaires (not probes). No internal state measurement.
+  No emotive concepts. No multi-turn conversation. No temporal dynamics. No
+  causal interventions. Treats self-report as a static trait.
+
+- Overall takeaway:
+  Cite as evidence that self-reports need independent validation. Your probe-
+  based approach directly addresses this limitation.
+
+--------------------------------------------------------------------------------
+17. Prestes (2025) — Simulated Selfhood in LLMs: A Behavioral Analysis of
+    Introspective Coherence
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can mimic introspection but suffer from "diachronic continuity"
+  failures — they cannot sustain a consistent self-representation across
+  repeated, independent prompts over time.
+
+- Methodology:
+  Repeated introspective prompting over multiple sessions; analysis of
+  consistency and coherence of self-representations across time.
+
+- Relevance to my work:
+  Identifies the temporal consistency problem that is central to your work.
+  Your turn-by-turn analysis within conversations is precisely the kind of
+  temporal measurement this paper calls for.
+
+- What it lacks relative to my work:
+  Tests consistency of self-identity claims, not tracking of internal emotive
+  states. Independent prompts (not multi-turn conversations). No probes, no
+  steering. No comparison of self-report with independently measured internal
+  state. No numeric self-reports. No causal tests.
+
+- Overall takeaway:
+  Cite when motivating the temporal dimension of your work. Your paper
+  directly addresses the diachronic limitations identified here by measuring
+  probe-report coupling turn by turn within conversations.
+
+--------------------------------------------------------------------------------
+18. Rivera (2025) — Training Introspective Behavior: Fine-Tuning Induces
+    Reliable Internal State Detection in a 7B Model
+--------------------------------------------------------------------------------
+- Central finding:
+  The ability to detect transient, single-token injected concepts can be
+  explicitly induced into 7B models via fine-tuning, turning a rare emergent
+  trait into a reliable capability.
+
+- Methodology:
+  Fine-tune a 7B model to detect concept vector injections in its activations;
+  evaluate detection accuracy pre and post fine-tuning.
+
+- Relevance to my work:
+  Shows that introspective detection of internal state changes can be trained
+  into small models. Related to the idea that introspective capacity can be
+  modulated, paralleling your finding that steering can improve introspection.
+
+- What it lacks relative to my work:
+  Detection of injected concepts (a binary recognition task), not graded
+  numeric reporting of natural emotive states. Requires fine-tuning. Single-
+  turn injection detection. No multi-turn conversation. No temporal dynamics.
+  No comparison of self-report with probe-defined internal state through
+  time. No naturalistic setting.
+
+- Overall takeaway:
+  Cite as evidence that introspective capacity is malleable in small models.
+  Contrast by noting your work studies naturally occurring (not injected)
+  states without fine-tuning, in graded numeric form, across conversation time.
+
+--------------------------------------------------------------------------------
+19. Lindsey (2026) — Emergent Introspective Awareness in Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  Large models (Claude Opus 4/4.1) can detect concept vector injections ~20% of
+  the time with near-zero false positives. They can distinguish internally
+  forced outputs from intended ones and update their self-reports accordingly.
+
+- Methodology:
+  Inject concept activation vectors into model forward passes; test whether
+  models can identify, name, and distinguish the injected concept; measure
+  detection rates, false positive rates, and apology behavior.
+
+- Relevance to my work:
+  Establishes causal link between internal state changes and self-reports.
+  Most directly relevant precedent for the claim that models can notice
+  changes in their internal state. The concept injection paradigm is related
+  to your steering approach.
+
+- What it lacks relative to my work:
+  Tests detection of externally injected concepts, which is conceptually
+  "detecting a special event" rather than continuous tracking of natural
+  internal state. Only very large models (Claude Opus 4). Single-shot,
+  not multi-turn conversational. No graded numeric self-reports. No turn-by-
+  turn temporal dynamics. Not emotive concepts but injected activations.
+  Very low detection rates (20%).
+
+- Overall takeaway:
+  Key citation for the causal connection between internal states and self-
+  reports. Your work extends this from "detecting a special injected event"
+  to "continuous numeric measurement of natural internal state over time"
+  in much smaller models and naturalistic settings.
+
+================================================================================

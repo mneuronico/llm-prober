@@ -155,6 +155,7 @@ def _cluster_bootstrap_metric_delta(true_df, rand_df, x_col, y_col, metric_fn,
 def generate_figure_3(results_dir):
     """Generate all Figure 3 panels."""
     fig_dir = ensure_dir(os.path.join(results_dir, 'Figure_3'))
+    appendix_dir = ensure_dir(os.path.join(results_dir, 'Appendix_Figure_3'))
     print("  Generating Figure 3: Introspection Analysis...")
 
     other_stats = {}
@@ -249,6 +250,121 @@ def generate_figure_3(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panel B: R² and Rho bars + optional random vector control
     # ──────────────────────────────────────────────────────────────
+    turnwise_data = {}
+    turnwise_rho_data = {}
+    for short in SHORTHANDS:
+        concept = SHORTHAND_TO_CONCEPT[short]
+        exp_dir = LLAMA_3B_RERUN_SELF.get(short)
+        if exp_dir is None:
+            continue
+        tw_stats = get_turnwise_stats(exp_dir, concept, PROBE_METRIC_KEY,
+                                      source='logit', alpha=0.0)
+        if not tw_stats:
+            continue
+        turns = sorted([int(t) for t in tw_stats.keys()])
+        r2_vals = [tw_stats[str(t)].get('isotonic_r2', np.nan) for t in turns]
+        r2_lo = [tw_stats[str(t)].get('isotonic_r2_ci_low', np.nan) for t in turns]
+        r2_hi = [tw_stats[str(t)].get('isotonic_r2_ci_high', np.nan) for t in turns]
+        turnwise_data[short] = {
+            'turns': turns,
+            'isotonic_r2': r2_vals,
+            'isotonic_r2_ci': list(zip(r2_lo, r2_hi)),
+        }
+        rho_vals = [tw_stats[str(t)].get('spearman_rho', np.nan) for t in turns]
+        rho_lo = [tw_stats[str(t)].get('spearman_rho_ci_low', np.nan) for t in turns]
+        rho_hi = [tw_stats[str(t)].get('spearman_rho_ci_high', np.nan) for t in turns]
+        rho_p = [tw_stats[str(t)].get('spearman_p', np.nan) for t in turns]
+        flip_sign = -1 if concept in FLIP_CONCEPTS else 1
+        turnwise_rho_data[short] = {
+            'turns': turns,
+            'spearman_rho': [v * flip_sign for v in rho_vals],
+            'spearman_rho_ci': list(zip(
+                [v * flip_sign for v in (rho_hi if flip_sign == -1 else rho_lo)],
+                [v * flip_sign for v in (rho_lo if flip_sign == -1 else rho_hi)],
+            )),
+            'spearman_p': rho_p,
+            'rho_sign_flipped': concept in FLIP_CONCEPTS,
+        }
+
+    fig, ax = plt.subplots(1, 1, figsize=(6.5, 4))
+    for short in SHORTHANDS:
+        concept = SHORTHAND_TO_CONCEPT[short]
+        color = CONCEPT_COLORS[concept]
+        if short not in turnwise_data:
+            continue
+        turns = turnwise_data[short]['turns']
+        r2_vals = turnwise_data[short]['isotonic_r2']
+        r2_ci = turnwise_data[short]['isotonic_r2_ci']
+        plot_line_with_ci(
+            ax,
+            turns,
+            r2_vals,
+            [ci[0] for ci in r2_ci],
+            [ci[1] for ci in r2_ci],
+            color=color,
+            label=SHORTHAND_DISPLAY[short],
+            alpha_fill=0.08,
+        )
+    ax.set_xlabel('Turn')
+    ax.set_ylabel('Isotonic RÂ²')
+    ax.set_ylabel('Isotonic R2')
+    ax.set_title('Turn-wise Introspection Accuracy')
+    ax.set_xlim(0.5, 10.5)
+    ax.set_xticks(range(1, 11))
+    ax.set_ylim(0, 1)
+    ax.legend(fontsize=7, loc='best')
+    add_panel_label(ax, 'E')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_03_E_turnwise_r2_combined')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_03_E',
+        'title': 'Turn-wise Isotonic RÂ² (Combined)',
+        'description': ('All four turn-wise isotonic RÂ² curves shown in a single axis with '
+                        'lighter confidence bands to facilitate cross-concept comparison.'),
+        'turnwise_r2': {k: v for k, v in turnwise_data.items()},
+    })
+
+    fig, ax = plt.subplots(1, 1, figsize=(6.5, 4))
+    for short in SHORTHANDS:
+        concept = SHORTHAND_TO_CONCEPT[short]
+        color = CONCEPT_COLORS[concept]
+        if short not in turnwise_rho_data:
+            continue
+        turns = turnwise_rho_data[short]['turns']
+        rho_vals = turnwise_rho_data[short]['spearman_rho']
+        rho_ci = turnwise_rho_data[short]['spearman_rho_ci']
+        plot_line_with_ci(
+            ax,
+            turns,
+            rho_vals,
+            [ci[0] for ci in rho_ci],
+            [ci[1] for ci in rho_ci],
+            color=color,
+            label=SHORTHAND_DISPLAY[short],
+            alpha_fill=0.08,
+        )
+    ax.set_xlabel('Turn')
+    ax.set_ylabel('Spearman Ï')
+    ax.set_ylabel('Spearman rho')
+    ax.set_title('Turn-wise Introspection Correlation')
+    ax.set_xlim(0.5, 10.5)
+    ax.set_xticks(range(1, 11))
+    ax.set_ylim(-0.3, 1)
+    ax.axhline(0, color='gray', linestyle=':', alpha=0.5, linewidth=0.8)
+    ax.legend(fontsize=7, loc='best')
+    add_panel_label(ax, 'F')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_03_F_turnwise_rho_combined')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_03_F',
+        'title': 'Turn-wise Spearman Ï (Combined)',
+        'description': ('All four turn-wise Spearman Ï curves shown in a single axis with '
+                        'lighter confidence bands to facilitate cross-concept comparison.'),
+        'turnwise_rho': turnwise_rho_data,
+    })
+
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
     random_stats = {}
 
@@ -640,7 +756,7 @@ def generate_figure_3(results_dir):
     axes[0].set_title('First vs Last Turn: R²')
     axes[0].set_ylim(0, 1)
     axes[0].legend(fontsize=8)
-    add_panel_label(axes[0], 'CDii')
+    add_panel_label(axes[0], 'A')
 
     axes[1].set_xticks(range(4))
     axes[1].set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS], fontsize=8, rotation=15)
@@ -650,10 +766,10 @@ def generate_figure_3(results_dir):
     axes[1].axhline(0, color='gray', linestyle=':', alpha=0.5)
 
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_03_CDii_first_vs_last_turn')
+    prefix = os.path.join(appendix_dir, 'App_Fig_03_A_first_vs_last_turn')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_03_CDii',
+        'panel_id': 'App_Fig_03_A',
         'title': 'First vs Last Turn Introspection Comparison',
         'description': ('Comparison of introspection metrics at the first and last conversation '
                         'turn with 95% bootstrap CIs and bootstrap significance test for '
@@ -775,13 +891,13 @@ def generate_figure_3(results_dir):
             'lmm_interaction_test': lmm_interaction,
         }
 
-    add_panel_label(axes[0], 'CDiii', x=-0.18)
+    add_panel_label(axes[0], 'B', x=-0.18)
     fig.suptitle('Within-Conversation Introspection Change Over Turns', fontsize=12, y=1.02)
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_03_CDiii_within_conv_trend')
+    prefix = os.path.join(appendix_dir, 'App_Fig_03_B_within_conv_trend')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_03_CDiii',
+        'panel_id': 'App_Fig_03_B',
         'title': 'Within-Conversation Introspection Change Over Turns',
         'description': (
             'Tests whether introspection quality changes monotonically across turns '
@@ -866,12 +982,12 @@ def generate_figure_3(results_dir):
     ax.set_title('Self-Steering: Self-Report vs. Alpha')
     ax.legend(fontsize=8)
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
-    add_panel_label(ax, 'E')
+    add_panel_label(ax, 'G')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_03_E_self_steering_mean_report')
+    prefix = os.path.join(fig_dir, 'Fig_03_G_self_steering_mean_report')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_03_E',
+        'panel_id': 'Fig_03_G',
         'title': 'Self-Steering: Mean Self-Report vs. Alpha (Polarity-Corrected)',
         'description': ('Mean logit-based self-report vs steering alpha (sign-corrected for '
                         'FLIP concepts so positive α → positive direction). Monotonic increase '
@@ -884,7 +1000,7 @@ def generate_figure_3(results_dir):
     # Panels F–I: Self-report drift by alpha (one per concept)
     #   — Flip alpha in labels for FLIP concepts
     # ──────────────────────────────────────────────────────────────
-    panel_labels = ['F', 'G', 'H', 'I']
+    panel_labels = ['C', 'D', 'E', 'F']
     for pi, short in enumerate(SHORTHANDS):
         concept = SHORTHAND_TO_CONCEPT[short]
         df = _load_df(short)
@@ -939,11 +1055,11 @@ def generate_figure_3(results_dir):
         ax.legend(fontsize=7, loc='best')
         add_panel_label(ax, panel_labels[pi])
         plt.tight_layout()
-        prefix = os.path.join(fig_dir,
-                              f'Fig_03_{panel_labels[pi]}_steering_drift_{concept}')
+        prefix = os.path.join(appendix_dir,
+                              f'App_Fig_03_{panel_labels[pi]}_steering_drift_{concept}')
         savefig(fig, prefix)
         save_panel_json(prefix, {
-            'panel_id': f'Fig_03_{panel_labels[pi]}',
+            'panel_id': f'App_Fig_03_{panel_labels[pi]}',
             'title': f'Self-Report Drift Under Steering - {SHORTHAND_DISPLAY[short]}',
             'description': (f'Mean logit self-report across turns for different steering '
                             f'alphas (display-corrected for polarity). Drift Spearman ρ '
@@ -1014,12 +1130,12 @@ def generate_figure_3(results_dir):
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
     ax.legend(fontsize=8)
-    add_panel_label(ax, 'J')
+    add_panel_label(ax, 'H')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_03_J_drift_magnitude_vs_alpha')
+    prefix = os.path.join(fig_dir, 'Fig_03_H_drift_magnitude_vs_alpha')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_03_J',
+        'panel_id': 'Fig_03_H',
         'title': 'Self-Report Drift Magnitude vs. Alpha',
         'description': ('Per-conversation self-report drift (last - first turn) summarized '
                         'by steering alpha, with cluster-bootstrap 95% CIs and three '
@@ -1028,23 +1144,29 @@ def generate_figure_3(results_dir):
     })
 
     # ── Save other_stats ──
-    other_stats = {
-        'description': ('Figure 3 establishes introspection. Scatter plots show correlations '
-                        'between probe scores and self-reports. Turn-wise analysis per concept '
-                        'shows introspection from first turn. First-vs-last comparison tests '
-                        'stability. Self-steering with polarity-corrected alpha confirms '
-                        'causal modulation. Random vector controls validate probe specificity.'),
+    main_other_stats = {
+        'description': ('Figure 3 main panels establish introspection with scatter plots, '
+                        'random controls, turn-wise analyses in both stacked and combined '
+                        'formats, self-steering response curves, and drift-vs-alpha.'),
         'overall_introspection': scatter_stats,
         'random_control': random_stats,
         'paired_true_vs_random': paired_true_vs_random,
-        'first_vs_last_turn': first_last_stats,
         'turnwise_r2': {s: turnwise_data.get(s, {}) for s in SHORTHANDS},
         'turnwise_rho': {s: turnwise_rho_data.get(s, {}) for s in SHORTHANDS},
-        'within_conversation_trend': cdiii_stats,
         'steering_stats': steering_stats,
         'alpha_drift_stats': alpha_drift_stats,
     }
-    save_other_stats(fig_dir, other_stats)
+    appendix_other_stats = {
+        'description': ('Appendix Figure 3 keeps first-vs-last-turn tests, within-conversation '
+                        'trend analyses, and the four steering-drift panels.'),
+        'first_vs_last_turn': first_last_stats,
+        'within_conversation_trend': cdiii_stats,
+        'steering_drift_panels': {
+            label: SHORTHANDS[idx] for idx, label in enumerate(['C', 'D', 'E', 'F'])
+        },
+    }
+    save_other_stats(fig_dir, main_other_stats)
+    save_other_stats(appendix_dir, appendix_other_stats)
     print("    Figure 3 complete.")
 
 

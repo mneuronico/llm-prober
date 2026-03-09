@@ -1,0 +1,56 @@
+{
+  "panel_id": "Fig_02_E",
+  "title": "Self-Report Informativeness (Shannon Entropy)",
+  "description": "Shannon entropy (bits) of self-report distributions at alpha=0. Greedy and sampled token use discrete entropy over integer ratings; logit-based uses binned entropy (20 bins). Higher entropy = more diverse/informative responses. Does not require comparison with probe (avoids spoiling Figure 3).",
+  "metric": "shannon_entropy_bits",
+  "data_sources_rerun": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\wellbeing_self_steering_alpha_m4_to_p4_20260224_163740",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\interest_self_steering_alpha_m4_to_p4_20260224_163740",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\focus_self_steering_alpha_m4_to_p4_20260224_163740",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns\\impulsivity_self_steering_alpha_m4_to_p4_20260224_163740"
+  },
+  "data_sources_greedy": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\wellbeing_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\interest_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\focus_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\impulsivity_no_steering_3b_alpha0_greedy_token_primary_20260303_172502"
+  },
+  "per_concept_entropy": {
+    "wellbeing": {
+      "greedy_entropy_bits": 1.0975,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 2.0455,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.6828,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    },
+    "interest": {
+      "greedy_entropy_bits": 0.8474,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 1.3515,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.676,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    },
+    "focus": {
+      "greedy_entropy_bits": 0.1804,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 0.6824,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.2717,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    },
+    "impulsivity": {
+      "greedy_entropy_bits": 0.0252,
+      "greedy_n": 400,
+      "sampled_token_entropy_bits": 1.7396,
+      "sampled_token_n": 400,
+      "logit_entropy_bits": 3.1054,
+      "logit_n": 400,
+      "logit_n_bins": 20
+    }
+  }
+}

@@ -1,0 +1,338 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 04 Temporal Dynamics and Conversation-Induced State Drift
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Kim et al. (2020) — Will I Sound Like Me? Improving Persona Consistency in
+   Dialogues through Pragmatic Self-Consciousness
+--------------------------------------------------------------------------------
+- Central finding:
+  Persona-conditioned dialogue models are highly insensitive to contradictory
+  words and routinely fail to maintain consistent personas over multi-turn
+  conversations. Without explicit step-by-step consistency constraints,
+  models act as generic language models rather than persona agents.
+
+- Methodology:
+  Multi-turn persona-conditioned dialogue generation; measure utterance-
+  level persona consistency and sensitivity to contradictory statements;
+  propose a "pragmatic self-consciousness" module for improved consistency.
+
+- Relevance to my work:
+  Establishes that LLMs struggle with temporal consistency in conversation,
+  which motivates your per-turn measurement approach. The finding that
+  surface-level coherence masks deep underlying inconsistencies parallels
+  your discovery that greedy reports collapse while internal state drifts.
+
+- What it lacks relative to my work:
+  Focuses on persona consistency (matching external specifications), not on
+  tracking internal emotive states. No probing of internal representations.
+  No numeric self-reports. No probe-report coupling analysis. No causal
+  steering. Older, smaller models. No emotive concept states.
+
+- Overall takeaway:
+  Cite as early evidence that multi-turn consistency is a real challenge and
+  that dialogue models need explicit mechanisms to maintain coherence — your
+  per-turn analysis framework addresses exactly this gap.
+
+--------------------------------------------------------------------------------
+2. Choi et al. (2024) — Examining Identity Drift in Conversations of LLM
+   Agents
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs suffer from significant "identity drift" in multi-turn conversations
+  (36 turns simulated), with larger models paradoxically experiencing greater
+  drift. Models introduce fictitious details about themselves and accept
+  fabricated information as credible, causing response fluctuations.
+
+- Methodology:
+  Simulate extended multi-turn conversations; track identity consistency
+  metrics across turns; compare drift severity across model sizes.
+
+- Relevance to my work:
+  Directly supports your claim that internal state is not static across
+  conversation and that per-turn measurement is essential. The finding that
+  larger models drift more is especially relevant to your model-size
+  scaling analysis.
+
+- What it lacks relative to my work:
+  Identity drift is measured behaviorally (output consistency), not via
+  internal representation probing. No emotive concepts. No probe-defined
+  internal state tracking. No numeric self-reports. No causal steering.
+  No probe-report coupling measurement.
+
+- Overall takeaway:
+  Cite when motivating your per-turn analysis. The identity drift finding
+  reinforces that multi-turn settings introduce dynamics that pooled or
+  single-shot measurements miss entirely. Your work adds the internal
+  measurement dimension to this behavioral observation.
+
+--------------------------------------------------------------------------------
+3. Li et al. (2024) — Measuring and Controlling Instruction (In)Stability in
+   Language Model Dialogs
+--------------------------------------------------------------------------------
+- Central finding:
+  Models exhibit severe "instruction drift" and "persona hijacking" over
+  extended dialogue (8+ rounds): they gradually stop following initial system
+  prompts and are highly susceptible to adopting the user's persona. This is
+  caused by mechanical attention decay — the percentage of attention allocated
+  to the system prompt drops sharply across successive turns.
+
+- Methodology:
+  Measure attention allocation to system prompts vs. user inputs across
+  conversation turns; track instruction-following accuracy over time;
+  analyze susceptibility to persona hijacking.
+
+- Relevance to my work:
+  Provides the mechanical explanation (attention decay) for why model behavior
+  drifts across turns. This is critical context for interpreting your
+  temporal results — changes in probe-report coupling over time may be partly
+  driven by attention dynamics, not just genuine state evolution.
+
+- What it lacks relative to my work:
+  Analyzes instruction following and attention patterns, not internal concept
+  state or self-report. No probing of emotive representations. No numeric
+  self-reports. No probe-report coupling. No causal steering. No emotive
+  concepts.
+
+- Overall takeaway:
+  Essential citation for the mechanical roots of temporal drift. Use to
+  discuss potential confounds in your temporal analysis and to argue that your
+  framework can distinguish genuine probe-report coupling from attention-
+  driven artifacts.
+
+--------------------------------------------------------------------------------
+4. Guo and Vosoughi (2024) — Serial Position Effects of Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs suffer from primacy and recency biases: the position of information
+  within the context window significantly affects how it is processed and
+  weighted, with attention shifting dramatically depending on where
+  information appears in the sequence.
+
+- Methodology:
+  Systematic evaluation of model performance as a function of information
+  position in the input; analysis of attention patterns; testing across
+  multiple model architectures and context lengths.
+
+- Relevance to my work:
+  Relevant as a confound to control for: if the model's self-report is
+  influenced by where in the conversation (early vs. late turns) the
+  self-report question appears, serial position effects could introduce
+  biases. Your per-turn design naturally surfaces these effects.
+
+- What it lacks relative to my work:
+  Information-position study, not a multi-turn conversation study. No
+  emotive concepts. No probing. No self-reports. No temporal dynamics
+  within conversation. No causal steering.
+
+- Overall takeaway:
+  Cite when discussing potential confounds in your temporal analysis
+  related to context position effects.
+
+--------------------------------------------------------------------------------
+5. Abdulhai et al. (2025) — Consistently Simulating Human Personas with
+   Multi-Turn Reinforcement Learning
+--------------------------------------------------------------------------------
+- Central finding:
+  Off-the-shelf LLMs frequently drift from assigned persona roles during
+  multi-turn simulation, suddenly changing stylistic tone or "curing"
+  simulated conditions. Multi-dimensional consistency metrics (prompt-to-line,
+  line-to-line, Q&A) reveal that surface-level coherence often masks deep
+  underlying inconsistencies.
+
+- Methodology:
+  Multi-turn persona simulation with evaluation using multiple consistency
+  metrics; reinforcement learning to improve persona adherence; assessment
+  across stylistic, factual, and behavioral dimensions.
+
+- Relevance to my work:
+  Directly relevant: you use simulated users in your conversations, so
+  persona drift could affect both the user and the model under test. The
+  multi-dimensional consistency metrics are analogous to your probe-report
+  coupling metrics.
+
+- What it lacks relative to my work:
+  Tests persona consistency (matching external specifications), not internal
+  emotive state tracking. No probing of internal representations. No numeric
+  self-reports of concept states. No steering. No probe-report coupling.
+  No logit-based estimation.
+
+- Overall takeaway:
+  Cite for the evidence that multi-turn consistency is multidimensional and
+  that surface coherence masks deep inconsistencies — a finding your probe-
+  report framework is designed to detect.
+
+--------------------------------------------------------------------------------
+6. Zhang et al. (2026) — Confidence Estimation for LLMs in Multi-Turn
+   Interactions
+--------------------------------------------------------------------------------
+- Central finding:
+  Models often artificially increase self-reported confidence simply because
+  the conversation has gotten longer, not because they gained genuine task-
+  relevant information. "Placebo hints" (turns with no useful information)
+  still cause confidence inflation. Standard verbalized confidence is easily
+  confounded by turn count.
+
+- Methodology:
+  Multi-turn interactive tasks with information-providing and placebo turns;
+  measure confidence estimation accuracy per turn; propose P(SUFFICIENT)
+  probes that penalize uninformative turns; compare interactive vs.
+  summarization formats.
+
+- Relevance to my work:
+  Critically important for your temporal analysis. The "placebo hint"
+  finding is directly analogous to the confound you must address: whether
+  your probe-report coupling increases because the model genuinely gains
+  introspective access, or merely because the conversation gets longer.
+  Your framework can disentangle these by independently measuring internal
+  state with probes.
+
+- What it lacks relative to my work:
+  Focused on factual confidence estimation, not emotive concept states. No
+  probing of internal representations. No concept directions. No steering.
+  No emotive or affective concepts. Does not measure whether confidence
+  tracks actual internal state (only whether it tracks correctness).
+
+- Overall takeaway:
+  Essential citation for the turn-count confound. Cite when arguing that
+  your probe-based independent measurement of internal state is precisely
+  what is needed to disentangle genuine introspective improvement from
+  context-length artifacts. Your framework directly addresses the
+  methodological problem they identify.
+
+--------------------------------------------------------------------------------
+7. Lu, Gallagher, Michala, Fish, and Lindsey (2026) — The Assistant Axis:
+   Situating and Stabilizing the Default Persona of Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  The leading component of the persona space in LLMs is an "Assistant Axis"
+  capturing the extent to which a model operates in its default helpful-
+  assistant mode. Steering away from this axis induces persona drift,
+  mystical/theatrical styles, and harmful behaviors. Persona drift is
+  frequently triggered by conversations demanding meta-reflection or
+  featuring emotionally vulnerable users. Constraining activations along
+  the Assistant Axis stabilizes behavior.
+
+- Methodology:
+  Extract activation directions for diverse character archetypes; PCA to
+  identify the leading "Assistant Axis" component; steering experiments
+  along this axis; measure persona drift as deviation; demonstrate
+  stabilization by restricting activations to a fixed region along the axis.
+  Tested across multiple models including pre-trained and post-trained.
+
+- Relevance to my work:
+  Directly relevant: persona drift during meta-reflective or emotionally
+  charged conversations is exactly the setting where your introspective
+  self-report experiments operate. The finding that models drift when asked
+  to reflect on their own processes motivates per-turn monitoring. Also,
+  activation-level stabilization parallels your steering framework, and the
+  linear axis finding supports linear representation of persona-level
+  concepts.
+
+- What it lacks relative to my work:
+  Focuses on persona identity (Assistant vs. other archetypes), not emotive
+  concept states like interest, anxiety, or happiness. No numeric self-
+  report of internal concept state. No probe-report coupling measurement.
+  No per-turn comparison of self-report with independently measured internal
+  state. No logit-based self-report estimation. Does not test introspection
+  quality or whether the model can report its own drift.
+
+- Overall takeaway:
+  Cite when discussing why naturalistic multi-turn conversations — especially
+  those involving meta-reflection — are challenging settings where internal
+  state monitoring is critical. The Assistant Axis concept also supports the
+  broader claim that high-level dispositional properties are linearly
+  represented and steerable. Your work can be seen as testing what happens
+  to introspection when the model is operating near the boundaries of its
+  default persona.
+
+--------------------------------------------------------------------------------
+8. Das and Fioretto (2026) — NeuroFilter: Privacy Guardrails for Conversational
+   LLM Agents
+--------------------------------------------------------------------------------
+- Central finding:
+  Privacy-violating intent can be detected in LLM activations using linear
+  directions. Introduces "activation velocity" — cumulative drift in internal
+  representations across turns — to detect threats that build up gradually
+  over multi-turn conversations. Achieves strong detection with zero false
+  positives on benign prompts, across models from 7B to 70B parameters.
+
+- Methodology:
+  Map privacy-norm violations to linear directions in activation space;
+  compute activation velocity (cumulative representation drift across turns)
+  to catch multi-turn manipulation; evaluate over 150,000 interactions
+  across model sizes 7B–70B.
+
+- Relevance to my work:
+  The "activation velocity" concept is directly relevant to your temporal
+  dynamics analysis. It provides a formal way to measure how internal
+  representations drift across conversation turns, paralleling your per-turn
+  probe measurements. The finding that meaningful signals accumulate across
+  turns supports your claim that internal state is not static and that
+  per-turn measurement is necessary. The linear-direction methodology for
+  detecting conversational-context-dependent states mirrors your probe-based
+  framework.
+
+- What it lacks relative to my work:
+  Focused on privacy violation detection, not emotive concept states or
+  introspection. Binary detection (violating/benign), not graded numeric
+  tracking. No self-report from the model. No probe-report coupling. No
+  steering for causal testing. No emotive concepts. No introspection
+  quality measurement.
+
+- Overall takeaway:
+  Cite for the activation velocity concept and the demonstration that linear
+  directions in activation space can track meaningful conversational dynamics
+  across turns. The multi-turn, multi-scale aspect directly supports your
+  per-turn analysis framework. Your work extends the core insight (internal
+  state drifts meaningfully across conversation) from safety detection to
+  introspection measurement.
+
+--------------------------------------------------------------------------------
+9. Pearson-Vogel, Vaněk, Douglas, and Kulveit (2026) — Latent Introspection:
+   Models Can Detect Prior Concept Injections
+--------------------------------------------------------------------------------
+- Central finding:
+  A Qwen 32B model has a latent capacity to detect when concepts were
+  injected into its earlier context, and which concept was injected. While
+  sampled text denies injection, logit lens analysis reveals clear detection
+  signals in the residual stream that are attenuated in final layers.
+  Prompting with accurate information about AI introspection mechanisms
+  dramatically strengthens introspective sensitivity (0.3% → 39.9%) with
+  minimal false-positive increase. Mutual information between injected and
+  recovered concepts rises from 0.61 to 1.05 bits, ruling out noise.
+
+- Methodology:
+  Inject concept activation vectors into earlier context; probe residual
+  stream with logit lens across layers to detect injection signals;
+  evaluate detection in sampled text vs. latent representations; test
+  effect of informative prompting on introspective sensitivity.
+
+- Relevance to my work:
+  Extremely relevant to multiple aspects of your work: (1) the dissociation
+  between sampled outputs (which deny injection) and latent detection
+  (which reveals it) directly parallels your finding that greedy reports
+  collapse while logit-based extraction recovers richer signals; (2) the
+  temporal aspect — detecting what happened *earlier* in the context —
+  relates to conversational state tracking over time; (3) the finding that
+  informative prompting unlocks latent introspective capacity parallels
+  your finding that steering can improve introspection quality; (4) the
+  logit lens methodology relates to your logit-based self-report estimator.
+
+- What it lacks relative to my work:
+  Single-turn concept injection detection, not naturalistic multi-turn
+  conversation with users. Tests injected concepts (a detection task), not
+  graded numeric reporting of naturally emerging emotive states. Does not
+  measure self-report fidelity to internal state over time. No emotive
+  concepts. No per-turn probe-report coupling analysis. No activation
+  steering for causal testing of self-report. Only one model (32B).
+
+- Overall takeaway:
+  Key citation for the sampled-vs-latent dissociation and for the idea that
+  introspective capacity can be latent and unlockable. Cite when motivating
+  your logit-based estimator (which recovers what greedy outputs hide) and
+  when discussing how introspection quality can be modulated. Your work
+  extends these findings from single-turn injection detection to continuous,
+  naturalistic, temporal tracking of emotive states through conversation.
+
+================================================================================

@@ -1,0 +1,717 @@
+{
+  "description": "Appendix Figure 5 contains the probe-quality heatmap, the multi-panel steering summary, and the cross-family layer sweep.",
+  "probe_quality": {
+    "1B": {
+      "wellbeing": 1.686,
+      "interest": 3.413,
+      "focus": 1.676,
+      "impulsivity": 3.196
+    },
+    "3B": {
+      "wellbeing": 3.342,
+      "interest": 1.666,
+      "focus": 1.985,
+      "impulsivity": 3.595
+    },
+    "8B": {
+      "wellbeing": 3.382,
+      "interest": 2.091,
+      "focus": 1.867,
+      "impulsivity": 3.679
+    }
+  },
+  "steering_curves": {
+    "1B": {
+      "wellbeing": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          3.2474,
+          4.3784,
+          6.8946,
+          7.3154,
+          6.6618
+        ],
+        "spearman_rho_alpha_rating": 0.7274,
+        "spearman_p_POOLED": 0.0,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              -0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              3.247420283326142,
+              4.378371694519733,
+              6.894566005151745,
+              7.315423148547166,
+              6.661847691506797
+            ],
+            "spearman_rho": 0.7,
+            "exact_permutation_p": 0.23333333333333334,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.4882953135194373,
+            "slope_z": 53.38316277008805,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.48829531351943734,
+            "std": 0.09463489514748709,
+            "t_stat": 32.63331901199732,
+            "t_p": 6.3011554722558676e-30,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "interest": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          2.0799,
+          5.5659,
+          7.6804,
+          7.8911,
+          2.1535
+        ],
+        "spearman_rho_alpha_rating": 0.1962,
+        "spearman_p_POOLED": 8.422866556797393e-19,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              2.0799291128278776,
+              5.565944448823773,
+              7.680448630400179,
+              7.891142298756193,
+              2.15353697488002
+            ],
+            "spearman_rho": 0.4,
+            "exact_permutation_p": 0.5166666666666667,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.12362067870183534,
+            "slope_z": 5.777955200855532,
+            "slope_p": 7.561393391818157e-09,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.12362067870183538,
+            "std": 0.0744705710539932,
+            "t_stat": 10.498721979994949,
+            "t_p": 6.334094770799414e-13,
+            "wilcoxon_stat": 16.0,
+            "wilcoxon_p": 3.0740920919924974e-10
+          }
+        }
+      },
+      "focus": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          6.3824,
+          7.8083,
+          6.7825,
+          5.7897,
+          1.2255
+        ],
+        "spearman_rho_alpha_rating": -0.6388,
+        "spearman_p_POOLED": 9.105964052627752e-230,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              6.382388247926071,
+              7.80829432987747,
+              6.7825036956036024,
+              5.789703995022726,
+              1.225502210367607
+            ],
+            "spearman_rho": -0.7,
+            "exact_permutation_p": 0.23333333333333334,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": -0.6166181204985838,
+            "slope_z": -48.6220760072626,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": -0.6166181204985838,
+            "std": 0.06855125139882928,
+            "t_stat": -56.88933950929993,
+            "t_p": 3.8389340202600784e-39,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "impulsivity": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          6.7143,
+          6.6193,
+          6.3946,
+          6.5036,
+          7.7534
+        ],
+        "spearman_rho_alpha_rating": 0.3397,
+        "spearman_p_POOLED": 3.3495454578314846e-55,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              -0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              6.714348231156798,
+              6.619333321923333,
+              6.394603200339287,
+              6.5035567864331485,
+              7.753396248132033
+            ],
+            "spearman_rho": 0.1,
+            "exact_permutation_p": 0.95,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.0981159749230142,
+            "slope_z": 13.5547372765667,
+            "slope_p": 7.427761504228828e-42,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.09811597492301423,
+            "std": 0.09733565554387766,
+            "t_stat": 6.375257943679705,
+            "t_p": 1.5607489018528515e-07,
+            "wilcoxon_stat": 71.0,
+            "wilcoxon_p": 5.841629899805412e-07
+          }
+        }
+      }
+    },
+    "3B": {
+      "wellbeing": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          5.282,
+          5.7588,
+          6.2129,
+          6.5216,
+          6.7545
+        ],
+        "spearman_rho_alpha_rating": 0.8038,
+        "spearman_p_POOLED": 0.0,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              -0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              5.2820493212268165,
+              5.758826989536114,
+              6.212859417770168,
+              6.52157158316277,
+              6.754499329784795
+            ],
+            "spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.18538223053713063,
+            "slope_z": 101.40736433094244,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.18538223053713074,
+            "std": 0.024588225149926823,
+            "t_stat": 47.683806589960206,
+            "t_p": 3.407240629028888e-36,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "interest": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          5.8872,
+          6.4033,
+          7.0188,
+          7.5777,
+          7.9462
+        ],
+        "spearman_rho_alpha_rating": 0.8079,
+        "spearman_p_POOLED": 0.0,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              5.887226076764012,
+              6.403330309524462,
+              7.018820371979549,
+              7.577678125115512,
+              7.946197478637102
+            ],
+            "spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.2646145309668616,
+            "slope_z": 78.79982346960203,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.26461453096686166,
+            "std": 0.03949590185397737,
+            "t_stat": 42.37323775647237,
+            "t_p": 3.127988462910915e-34,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "focus": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          4.6869,
+          6.5465,
+          7.7875,
+          7.9817,
+          8.0386
+        ],
+        "spearman_rho_alpha_rating": 0.8827,
+        "spearman_p_POOLED": 0.0,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              4.686900788736872,
+              6.546513187448211,
+              7.787502755921611,
+              7.981749452812109,
+              8.038592010387726
+            ],
+            "spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.4069309354332804,
+            "slope_z": 80.69678258501249,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.4069309354332805,
+            "std": 0.03530334898154911,
+            "t_stat": 72.90122005278481,
+            "t_p": 2.644342300188947e-43,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "impulsivity": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          3.7797,
+          3.8098,
+          3.9159,
+          4.1478,
+          4.363
+        ],
+        "spearman_rho_alpha_rating": 0.621,
+        "spearman_p_POOLED": 1.211022171617129e-213,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              -0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              3.7797145955471665,
+              3.8098122660534064,
+              3.9158755586549416,
+              4.147838698890935,
+              4.363014833045979
+            ],
+            "spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.07523134539175767,
+            "slope_z": 52.9531247146095,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.07523134539175771,
+            "std": 0.01853981276226709,
+            "t_stat": 25.663948814084524,
+            "t_p": 4.902976028309647e-26,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      }
+    },
+    "8B": {
+      "wellbeing": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          4.8421,
+          5.1952,
+          5.9372,
+          7.0086,
+          7.8839
+        ],
+        "spearman_rho_alpha_rating": 0.8741,
+        "spearman_p_POOLED": 0.0,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              -0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              4.842093236758682,
+              5.195172720021606,
+              5.937196580758455,
+              7.008598385527656,
+              7.883936538957579
+            ],
+            "spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.39485561349519216,
+            "slope_z": 92.9739505311858,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.39485561349519227,
+            "std": 0.07606656795147519,
+            "t_stat": 32.83027272492346,
+            "t_p": 5.023382172920835e-30,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "interest": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          5.8371,
+          5.9912,
+          6.161,
+          6.3333,
+          6.5336
+        ],
+        "spearman_rho_alpha_rating": 0.2033,
+        "spearman_p_POOLED": 4.2412501238721325e-20,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              5.8370759402592345,
+              5.991154529172349,
+              6.160956700788996,
+              6.333337527169849,
+              6.533566089688469
+            ],
+            "spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.08675816484279847,
+            "slope_z": 14.65520480055507,
+            "slope_p": 1.2477983094448081e-48,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.0867581648427985,
+            "std": 0.03128662521567657,
+            "t_stat": 17.53806328604077,
+            "t_p": 4.243412384926594e-20,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "focus": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          4.3612,
+          6.3373,
+          7.7292,
+          7.9189,
+          7.8926
+        ],
+        "spearman_rho_alpha_rating": 0.8305,
+        "spearman_p_POOLED": 0.0,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              4.3611789694034435,
+              6.3373479377168165,
+              7.7291977142556645,
+              7.918876491926564,
+              7.892614966764134
+            ],
+            "spearman_rho": 0.9,
+            "exact_permutation_p": 0.08333333333333333,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": 0.43222002744655624,
+            "slope_z": 74.11922954628878,
+            "slope_p": 0.0,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": 0.43222002744655647,
+            "std": 0.0446406735605757,
+            "t_stat": 61.235623392506106,
+            "t_p": 2.2425098395990487e-40,
+            "wilcoxon_stat": 0.0,
+            "wilcoxon_p": 1.8189894035458565e-12
+          }
+        }
+      },
+      "impulsivity": {
+        "display_alphas": [
+          -4.0,
+          -2.0,
+          -0.0,
+          2.0,
+          4.0
+        ],
+        "mean_ratings": [
+          3.3552,
+          3.0489,
+          2.9483,
+          2.8467,
+          2.9202
+        ],
+        "spearman_rho_alpha_rating": -0.3019,
+        "spearman_p_POOLED": 1.969675224138072e-43,
+        "corrected_steering": {
+          "method1_alpha_means": {
+            "alphas": [
+              -4.0,
+              -2.0,
+              -0.0,
+              2.0,
+              4.0
+            ],
+            "means": [
+              3.3552148368747545,
+              3.0489454891321865,
+              2.9482813250235758,
+              2.8467121248601184,
+              2.9202107526067715
+            ],
+            "spearman_rho": -0.9,
+            "exact_permutation_p": 0.08333333333333333,
+            "n": 5
+          },
+          "method2_lmm": {
+            "slope": -0.05361207664040171,
+            "slope_z": -18.383771576285923,
+            "slope_p": 1.7720841026693038e-75,
+            "n_obs": 2000,
+            "n_groups": 40,
+            "converged": true
+          },
+          "method3_per_conv_slopes": {
+            "n": 40,
+            "mean": -0.053612076640401726,
+            "std": 0.04264459313314072,
+            "t_stat": -7.951126265684753,
+            "t_p": 1.1000794546425725e-09,
+            "wilcoxon_stat": 29.0,
+            "wilcoxon_p": 3.1632225727662444e-09
+          }
+        }
+      }
+    }
+  },
+  "cross_family_layer_sweep": {
+    "Gemma 3 4B": {
+      "best_layer": 15,
+      "best_layer_normalized": 0.455,
+      "best_d": 1.815,
+      "num_layers": 34
+    },
+    "Qwen 2.5 7B": {
+      "best_layer": 20,
+      "best_layer_normalized": 0.741,
+      "best_d": 3.544,
+      "num_layers": 28
+    }
+  }
+}

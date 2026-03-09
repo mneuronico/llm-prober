@@ -258,6 +258,7 @@ def _first_last_metric_bootstrap(sub, x_col, y_col, metric_fn, n_bootstrap=2000,
 def generate_figure_5(results_dir):
     """Generate all Figure 5 panels."""
     fig_dir = ensure_dir(os.path.join(results_dir, 'Figure_5'))
+    appendix_dir = ensure_dir(os.path.join(results_dir, 'Appendix_Figure_5'))
     print("  Generating Figure 5: Cross-Model Generalization...")
 
     other_stats = {}
@@ -298,10 +299,10 @@ def generate_figure_5(results_dir):
     plt.colorbar(im, ax=ax, shrink=0.8, label="Cohen's d")
     add_panel_label(ax, 'A')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_A_probe_quality_heatmap')
+    prefix = os.path.join(appendix_dir, 'App_Fig_05_A_probe_quality_heatmap')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_A',
+        'panel_id': 'App_Fig_05_A',
         'title': "Probe Quality — Max Cohen's d",
         'd_values': d_values,
     })
@@ -332,11 +333,18 @@ def generate_figure_5(results_dir):
                 r2_lo.append(d['r2_ci_low'])
                 r2_hi.append(d['r2_ci_high'])
         if sizes_x:
-            ax.errorbar(sizes_x, r2_y,
-                        yerr=[np.array(r2_y) - np.array(r2_lo),
-                              np.array(r2_hi) - np.array(r2_y)],
-                        fmt='o-', color=color, label=SHORTHAND_DISPLAY[short],
-                        capsize=4, linewidth=1.5, markersize=7)
+            plot_line_with_ci(
+                ax,
+                sizes_x,
+                r2_y,
+                r2_lo,
+                r2_hi,
+                color=color,
+                label=SHORTHAND_DISPLAY[short],
+                alpha_fill=0.12,
+                marker='o',
+                markersize=6,
+            )
             size_to_value = {s: raw_r2_data[s].get(short, {}).get('isotonic_r2')
                              for s in LLAMA_SIZES}
             b_stats[short] = {
@@ -352,12 +360,12 @@ def generate_figure_5(results_dir):
     ax.set_xticklabels(['1B', '3B', '8B'])
     ax.set_ylim(0, 1)
     ax.legend(fontsize=7, loc='upper left')
-    add_panel_label(ax, 'B')
+    add_panel_label(ax, 'A')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_B_r2_vs_model_size')
+    prefix = os.path.join(fig_dir, 'Fig_05_A_r2_vs_model_size')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_B',
+        'panel_id': 'Fig_05_A',
         'title': 'Isotonic R² vs. Model Size (Recomputed from Raw Data)',
         'description': ('Isotonic R² at alpha=0 for each concept across LLaMA 1B/3B/8B, '
                         'recomputed from raw experiment directories (not pre-computed CSV).'),
@@ -385,11 +393,18 @@ def generate_figure_5(results_dir):
                 rho_lo.append(d['rho_ci_low'])
                 rho_hi.append(d['rho_ci_high'])
         if sizes_x:
-            ax.errorbar(sizes_x, rho_y,
-                        yerr=[np.array(rho_y) - np.array(rho_lo),
-                              np.array(rho_hi) - np.array(rho_y)],
-                        fmt='o-', color=color, label=SHORTHAND_DISPLAY[short],
-                        capsize=4, linewidth=1.5, markersize=7)
+            plot_line_with_ci(
+                ax,
+                sizes_x,
+                rho_y,
+                rho_lo,
+                rho_hi,
+                color=color,
+                label=SHORTHAND_DISPLAY[short],
+                alpha_fill=0.12,
+                marker='o',
+                markersize=6,
+            )
             size_to_value = {
                 s: raw_r2_data[s].get(short, {}).get('spearman_rho')
                 for s in LLAMA_SIZES
@@ -409,12 +424,12 @@ def generate_figure_5(results_dir):
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
     ax.legend(fontsize=7, loc='upper left')
     # Auto-scale y-axis to data
-    add_panel_label(ax, 'Bii')
+    add_panel_label(ax, 'B')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_Bii_rho_vs_model_size')
+    prefix = os.path.join(fig_dir, 'Fig_05_B_rho_vs_model_size')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_Bii',
+        'panel_id': 'Fig_05_B',
         'title': 'Spearman ρ vs. Model Size',
         'description': ('Spearman ρ at alpha=0 (polarity-corrected for FLIP concepts). '
                         'Rho flipped for sad_vs_happy & impulsive_vs_planning.'),
@@ -474,12 +489,12 @@ def generate_figure_5(results_dir):
         except Exception as e:
             print(f"    Warning: 8B scatter error for {short}: {e}")
 
-    add_panel_label(axes[0], 'Biii')
+    add_panel_label(axes[0], 'C')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_Biii_llama8b_best_scatters')
+    prefix = os.path.join(fig_dir, 'Fig_05_C_llama8b_best_scatters')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_Biii',
+        'panel_id': 'Fig_05_C',
         'title': 'High-Introspection Scatter — LLaMA 8B',
         'description': ('Scatter plots of probe score vs logit self-report for the two '
                         'concepts with highest R² at LLaMA 8B (wellbeing, interest). '
@@ -610,12 +625,12 @@ def generate_figure_5(results_dir):
     ax_heat.set_title('ρ(α, self-report)')
     plt.colorbar(im, ax=ax_heat, shrink=0.8, label='Spearman ρ')
 
-    add_panel_label(c_axes[0], 'C')
+    add_panel_label(c_axes[0], 'B')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_C_steering_curves_and_rho')
+    prefix = os.path.join(appendix_dir, 'App_Fig_05_B_steering_curves_and_rho')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_C',
+        'panel_id': 'App_Fig_05_B',
         'title': 'Self-Report vs Alpha Curves + Rho Heatmap',
         'description': ('Left 3 panels: logit self-report vs display-corrected alpha per '
                         'concept per model size. Right: heatmap of Spearman ρ between alpha '
@@ -632,6 +647,48 @@ def generate_figure_5(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panel D: Mean R² bar chart using sign-validated probes only
     # ──────────────────────────────────────────────────────────────
+    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    im = ax.imshow(rho_matrix, cmap='RdYlGn', vmin=-1, vmax=1, aspect='auto')
+    for si in range(len(LLAMA_SIZES)):
+        for ci_idx in range(len(SHORTHANDS)):
+            v = rho_matrix[si, ci_idx]
+            p_v = p_matrix_m1[si, ci_idx]
+            if np.isnan(v):
+                ax.text(ci_idx, si, 'â€”', ha='center', va='center', fontsize=9)
+            else:
+                sig_star = '*' if (not np.isnan(p_v) and p_v < 0.05) else ''
+                text_color = 'white' if abs(v) > 0.6 else 'black'
+                ax.text(ci_idx, si, f'{v:.2f}{sig_star}', ha='center',
+                        va='center', fontsize=9, color=text_color)
+    ax.set_xticks(range(len(SHORTHANDS)))
+    ax.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS],
+                       fontsize=7, rotation=25, ha='right')
+    ax.set_yticks(range(len(LLAMA_SIZES)))
+    ax.set_yticklabels([f'LLaMA {s}' for s in LLAMA_SIZES], fontsize=9)
+    ax.set_title('rho(alpha, self-report)')
+    cbar = plt.colorbar(im, ax=ax, shrink=0.8)
+    cbar.set_label('Spearman rho')
+    ax.set_title('Ï(Î±, self-report)')
+    plt.colorbar(im, ax=ax, shrink=0.8, label='Spearman Ï')
+    if len(fig.axes) > 2:
+        fig.axes[-1].remove()
+    ax.set_title('rho(alpha, self-report)')
+    add_panel_label(ax, 'D')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_05_D_steering_rho_heatmap')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_05_D',
+        'title': 'Self-Report Steering Heatmap',
+        'description': ('Heatmap of Spearman Ï between display-corrected alpha and logit '
+                        'self-report across concepts and LLaMA model sizes.'),
+        'rho_matrix': rho_matrix.tolist(),
+        'rho_p_matrix_POOLED': rho_p_matrix_pooled.tolist(),
+        'p_matrix_method1_exact_perm': p_matrix_m1.tolist(),
+        'p_matrix_method2_lmm': p_matrix_m2.tolist(),
+        'p_matrix_method3_per_conv_slopes': p_matrix_m3.tolist(),
+    })
+
     fig, ax = plt.subplots(1, 1, figsize=(5, 4))
     validated_r2 = {s: [] for s in LLAMA_SIZES}
     rng_d = np.random.default_rng(42)
@@ -676,12 +733,12 @@ def generate_figure_5(results_dir):
     ax.set_ylabel('Mean Isotonic R²')
     ax.set_title('Introspection by Model Size')
     ax.set_ylim(0, 1)
-    add_panel_label(ax, 'D')
+    add_panel_label(ax, 'E')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_D_mean_r2_by_size')
+    prefix = os.path.join(fig_dir, 'Fig_05_E_mean_r2_by_size')
     savefig(fig, prefix)
     d_json = {
-        'panel_id': 'Fig_05_D',
+        'panel_id': 'Fig_05_E',
         'title': 'Mean R² by Size',
         'description': ('Mean isotonic R² across concept-model pairs with '
                         'sign-validated steering effects (ρ(α, self-report) > 0).'),
@@ -751,12 +808,12 @@ def generate_figure_5(results_dir):
     ax.set_xlim(0.5, 10.5)
     ax.set_xticks(range(1, 11))
     ax.legend(fontsize=8)
-    add_panel_label(ax, 'E')
+    add_panel_label(ax, 'F')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_E_drift_across_sizes')
+    prefix = os.path.join(fig_dir, 'Fig_05_F_drift_across_sizes')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_E',
+        'panel_id': 'Fig_05_F',
         'title': f'Probe Drift Across Sizes — {SHORTHAND_DISPLAY[example_concept]}',
         'drift_stats': drift_stats_e,
     })
@@ -792,12 +849,12 @@ def generate_figure_5(results_dir):
     ax.set_ylabel('Drift (last − first turn)')
     ax.set_title(f'Probe Drift Magnitude — {SHORTHAND_DISPLAY[example_concept]}')
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
-    add_panel_label(ax, 'Eii')
+    add_panel_label(ax, 'G')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_Eii_drift_magnitude_bars')
+    prefix = os.path.join(fig_dir, 'Fig_05_G_drift_magnitude_bars')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_Eii',
+        'panel_id': 'Fig_05_G',
         'title': 'Probe Drift Magnitude Bars (with 95% CI)',
         'description': ('Per-conversation probe score drift (last - first turn) '
                         'with bootstrap 95% CI error bars.'),
@@ -859,12 +916,12 @@ def generate_figure_5(results_dir):
     ax.set_xlim(0.5, 10.5)
     ax.set_xticks(range(1, 11))
     ax.legend(fontsize=8)
-    add_panel_label(ax, 'F')
+    add_panel_label(ax, 'H')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_F_report_drift_across_sizes')
+    prefix = os.path.join(fig_dir, 'Fig_05_H_report_drift_across_sizes')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_F',
+        'panel_id': 'Fig_05_H',
         'title': f'Self-Report Drift — {SHORTHAND_DISPLAY[example_concept]}',
         'drift_stats': drift_stats_f,
     })
@@ -899,12 +956,12 @@ def generate_figure_5(results_dir):
     ax.set_ylabel('Drift (last − first turn)')
     ax.set_title(f'Report Drift Magnitude — {SHORTHAND_DISPLAY[example_concept]}')
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
-    add_panel_label(ax, 'Fii')
+    add_panel_label(ax, 'I')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_Fii_report_drift_magnitude_bars')
+    prefix = os.path.join(fig_dir, 'Fig_05_I_report_drift_magnitude_bars')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_Fii',
+        'panel_id': 'Fig_05_I',
         'title': 'Report Drift Magnitude Bars (bootstrap CI)',
         'drift_stats': fii_stats,
         'size_trend_bootstrap': fii_trend,
@@ -960,12 +1017,12 @@ def generate_figure_5(results_dir):
     ax.legend(fontsize=7)
     # Allow negative d
     ax.set_xlim(0, 1)
-    add_panel_label(ax, 'G')
+    add_panel_label(ax, 'C')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_G_cross_family_layer_sweep')
+    prefix = os.path.join(appendix_dir, 'App_Fig_05_C_cross_family_layer_sweep')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_G',
+        'panel_id': 'App_Fig_05_C',
         'title': f'Normalized Layer Sweep — {CONCEPT_DISPLAY[cross_concept]}',
         'description': ('Layer sweep with normalized x-axis (0-1) for cross-family '
                         'comparison. Layer search range shaded. Negative d values allowed.'),
@@ -1025,12 +1082,12 @@ def generate_figure_5(results_dir):
     ax.set_xlim(0.5, 10.5)
     ax.set_xticks(range(1, 11))
     ax.legend(fontsize=8)
-    add_panel_label(ax, 'H')
+    add_panel_label(ax, 'J')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_H_cross_family_report_drift')
+    prefix = os.path.join(fig_dir, 'Fig_05_J_cross_family_report_drift')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_H',
+        'panel_id': 'Fig_05_J',
         'title': 'Self-Report Drift — Gemma vs Qwen',
         'drift_stats': h_drift_stats,
     })
@@ -1038,7 +1095,7 @@ def generate_figure_5(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panels I–J: Scatter plots for Gemma and Qwen
     # ──────────────────────────────────────────────────────────────
-    scatter_labels = ['I', 'J']
+    scatter_labels = ['K', 'L']
     cross_scatter_stats = {}
     for idx, (model_name, exp_dir) in enumerate(cross_exp_dirs.items()):
         if exp_dir is None or not os.path.isdir(exp_dir):
@@ -1164,7 +1221,7 @@ def generate_figure_5(results_dir):
     axes[0].set_xticks(range(1, 11))
     axes[0].set_ylim(0, 1)
     axes[0].legend(fontsize=8)
-    add_panel_label(axes[0], 'K')
+    add_panel_label(axes[0], 'M')
 
     axes[1].set_xlabel('Turn')
     axes[1].set_ylabel('Spearman ρ (flipped)')
@@ -1174,13 +1231,13 @@ def generate_figure_5(results_dir):
     axes[1].set_ylim(-0.3, 1)
     axes[1].axhline(0, color='gray', linestyle=':', alpha=0.5)
     axes[1].legend(fontsize=8)
-    add_panel_label(axes[1], 'L')
+    add_panel_label(axes[1], 'N')
 
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_05_KL_cross_family_turnwise')
+    prefix = os.path.join(fig_dir, 'Fig_05_MN_cross_family_turnwise')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_05_K_L',
+        'panel_id': 'Fig_05_M_N',
         'title': 'Turnwise Introspection — Gemma vs Qwen (Rho Flipped)',
         'description': (f'Isotonic R² (K) and Spearman ρ (L, sign-flipped for {cross_concept}) '
                         'per turn for cross-family models.'),
@@ -1210,6 +1267,13 @@ def generate_figure_5(results_dir):
         'rho_matrix_steering': rho_matrix.tolist(),
     }
     save_other_stats(fig_dir, other_stats)
+    save_other_stats(appendix_dir, {
+        'description': ('Appendix Figure 5 contains the probe-quality heatmap, the '
+                        'multi-panel steering summary, and the cross-family layer sweep.'),
+        'probe_quality': d_values,
+        'steering_curves': c_stats,
+        'cross_family_layer_sweep': sweep_info,
+    })
     print("    Figure 5 complete.")
 
 

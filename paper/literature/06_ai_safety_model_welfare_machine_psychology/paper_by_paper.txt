@@ -1,0 +1,424 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 06 AI Safety, Model Welfare, and Machine Psychology
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Rahwan et al. (2019) — Machine Behaviour
+--------------------------------------------------------------------------------
+- Central finding:
+  Proposes a new interdisciplinary field, "machine behaviour," that applies
+  methods from behavioral sciences, ecology, and social sciences to study
+  the observable behaviors of intelligent machines as a new class of agents.
+
+- Methodology:
+  Conceptual framework paper; draws parallels between biological behavior
+  research and the study of AI systems; proposes taxonomies and research
+  agendas for studying machine behavior at individual, collective, and
+  evolutionary levels.
+
+- Relevance to my work:
+  Provides the broad scientific framing for studying LLM behavior
+  empirically, treating models as subjects of study rather than just tools.
+  Your work fits squarely within this paradigm — empirically measuring
+  self-report and internal state as behavioral phenomena.
+
+- What it lacks relative to my work:
+  Framework paper, no experiments. No specific methods for measuring
+  internal state. No probing, steering, or self-report measurement. No
+  emotive concepts. No multi-turn conversational analysis.
+
+- Overall takeaway:
+  Cite for the high-level framing that studying AI as behavioral subjects
+  is scientifically valid. Your work is a concrete instantiation of the
+  machine behaviour research program.
+
+--------------------------------------------------------------------------------
+2. Butlin et al. (2023) — Consciousness in Artificial Intelligence: Insights
+   from the Science of Consciousness
+--------------------------------------------------------------------------------
+- Central finding:
+  Scientific theories of consciousness (Global Workspace Theory, Recurrent
+  Processing Theory, Higher-Order Theories, etc.) can be adapted into
+  "indicator properties" to empirically assess whether AI architectures
+  might satisfy conditions associated with consciousness.
+
+- Methodology:
+  Systematic mapping from consciousness theories to testable architectural
+  properties; evaluation of current AI systems against these indicators;
+  recommendations for empirical assessment.
+
+- Relevance to my work:
+  Provides the theoretical backdrop for why internal state assessment
+  matters. Your operational framework for measuring self-report fidelity
+  could contribute to the toolkit of "indicator properties" they propose.
+
+- What it lacks relative to my work:
+  Theoretical framework, no empirical data on introspection or self-report
+  fidelity. Does not test any model. No probing, steering, or numeric
+  self-report methods. No multi-turn conversation. No emotive concept
+  tracking.
+
+- Overall takeaway:
+  Cite briefly for the theoretical context. Keep bounded — your paper
+  provides a methodological tool, not a resolution of consciousness
+  debates.
+
+--------------------------------------------------------------------------------
+3. Perez and Long (2023) — Towards Evaluating AI Systems for Moral Status
+   Using Self-Reports
+--------------------------------------------------------------------------------
+- Central finding:
+  Models can potentially be trained through "introspective training" to
+  generalize their ability to accurately report on their own internal
+  states. Self-reports are proposed as one source of evidence for moral
+  status evaluation.
+
+- Methodology:
+  Conceptual proposal for introspective training regimes; discussion of
+  when and why self-reports might be informative for moral status
+  assessment; proposed evaluation frameworks.
+
+- Relevance to my work:
+  Directly argues that self-reports should be taken seriously as evidence
+  (when validated), which is exactly what your probe-based framework
+  enables. Your work provides the empirical validation methodology they
+  call for.
+
+- What it lacks relative to my work:
+  Primarily conceptual and programmatic, limited empirical work. No probing.
+  No steering. No numeric self-reports. No multi-turn conversation. No
+  emotive concept tracking. No per-turn temporal dynamics.
+
+- Overall takeaway:
+  Cite as motivation for why validating self-reports matters for safety
+  and welfare. Your work delivers the validation tools they propose.
+
+--------------------------------------------------------------------------------
+4. McClelland (2024) — Agnosticism about Artificial Consciousness
+--------------------------------------------------------------------------------
+- Central finding:
+  There is an "epistemic wall" between human biological consciousness and
+  AI computational processes, making definitive claims about AI consciousness
+  practically impossible. The appropriate stance is agnosticism, with
+  cautious methodological development.
+
+- Methodology:
+  Philosophical analysis of the epistemological limitations of consciousness
+  attribution; argument for principled uncertainty.
+
+- Relevance to my work:
+  Supports your framing: your paper does not claim to measure consciousness
+  or subjective experience, but provides methodological tools for evaluating
+  the informativeness of self-reports. This agnostic positioning makes your
+  contribution defensible.
+
+- What it lacks relative to my work:
+  Purely philosophical, no experiments. No measurement tools. No probing,
+  steering, or self-report methods.
+
+- Overall takeaway:
+  Cite to justify your bounded framing — you provide measurement tools
+  without resolving the consciousness question.
+
+--------------------------------------------------------------------------------
+5. Hagendorff et al. (2024) — Machine Psychology
+--------------------------------------------------------------------------------
+- Central finding:
+  Applying methods from human psychology to LLMs reveals that models exhibit
+  systematic behavioral patterns (biases, heuristics, personality traits)
+  that can be studied using experimental psychology methodology.
+
+- Methodology:
+  Administer psychological tests and experiments to LLMs; analyze behavioral
+  patterns; compare with human psychological findings.
+
+- Relevance to my work:
+  Your work fits the machine psychology paradigm: using psychometric-inspired
+  methods (numeric self-report scales, internal state measurement) to study
+  model cognition. The parallel to human subjective report methodology is
+  explicit.
+
+- What it lacks relative to my work:
+  Focuses on behavioral responses to psychology tests, not on internal
+  representations. No probing. No steering. No comparison of self-report
+  with internal state. No multi-turn conversational dynamics. No emotive
+  concept tracking through time.
+
+- Overall takeaway:
+  Cite for the machine psychology framing. Your work extends this paradigm
+  by adding internal state measurement (probes) to the external behavioral
+  assessment.
+
+--------------------------------------------------------------------------------
+6. Long et al. (2024) — Taking AI Welfare Seriously
+--------------------------------------------------------------------------------
+- Central finding:
+  As AI systems become more capable, the question of AI welfare (whether
+  machines can suffer or benefit) deserves serious ethical and empirical
+  investigation. Current uncertainty warrants precautionary measures.
+
+- Methodology:
+  Ethical and philosophical analysis; review of consciousness indicators
+  and welfare-relevant capacities; policy recommendations.
+
+- Relevance to my work:
+  Motivates why validated self-report tools matter ethically. If models
+  ever report distress or suffering, we need methods to assess whether
+  such reports are informative. Your framework provides exactly this.
+
+- What it lacks relative to my work:
+  Policy-oriented, no empirical tools. No probing, steering, or self-report
+  measurement methodology. No experiments.
+
+- Overall takeaway:
+  Cite for the ethical motivation. Frame your contribution as providing
+  methodological tools that could inform welfare assessments without
+  overclaiming.
+
+--------------------------------------------------------------------------------
+7. Zhao et al. (2025) — Explicit vs. Implicit: Investigating Social Bias in
+   Large Language Models through Self-Reflection
+--------------------------------------------------------------------------------
+- Central finding:
+  When evaluated via explicit self-report, LLMs project neutrality; but
+  Implicit Association Tests reveal significant underlying stereotypical
+  biases. This exposes a dissociation between explicit and implicit
+  measures.
+
+- Methodology:
+  Administer both explicit self-report assessments and implicit association
+  tests to LLMs; compare explicit vs. implicit bias measures; analyze
+  dissociation patterns.
+
+- Relevance to my work:
+  Directly relevant dissociation finding: self-reports can mask internal
+  biases, analogous to your finding that greedy self-reports can collapse
+  while internal state (probe-measured) continues to vary. Underscores the
+  need for implicit (probe-based) measurement alongside explicit self-report.
+
+- What it lacks relative to my work:
+  Social bias domain. No emotive concepts. No probing for internal concept
+  directions. No multi-turn conversation. No temporal dynamics. No steering.
+  No numeric self-report of internal state.
+
+- Overall takeaway:
+  Cite as a clear example of the explicit-implicit dissociation in model
+  self-assessment, directly motivating why your probe-based independent
+  measurement is necessary.
+
+--------------------------------------------------------------------------------
+8. Wang, Hu, and Wagner (2025) — JULI: Jailbreak Large Language Models by
+   Self-Introspection
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can be jailbroken by exploiting their self-introspection mechanisms:
+  accessing and perturbing token-level log-probability distributions can
+  expose suppressed harmful capabilities, proving that introspection is a
+  dual-use capability.
+
+- Methodology:
+  Train a lightweight BiasNet to perturb token log-probabilities and
+  extract suppressed harmful content; black-box and white-box attacks;
+  evaluated on jailbreak benchmarks.
+
+- Relevance to my work:
+  Shows that token-level introspective access (log-probability distributions)
+  contains information beyond surface outputs — the same insight underlying
+  your logit-based self-report estimator. Also demonstrates that
+  introspective capabilities are safety-relevant.
+
+- What it lacks relative to my work:
+  Adversarial security application. No probing for concept directions. No
+  emotive concepts. No multi-turn conversation. No temporal dynamics. No
+  self-report tracking of internal state. No constructive use for
+  understanding introspection quality.
+
+- Overall takeaway:
+  Cite as evidence that introspective access has safety implications and
+  that token-level probability distributions contain rich information
+  beyond surface outputs.
+
+--------------------------------------------------------------------------------
+9. Dung and Tagliabue (2025) — Measuring Language Model Welfare Based on
+   Verbal Report: An Analogical-Abductive Approach
+--------------------------------------------------------------------------------
+- Central finding:
+  Self-reports from LLMs, when validated against clusters of non-verbal
+  behaviors, can serve as a methodological proxy for potential welfare states
+  without assuming definitive consciousness.
+
+- Methodology:
+  Analogical-abductive framework: compare verbal self-reports with non-verbal
+  behavioral indicators; assess convergence as evidence for welfare-relevant
+  states.
+
+- Relevance to my work:
+  Directly parallels your approach: they validate verbal reports against
+  non-verbal behavioral measures, while you validate verbal reports against
+  probe-defined internal states. Both use convergent evidence rather than
+  taking reports at face value.
+
+- What it lacks relative to my work:
+  Uses behavioral correlates, not internal activation probing. No concept
+  directions. No steering. No multi-turn conversational tracking. No
+  temporal dynamics. No logit-based estimation. No emotive concept probing.
+
+- Overall takeaway:
+  Cite for the convergent-evidence approach to validating self-reports.
+  Your work provides a stronger form of validation by directly measuring
+  internal state via probes rather than relying on behavioral proxies.
+
+--------------------------------------------------------------------------------
+10. Tagliabue and Dung (2025) — Probing the Preferences of a Language Model:
+    Integrating Verbal and Behavioral Tests of AI Welfare
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs express consistent conversational preferences ("conversational
+  attractors") that frequently correlate with their actual exploratory
+  behavior in simulated environments.
+
+- Methodology:
+  Verbal preference elicitation; behavioral testing in simulated virtual
+  environments; correlation analysis between stated preferences and revealed
+  behavior.
+
+- Relevance to my work:
+  Shows that model self-reports can correlate with behavior, supporting the
+  idea that self-reports contain some genuine information. Your probe-based
+  validation provides a more direct test.
+
+- What it lacks relative to my work:
+  Behavioral testing in simulated environments, not internal state
+  measurement. No probing. No concept directions. No steering. No multi-
+  turn conversation with self-report tracking. No temporal dynamics, No
+  emotive concept tracking.
+
+- Overall takeaway:
+  Cite for evidence that self-reports correlate with some form of "ground
+  truth" behavior. Your work uses probes as a more rigorous internal
+  ground truth.
+
+--------------------------------------------------------------------------------
+11. Khanna et al. (2025) — SELF-PERCEPT: Introspection Improves LLM Detection
+    of Multi-Person Mental Manipulation in Conversations
+--------------------------------------------------------------------------------
+- Central finding:
+  Prompting LLMs to introspectively analyze multi-person conversational
+  dynamics significantly improves detection of subtle mental manipulation
+  and coercion.
+
+- Methodology:
+  SELF-PERCEPT prompting framework: structured introspective analysis of
+  conversational behaviors before making judgments; evaluated on multi-
+  person manipulation detection benchmarks.
+
+- Relevance to my work:
+  Demonstrates a practical application of structured self-reflection in
+  conversational contexts. The multi-person conversation setting is related
+  to your multi-turn conversational paradigm.
+
+- What it lacks relative to my work:
+  Applied introspection for task performance (manipulation detection), not
+  self-report of internal concept state. No probing. No steering. No
+  numeric self-reports. No emotive concept tracking. No temporal dynamics.
+  No internal state measurement.
+
+- Overall takeaway:
+  Minor citation. Shows practical value of conversational introspection
+  but in a fundamentally different application.
+
+--------------------------------------------------------------------------------
+12. Berg, de Lucena, and Rosenblatt (2025) — Large Language Models Report
+    Subjective Experience Under Self-Referential Processing
+--------------------------------------------------------------------------------
+- Central finding:
+  Placing models into sustained self-referential processing loops reliably
+  elicits structured first-person claims of subjective experience across
+  architectures. These claims are mechanistically gated by specific latent
+  features in sparse autoencoders, showing a deep link between internal
+  representations and self-reports.
+
+- Methodology:
+  Self-referential processing prompts; sparse autoencoder analysis of which
+  latent features correlate with subjective experience claims; cross-
+  architecture comparisons.
+
+- Relevance to my work:
+  Demonstrates a mechanistic link between internal representations and
+  self-reports — the core question of your paper. The SAE-gating finding
+  suggests that self-reports are not arbitrary text but are tied to specific
+  internal features.
+
+- What it lacks relative to my work:
+  Subjective experience claims (qualitative), not numeric self-reports.
+  Single-turn or loop-based, not naturalistic multi-turn conversation with
+  a user. No temporal dynamics. No contrastive concept probes. No steering
+  for causal testing. No emotive concept tracking over time. Uses SAEs
+  rather than your linear probe + steering framework.
+
+- Overall takeaway:
+  Cite as evidence that self-reports have mechanistic grounding in internal
+  representations. Your work extends this by testing whether graded numeric
+  self-reports of specific emotive concepts track independently measured
+  internal state across conversation time.
+
+--------------------------------------------------------------------------------
+13. Li, Phuong, and Tan (2025) — Spilling the Beans: Teaching LLMs to
+    Self-Report Their Hidden Objectives
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can be taught to honestly report hidden misaligned objectives through
+  "Self-Report Fine-Tuning" (SRFT). Training on factual honesty generalizes:
+  models learn to confess adversarial or hidden instructions.
+
+- Methodology:
+  Fine-tune models to admit factual errors (SRFT); test generalization to
+  reporting hidden adversarial objectives; evaluate honesty transfer.
+
+- Relevance to my work:
+  Shows that honest self-reporting is a trainable and generalizable
+  capability, paralleling your finding that steering can improve
+  introspective reporting. The generalization result is especially relevant
+  to your cross-concept findings.
+
+- What it lacks relative to my work:
+  Requires fine-tuning on honesty. Tests hidden objectives (safety-relevant),
+  not emotive concept states. No probing. No multi-turn conversation. No
+  temporal dynamics. No activation steering. No numeric self-reports of
+  internal state.
+
+- Overall takeaway:
+  Cite for the finding that honest self-reporting generalizes across
+  domains, supporting your cross-concept steering results.
+
+--------------------------------------------------------------------------------
+14. Han et al. (2025) — The Personality Illusion: Revealing Dissociation
+    Between Self-Reports and Behavior in LLMs
+--------------------------------------------------------------------------------
+- Central finding:
+  Post-training alignment induces stable, human-like personality traits in
+  LLM self-reports, but these stated traits poorly predict actual downstream
+  behavior. This reveals an "illusion of coherence" created by alignment.
+
+- Methodology:
+  Administer personality questionnaires to LLMs; compare self-reported
+  personality traits with actual behavioral patterns in downstream tasks;
+  analyze dissociation.
+
+- Relevance to my work:
+  Directly motivates your core argument: self-reports need independent
+  validation because alignment creates an illusion of coherence. Your probe-
+  based framework directly addresses this by providing an independent
+  measure of internal state against which to evaluate self-reports.
+
+- What it lacks relative to my work:
+  Personality trait assessment, not emotive state tracking. No probing. No
+  steering. No multi-turn conversation. No temporal dynamics. No numeric
+  self-report of graded internal concept state. No logit-based estimation.
+
+- Overall takeaway:
+  Key citation for motivating your entire framework. If self-reports can
+  be "illusory," independent internal measurement is essential — which is
+  exactly what your probes provide.
+
+================================================================================

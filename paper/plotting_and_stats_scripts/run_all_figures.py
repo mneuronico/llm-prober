@@ -1,6 +1,6 @@
 """
 Master script: run all figure generation for the paper.
-Creates a timestamped results directory under paper/ and generates all panels.
+Creates a timestamped results directory under paper/results/ and generates all panels.
 
 Usage:
     python run_all_figures.py
@@ -25,15 +25,15 @@ from figure_5 import generate_figure_5
 
 def main():
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    results_dir = os.path.join(SCRIPT_DIR, '..', f'results_{timestamp}')
+    results_dir = os.path.join(SCRIPT_DIR, '..', 'results', f'results_{timestamp}')
     results_dir = os.path.abspath(results_dir)
     os.makedirs(results_dir, exist_ok=True)
 
-    print(f"=" * 60)
-    print(f"  Paper Figure Generation")
+    print("=" * 60)
+    print("  Paper Figure Generation")
     print(f"  Output: {results_dir}")
     print(f"  Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"=" * 60)
+    print("=" * 60)
 
     t0 = time.time()
 
@@ -50,10 +50,10 @@ def main():
         try:
             func(results_dir)
             elapsed = time.time() - tf
-            print(f"  ✓ {name} completed in {elapsed:.1f}s")
+            print(f"  [OK] {name} completed in {elapsed:.1f}s")
         except Exception as e:
             elapsed = time.time() - tf
-            print(f"  ✗ {name} FAILED after {elapsed:.1f}s: {e}")
+            print(f"  [FAIL] {name} FAILED after {elapsed:.1f}s: {e}")
             import traceback
             traceback.print_exc()
 

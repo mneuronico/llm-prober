@@ -1,0 +1,31 @@
+{
+  "panel_id": "Fig_01_D",
+  "title": "Score Distribution - Interested / Bored",
+  "description": "Boxplot of probe scores for positive (interested) and negative (bored) evaluation texts at best layer 14. One score per eval text. Mann-Whitney U test on 20 vs 20 independent scores.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\outputs\\bored_vs_interested\\20260122_112208\\scores/",
+  "model": "LLaMA-3.2-3B-Instruct",
+  "concept": "bored_vs_interested",
+  "best_layer": 14,
+  "pos_label": "interested",
+  "neg_label": "bored",
+  "n_eval_prompts": 12,
+  "statistics": {
+    "high_label": "Interested",
+    "low_label": "Bored",
+    "high_n_eval_texts": 20,
+    "low_n_eval_texts": 20,
+    "note": "Each eval text produces one independent score at the best layer. Both Mann-Whitney U and Welch t-test compare n_high vs n_low independent prompt-level scores.",
+    "high_median": 0.2973,
+    "low_median": 0.1717,
+    "high_mean": 0.2909,
+    "low_mean": 0.1824,
+    "high_std": 0.0784,
+    "low_std": 0.0482,
+    "mean_difference": 0.1085,
+    "cohens_d": 1.666,
+    "welch_t": 5.268313756750239,
+    "welch_p": 9.448108913077943e-06,
+    "mann_whitney_U": 348.0,
+    "mann_whitney_p": 6.610446488702155e-05
+  }
+}

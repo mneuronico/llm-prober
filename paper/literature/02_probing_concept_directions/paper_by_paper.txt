@@ -1,0 +1,303 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 02 Probing Internal Representations and Concept Directions
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Kim et al. (2018) — Interpretability Beyond Feature Attribution: Quantitative
+   Testing with Concept Activation Vectors (TCAV)
+--------------------------------------------------------------------------------
+- Central finding:
+  High-level human-understandable concepts can be represented as linear
+  directions (Concept Activation Vectors, CAVs) in neural network activation
+  spaces. Directional derivatives along CAVs quantify how sensitive a model's
+  predictions are to each concept.
+
+- Methodology:
+  Train linear classifiers to separate concept examples from random examples
+  in activation space; the normal to the decision boundary is the CAV.
+  Compute directional derivatives of model outputs along CAVs to test causal
+  relevance. Statistical testing with random concept baselines.
+
+- Relevance to my work:
+  Foundational for the concept direction methodology. My probe-defined
+  internal state directions are conceptually descended from CAVs. TCAV's
+  directional derivative idea also relates to my causal steering tests.
+
+- What it lacks relative to my work:
+  Designed for image classification CNNs, not language models. No multi-turn
+  conversation. No self-report or introspection. No temporal dynamics. No
+  emotive concepts. Not applied to LLMs or text generation.
+
+- Overall takeaway:
+  Essential foundational citation for concept direction methodology. Frame
+  your probes as inheriting from this tradition while extending it to LLM
+  internal state tracking and introspection measurement.
+
+--------------------------------------------------------------------------------
+2. Alain and Bengio (2018) — Understanding Intermediate Layers Using Linear
+   Classifier Probes
+--------------------------------------------------------------------------------
+- Central finding:
+  Linear classifier probes applied to intermediate layers of deep networks
+  reveal that representations become progressively more linearly separable
+  (for the task objective) at deeper layers. Probes serve as "thermometers"
+  for measuring information at different network locations.
+
+- Methodology:
+  Train linear classifiers on frozen intermediate representations at each
+  layer; track classification accuracy across layers; compare with the
+  network's overall performance.
+
+- Relevance to my work:
+  Provides the original "probe as thermometer" metaphor that directly applies
+  to your use of probes as operational measurement tools. Justifies using
+  linear probes over complex non-linear ones.
+
+- What it lacks relative to my work:
+  Applied to standard classification networks, not LLMs. No concept-specific
+  probing (just task labels). No multi-turn conversational context. No
+  self-report comparison. No temporal dynamics. No emotive concepts.
+
+- Overall takeaway:
+  Cite as the foundational reference for linear probing methodology and the
+  "probes as measurement instruments" framing that your work adopts.
+
+--------------------------------------------------------------------------------
+3. Hewitt and Manning (2019) — A Structural Probe for Finding Syntax in Word
+   Representations
+--------------------------------------------------------------------------------
+- Central finding:
+  Linear transformations of contextual word representations encode syntactic
+  tree structure: squared L2 distances between transformed vectors correlate
+  with parse tree distances between words.
+
+- Methodology:
+  Train a linear transformation (structural probe) such that the distance
+  between transformed word embeddings mirrors syntactic tree distance.
+  Evaluate on dependency parsing tasks.
+
+- Relevance to my work:
+  Demonstrates that linear probes can capture rich, structured information
+  (not just binary labels) from representations. Supports the idea that
+  concept directions encode meaningful geometry.
+
+- What it lacks relative to my work:
+  Focused on syntactic structure, not emotive or affective concepts. No
+  self-report. No multi-turn conversation. No temporal tracking. No causal
+  interventions. No LLM-scale models.
+
+- Overall takeaway:
+  Cite as evidence that linear probes can capture structured geometric
+  information from representations, supporting the validity of your linear
+  probes for concept directions.
+
+--------------------------------------------------------------------------------
+4. Hewitt and Liang (2019) — Designing and Interpreting Probes with Control
+   Tasks
+--------------------------------------------------------------------------------
+- Central finding:
+  High probe accuracy alone does not prove that a representation "contains"
+  a concept — complex probes can memorize the task from word types alone.
+  Probe "selectivity" (accuracy on real task minus accuracy on random control
+  task) is the key metric.
+
+- Methodology:
+  Define control tasks where word types are mapped to random outputs. Measure
+  probe accuracy on both real tasks and control tasks. Selectivity =
+  real accuracy - control accuracy. Argue that good probes must have high
+  selectivity.
+
+- Relevance to my work:
+  Directly motivates the need for probe validation and controls. Supports
+  your use of random-vector controls and other validation methods to ensure
+  your probes are not learning surface artifacts.
+
+- What it lacks relative to my work:
+  Focused on syntactic probing in NLP models. No emotive concepts. No
+  multi-turn conversational setting. No self-report comparison. No temporal
+  dynamics. No causal steering.
+
+- Overall takeaway:
+  Cite when justifying your probe validation methodology (random-vector
+  controls, held-out contrastive separation). Your work directly addresses
+  the selectivity concern they raise.
+
+--------------------------------------------------------------------------------
+5. Pimentel et al. (2020) — Information-Theoretic Probing for Linguistic
+   Structure
+--------------------------------------------------------------------------------
+- Central finding:
+  Probing should be understood as estimating the mutual information between a
+  representation and a target property. Contextual embeddings cannot contain
+  more information than the raw input, so probes measure "ease of extraction"
+  (how accessibly structured the information is) rather than raw presence.
+
+- Methodology:
+  Information-theoretic framework for probing; minimum description length
+  analysis; comparison of probe complexity with extraction accuracy.
+
+- Relevance to my work:
+  Provides the theoretical foundation for why linear probes are preferred:
+  they measure whether information is accessibly structured, not just present.
+  Your probes capture how easily the model's own representations can be read
+  for concept information.
+
+- What it lacks relative to my work:
+  Purely methodological and linguistic. No emotive concepts. No LLMs. No
+  multi-turn conversation. No self-report. No temporal dynamics. No causal
+  tests.
+
+- Overall takeaway:
+  Cite for the theoretical justification that probes measure accessible
+  structure, not just information presence. This supports your framing of
+  probes as operational tools.
+
+--------------------------------------------------------------------------------
+6. Burns et al. (2022) — Discovering Latent Knowledge in Language Models
+   Without Supervision (CCS)
+--------------------------------------------------------------------------------
+- Central finding:
+  Contrast-Consistent Search (CCS) can discover latent knowledge (e.g.,
+  truth vs. falsehood directions) in LLM activation space without any
+  supervised labels, by enforcing logical consistency constraints (a
+  statement and its negation must have opposite truth values).
+
+- Methodology:
+  Unsupervised identification of concept directions using consistency loss;
+  contrastive pairs of statements and negations; evaluated on truth/falsehood
+  detection benchmarks.
+
+- Relevance to my work:
+  Your contrastive concept training methodology is conceptually related — you
+  also train directions from contrastive pairs. CCS shows that these
+  directions can be found even without supervision, validating the linear
+  representation hypothesis.
+
+- What it lacks relative to my work:
+  Focused on truth/falsehood concepts. No emotive or affective concepts. No
+  self-report. No multi-turn conversation. No temporal dynamics. No causal
+  steering. Single-shot classification setting.
+
+- Overall takeaway:
+  Cite as evidence supporting the linear representation hypothesis and
+  contrastive methods for identifying concept directions. Your work extends
+  this to emotive concepts and links the discovered directions to self-report.
+
+--------------------------------------------------------------------------------
+7. Belinkov (2022) — Probing Classifiers: Promises, Shortcomings, and Advances
+--------------------------------------------------------------------------------
+- Central finding:
+  Comprehensive review establishing that probing classifiers are useful but
+  inherently correlational. High probe accuracy does not guarantee that the
+  model causally uses the probed information. Probes must be validated
+  through convergent evidence.
+
+- Methodology:
+  Survey and critical analysis of the probing literature; taxonomization of
+  probe types, validation methods, and failure modes.
+
+- Relevance to my work:
+  Directly supports your framing of probes as operational tools requiring
+  convergent validation. Your use of steering as causal validation and
+  self-report as behavioral evidence addresses exactly the concerns raised
+  here.
+
+- What it lacks relative to my work:
+  Survey paper, no new experiments. Does not propose solutions for the
+  correlation-causation gap beyond flagging the problem. No emotive concepts.
+  No multi-turn setting. No self-report framework.
+
+- Overall takeaway:
+  Essential methodological citation. Cite to justify why your probes need
+  validation and why your steering tests provide the causal evidence that
+  probing alone cannot deliver.
+
+--------------------------------------------------------------------------------
+8. Gurnee and Tegmark (2023) — Language Models Represent Space and Time
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs construct linear, multi-scale spatial and temporal maps in their
+  hidden representations. Non-linear probes offer minimal improvement over
+  linear ones, strongly supporting linear representation of continuous
+  concepts.
+
+- Methodology:
+  Linear ridge regression and MLP probes trained on geographic coordinates
+  and temporal dates from LLM hidden layers; comparison of linear vs.
+  non-linear probe performance; neuron-level analysis.
+
+- Relevance to my work:
+  Strong precedent for linear representation of abstract, continuous concepts
+  in LLMs. Supports your assumption that emotive concepts can also be
+  linearly represented. Also demonstrates layer-wise analysis of where
+  concepts are represented.
+
+- What it lacks relative to my work:
+  Spatial and temporal concepts, not emotive states. No self-report. No
+  multi-turn conversational setting. No temporal dynamics of concept
+  evolution within conversations. No causal steering tests on behavior.
+
+- Overall takeaway:
+  Cite as strong evidence for the linear representation hypothesis applied
+  to continuous abstract concepts, which your work extends to emotive states.
+
+--------------------------------------------------------------------------------
+9. Azaria and Mitchell (2023) — The Internal State of an LLM Knows When It's
+   Lying
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs maintain an internal representation that distinguishes truthful from
+  false statements, even when the model's output text is a hallucination.
+  Classifiers on hidden states can predict truthfulness with high accuracy.
+
+- Methodology:
+  Train classifiers on hidden layer activations to detect truthfulness;
+  compare internal-state-based predictions with output-based methods;
+  evaluate across multiple datasets and model architectures.
+
+- Relevance to my work:
+  Demonstrates that internal representations contain information the model
+  does not always express in its outputs — directly paralleling your finding
+  that greedy self-reports collapse while internal state continues to vary.
+  Also supports the probe methodology for detecting internal states.
+
+- What it lacks relative to my work:
+  Truthfulness is the concept, not emotive states. No self-report analysis.
+  No multi-turn conversation. No temporal dynamics. No steering. No
+  comparison of probe-defined state with model's own reporting.
+
+- Overall takeaway:
+  Cite as evidence that internal states can diverge from outputs, and that
+  probes can detect what outputs miss. This directly motivates your logit-
+  based estimator that recovers variation invisible in greedy reports.
+
+--------------------------------------------------------------------------------
+10. McKenzie et al. (2025) — Detecting High-Stakes Interactions with
+    Activation Probes
+--------------------------------------------------------------------------------
+- Central finding:
+  Activation probes can serve as efficient monitors to detect "high-stakes"
+  or potentially harmful user interactions, matching the performance of
+  much larger fine-tuned models at a fraction of the computational cost.
+
+- Methodology:
+  Train lightweight linear probes on intermediate activations to classify
+  interactions as high-stakes vs. benign; compare with full model fine-tuning
+  and larger model baselines.
+
+- Relevance to my work:
+  Practical demonstration that lightweight probes on internal representations
+  can serve as real-time monitors — similar to your per-turn probe-based
+  measurement of internal state during conversations.
+
+- What it lacks relative to my work:
+  Binary classification of interaction type, not continuous tracking of
+  emotive state. No self-report. No multi-turn temporal analysis. No
+  steering. No comparison with model's own numeric reports.
+
+- Overall takeaway:
+  Cite as a practical application demonstrating the utility of activation
+  probes for monitoring, paralleling your use of probes as continuous state
+  monitors during conversation.
+
+================================================================================

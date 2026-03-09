@@ -1,0 +1,296 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 03 Activation Steering and Causal Interventions
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Li et al. (2023) — Inference-Time Intervention: Eliciting Truthful Answers
+   from a Language Model (ITI)
+--------------------------------------------------------------------------------
+- Central finding:
+  Identifying truthfulness-associated directions in activation space via
+  linear probes and shifting activations along these directions at inference
+  time significantly improves truthfulness on TruthfulQA, with minimal
+  impact on other capabilities.
+
+- Methodology:
+  Train linear probes on hidden states to identify "truthful" directions;
+  apply additive interventions to activations during inference; evaluate on
+  TruthfulQA and other benchmarks; layer and head selection analysis.
+
+- Relevance to my work:
+  Directly demonstrates the probe → steer → observe behavior change
+  pipeline that your work also uses. Establishes that probe-defined
+  directions can be causally leveraged to modify model behavior.
+
+- What it lacks relative to my work:
+  Steers for truthfulness (factual correctness), not emotive concepts.
+  Single-turn QA evaluation. No self-report comparison. No multi-turn
+  conversation. No temporal dynamics. Goal is to improve accuracy, not to
+  test introspective access. Does not measure whether the model's self-
+  report tracks the steered internal state.
+
+- Overall takeaway:
+  Key methodological precedent for your steering pipeline. Cite to establish
+  that probe-defined directions are causally relevant, then contrast your
+  novel application: using steering to test and improve introspection, not
+  just output accuracy.
+
+--------------------------------------------------------------------------------
+2. Zou et al. (2023) — Representation Engineering: A Top-Down Approach to
+   AI Transparency
+--------------------------------------------------------------------------------
+- Central finding:
+  High-level concepts (honesty, happiness, fairness, power) can be identified
+  as linear directions using contrastive stimuli, and these directions can
+  be monitored and controlled to detect and modify model behaviors including
+  lying, hallucination, and power-seeking.
+
+- Methodology:
+  Representation Engineering (RepE): collect contrastive stimulus pairs;
+  compute mean difference vectors; apply reading vectors (probing) and
+  control vectors (steering) on residual stream activations.
+
+- Relevance to my work:
+  Very closely related methodology. Your probe training is conceptually
+  similar to RepE's contrastive direction extraction. RepE also includes
+  some emotive-adjacent concepts (happiness). The reading + control
+  duality maps to your probing + steering framework.
+
+- What it lacks relative to my work:
+  Primarily single-shot evaluation settings. No multi-turn conversational
+  context. No numeric self-report from the model. No temporal tracking of
+  concept state through conversation. No turn-by-turn probe-report coupling
+  analysis. No comparison of greedy vs. logit-based self-report extraction.
+  Focuses on controlling behavior, not testing whether the model can report
+  its own state.
+
+- Overall takeaway:
+  Essential citation for the RepE framework. Your work extends RepE by
+  closing the loop: instead of just reading and controlling internal state,
+  you ask whether the model's own self-report tracks that internal state,
+  and how this coupling evolves through conversation.
+
+--------------------------------------------------------------------------------
+3. Panickssery et al. (2023) — Steering Llama 2 via Contrastive Activation
+   Addition (CAA)
+--------------------------------------------------------------------------------
+- Central finding:
+  Steering vectors computed from contrastive activation differences can
+  reliably shift model behavior on multiple-choice evaluations for
+  sycophancy, power-seeking, and other alignment-relevant traits, often
+  outperforming other methods.
+
+- Methodology:
+  Compute steering vectors as mean activation differences between positive
+  and negative concept examples at a target layer; add to residual stream
+  during inference; evaluate on multiple-choice benchmarks and open-ended
+  generation.
+
+- Relevance to my work:
+  Your activation steering approach descends from this methodology. CAA
+  establishes that contrastive steering vectors work reliably for behavioral
+  concepts in instruction-tuned LLMs.
+
+- What it lacks relative to my work:
+  Steers alignment-relevant traits (sycophancy, power-seeking), not emotive
+  concepts. Evaluated on multiple-choice benchmarks, not naturalistic multi-
+  turn conversation. No self-report analysis. No temporal dynamics. No probe-
+  report coupling measurement. Does not test introspective access.
+
+- Overall takeaway:
+  Cite for the contrastive activation addition methodology you inherit.
+  Your work applies similar techniques but for a fundamentally different
+  purpose: testing and improving introspection rather than aligning behavior.
+
+--------------------------------------------------------------------------------
+4. Kong et al. (2024) — Aligning Large Language Models with Representation
+   Editing: A Control Perspective (RE-CONTROL)
+--------------------------------------------------------------------------------
+- Central finding:
+  Viewing LLM generation as a discrete-time dynamical system, dynamic
+  control signals applied to the representation space at each generation
+  step can align model behavior for helpfulness and harmlessness, overcoming
+  limitations of static steering vectors.
+
+- Methodology:
+  Formalize generation as a dynamical system; compute per-step control
+  signals in representation space; optimize for alignment objectives;
+  compare with static activation addition methods.
+
+- Relevance to my work:
+  Introduces the idea of dynamic, per-step representation control, which
+  parallels your per-turn analysis of how internal state and self-report
+  evolve through conversation. Also demonstrates that static interventions
+  can be insufficient.
+
+- What it lacks relative to my work:
+  Focused on alignment optimization (helpfulness, harmlessness), not
+  introspection. No self-report analysis. No emotive concepts. No multi-
+  turn conversation with a user. No comparison of model self-report with
+  internal state.
+
+- Overall takeaway:
+  Cite for the dynamic control perspective and the insight that per-step
+  interventions may be needed. Tangentially relevant to your temporal
+  analysis.
+
+--------------------------------------------------------------------------------
+5. Arditi et al. (2024) — Refusal in Language Models Is Mediated by a Single
+   Direction
+--------------------------------------------------------------------------------
+- Central finding:
+  Refusal behavior in chat models is mediated by a single linear direction
+  in activation space. Adding this direction induces refusal on harmless
+  prompts; erasing it removes refusal entirely. This proves causal control
+  via a single concept direction.
+
+- Methodology:
+  Identify the refusal direction via contrastive activation analysis; add or
+  ablate this direction; test on harmful and harmless prompts; demonstrate
+  directional causality.
+
+- Relevance to my work:
+  Strongest single-direction causal result in the steering literature.
+  Demonstrates that a single linear direction can causally control a complex
+  behavioral phenotype. Supports your assumption that individual concept
+  directions are meaningful and causally active.
+
+- What it lacks relative to my work:
+  Refusal is a binary behavioral trait, not a graded emotive state. No
+  self-report analysis. No multi-turn context. No temporal dynamics. No
+  introspection testing. No numeric self-report comparison.
+
+- Overall takeaway:
+  Cite as the clearest evidence that single concept directions can causally
+  control behavior. Your work extends this causal logic to test whether
+  steering also causally affects self-report.
+
+--------------------------------------------------------------------------------
+6. Turner et al. (2024) — Steering Language Models with Activation Engineering
+   (ActAdd)
+--------------------------------------------------------------------------------
+- Central finding:
+  Simple algebraic operations on activation vectors (Activation Addition)
+  can control model generation, achieving state-of-the-art in sentiment
+  control and toxicity reduction while being computationally cheap and
+  not requiring retraining.
+
+- Methodology:
+  Compute steering vectors from prompt pairs (e.g., "Love" vs. "Hate");
+  add to residual stream at a target layer during generation; evaluate on
+  sentiment, toxicity, and behavioral benchmarks.
+
+- Relevance to my work:
+  Foundational methodological reference for your activation steering
+  approach. Demonstrates the practicality and effectiveness of activation
+  addition for concept-level control.
+
+- What it lacks relative to my work:
+  Focused on sentiment and toxicity control. No multi-turn conversational
+  setting. No self-report analysis. No probe-report coupling. No temporal
+  dynamics. No introspection testing. Goal is behavior modification, not
+  introspection measurement.
+
+- Overall takeaway:
+  Cite as the methodological foundation for activation addition. Your work
+  uses a similar mechanism but repurposes it as a causal test of
+  introspective access rather than a behavior control tool.
+
+--------------------------------------------------------------------------------
+7. Konen et al. (2024) — Style Vectors for Steering Generative Large Language
+   Models
+--------------------------------------------------------------------------------
+- Central finding:
+  "Style vectors" can predictably shift generated text toward specific
+  sentiments (positive/negative), emotions, or writing styles, demonstrating
+  that stylistic and emotional properties are linearly encoded in LLM
+  activation space.
+
+- Methodology:
+  Extract style vectors from contrastive examples; apply activation addition
+  during generation; evaluate shift in sentiment, emotion, and stylistic
+  properties of generated text.
+
+- Relevance to my work:
+  Demonstrates that emotive and stylistic properties are linearly
+  represented and steerable, directly supporting your premise that emotive
+  concept directions exist and can be manipulated.
+
+- What it lacks relative to my work:
+  Steers output style but does not test whether the model can report on its
+  own steered state. No self-report. No probes monitoring internal state
+  independently. No multi-turn conversation. No temporal dynamics. No
+  introspection measurement.
+
+- Overall takeaway:
+  Cite as evidence that emotive/stylistic concepts are linearly steerable,
+  then note your innovation: testing whether the model's self-report tracks
+  these steered states.
+
+--------------------------------------------------------------------------------
+8. Frising and Balcells (2025) — Linear Personality Probing and Steering in
+   LLMs: A Big Five Study
+--------------------------------------------------------------------------------
+- Central finding:
+  Big Five personality traits can be mapped to linear directions in Llama 3
+  activation space and used for both probing (detecting personality) and
+  steering (shifting personality). However, steering is brittle — it works
+  on forced-choice questionnaires but struggles in open-ended generation
+  and is overridden by prompt context.
+
+- Methodology:
+  Compute personality directions from contrastive stimuli; probe personality
+  from activations; steer personality via activation addition; evaluate on
+  personality questionnaires and open-ended generation.
+
+- Relevance to my work:
+  Most closely related in terms of concept type (personality/disposition
+  rather than factual knowledge). Demonstrates that personality-like traits
+  are linearly represented. The brittleness finding is relevant: your work
+  may also encounter challenges where steering effects are context-dependent.
+
+- What it lacks relative to my work:
+  Tests personality traits (Big Five), not emotive states per se. Personality
+  is static, not a dynamic state that evolves through conversation. No
+  multi-turn conversational setting. No turn-by-turn temporal analysis.
+  No model self-report analysis. No probe-report coupling. No logit-based
+  estimation.
+
+- Overall takeaway:
+  Cite for the demonstration that personality-adjacent concept directions
+  are linearly represented but steering can be brittle. Your work extends
+  to dynamic emotive states in multi-turn settings where temporal evolution
+  matters, and directly tests whether self-report tracks the steered state.
+
+--------------------------------------------------------------------------------
+9. Wehner et al. (2025) — Taxonomy, Opportunities, and Challenges of
+   Representation Engineering for Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  Comprehensive survey establishing a taxonomy of representation engineering
+  approaches, documenting their successes in controlling truthfulness,
+  style, safety, and personality, while identifying open challenges
+  including context-dependence, layer sensitivity, and scaling behavior.
+
+- Methodology:
+  Systematic literature review and taxonomy construction covering reading
+  (probing) and control (steering) methods across multiple behavioral
+  domains.
+
+- Relevance to my work:
+  Situates your work within the broader RepE landscape. Identifies that
+  RepE has mainly been applied to surface behaviors (truthfulness, safety,
+  style) and not to metacognitive or introspective capabilities. This
+  gap is exactly what your paper fills.
+
+- What it lacks relative to my work:
+  Survey paper, no new experiments. Does not address introspection or
+  self-report. No multi-turn conversational studies. No emotive concept
+  tracking. No temporal dynamics.
+
+- Overall takeaway:
+  Cite when positioning your work as a novel application of RepE — using
+  steering not to control behavior but to test and improve introspective
+  access. The survey itself identifies the gap your paper fills.
+
+================================================================================

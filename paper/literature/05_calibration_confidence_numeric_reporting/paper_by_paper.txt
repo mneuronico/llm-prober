@@ -1,0 +1,639 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 05 Calibration, Confidence Estimation, and Numeric Reporting
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Mielke et al. (2022) — Reducing Conversational Agents' Overconfidence
+   Through Linguistic Calibration
+--------------------------------------------------------------------------------
+- Central finding:
+  Conversational agents are systematically overconfident. Linguistic
+  calibration via reinforcement learning can train models to produce hedged
+  language that elicits better-calibrated downstream user beliefs.
+
+- Methodology:
+  RL-based fine-tuning to optimize linguistic hedging; calibration measured
+  as alignment between model's expressed uncertainty and user's downstream
+  forecasts; human evaluation studies.
+
+- Relevance to my work:
+  Early work on making model-expressed uncertainty more informative.
+  Relevant as background for why naïve model outputs overstate certainty —
+  paralleling your finding that greedy numeric self-reports collapse to high
+  values.
+
+- What it lacks relative to my work:
+  Calibration of hedging language for factual claims, not numeric self-report
+  of internal concepts. No probing. No emotive concepts. No multi-turn
+  internal state tracking. No comparison with probe-defined state.
+
+- Overall takeaway:
+  Cite as background on the overconfidence problem in LLM reporting, which
+  motivates your logit-based approach that bypasses this limitation.
+
+--------------------------------------------------------------------------------
+2. Tian et al. (2023) — Just Ask for Calibration: Strategies for Eliciting
+   Calibrated Confidence Scores from Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  Simply prompting RLHF-tuned LLMs for numeric confidence scores yields
+  surprisingly well-calibrated probabilities, competitive with or exceeding
+  more complex methods. Verbalized confidence is a viable signal.
+
+- Methodology:
+  Prompt LLMs for numeric confidence (0-100%); measure calibration (ECE,
+  Brier) against factual accuracy; compare with sampling-based and logit-
+  based alternatives.
+
+- Relevance to my work:
+  Establishes that prompted numeric confidence is feasible and sometimes
+  well-calibrated — the basic operation your self-report extraction builds
+  on. However, their calibration is against factual correctness, whereas
+  yours is against probe-defined internal state.
+
+- What it lacks relative to my work:
+  Factual correctness calibration only. No emotive concepts. No probing of
+  internal state. No multi-turn conversation. No temporal dynamics. No
+  comparison of greedy vs. logit-based extraction. No causal steering.
+
+- Overall takeaway:
+  Cite as precedent for numeric confidence elicitation. Contrast by noting
+  your target is not correctness calibration but fidelity to internal
+  concept state.
+
+--------------------------------------------------------------------------------
+3. Manakul et al. (2023) — SelfCheckGPT: Zero-Resource Black-Box Hallucination
+   Detection for Generative Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  By sampling multiple responses and measuring their informational
+  consistency, hallucinations can be detected without ground truth. High
+  divergence among samples indicates low confidence and probable
+  hallucination.
+
+- Methodology:
+  Sample multiple model outputs; compute consistency metrics (n-gram overlap,
+  NLI-based contradiction detection, BERTScore); flag divergent outputs as
+  hallucinations.
+
+- Relevance to my work:
+  Alternative approach to estimating model uncertainty via sampling
+  consistency. Your logit-based estimator serves a similar purpose but
+  operates at the single-generation level rather than requiring multiple
+  samples, making it more efficient for per-turn evaluation.
+
+- What it lacks relative to my work:
+  Hallucination detection, not internal state tracking. No emotive concepts.
+  No probing. No numeric self-reports. No multi-turn conversation. No
+  temporal dynamics. No comparison with probe-defined state. Requires
+  multiple samples per query.
+
+- Overall takeaway:
+  Cite as context for alternative uncertainty estimation methods. Your
+  single-forward-pass logit-based approach is more suitable for per-turn
+  tracking in conversations.
+
+--------------------------------------------------------------------------------
+4. Zhang et al. (2024) — Calibrating the Confidence of Large Language Models
+   by Eliciting Fidelity
+--------------------------------------------------------------------------------
+- Central finding:
+  Models' self-reported confidence can be improved by eliciting fidelity —
+  prompting models to assess the trustworthiness of their own reasoning
+  process, not just the answer.
+
+- Methodology:
+  Multi-step prompting: generate answer → assess reasoning fidelity →
+  calibrate confidence; measure calibration against factual accuracy.
+
+- Relevance to my work:
+  Another approach to improving the quality of numeric self-reports. However,
+  their "fidelity" is about reasoning correctness, not about tracking
+  internal concept states.
+
+- What it lacks relative to my work:
+  Factual calibration focus. No emotive concepts. No probing. No multi-
+  turn context. No temporal dynamics. No probe-report coupling. No steering.
+
+- Overall takeaway:
+  Minor citation. Demonstrates that reasoning about reasoning can improve
+  calibration, but in a fundamentally different domain from your emotive
+  state tracking.
+
+--------------------------------------------------------------------------------
+5. Xie et al. (2024) — Calibrating Reasoning in Language Models with Internal
+   Consistency
+--------------------------------------------------------------------------------
+- Central finding:
+  Inconsistencies between intermediate and final layer representations can
+  accurately signal unfaithful chain-of-thought reasoning. Internal
+  consistency can serve as a calibration signal.
+
+- Methodology:
+  Compare representations at intermediate vs. final layers during reasoning;
+  use discrepancies to detect unfaithful reasoning; calibrate confidence
+  based on layer agreement.
+
+- Relevance to my work:
+  Demonstrates that internal layer representations carry information beyond
+  what the final output reveals — paralleling your finding that logit-based
+  estimators recover variation invisible in greedy outputs. The idea that
+  internal consistency matters connects to your concept coherence analysis.
+
+- What it lacks relative to my work:
+  Reasoning faithfulness, not emotive state tracking. No self-report. No
+  multi-turn conversation. No temporal dynamics. No emotive concepts. No
+  steering.
+
+- Overall takeaway:
+  Cite as support for the idea that internal representations contain
+  richer signals than surface outputs, motivating your logit-based
+  extraction approach.
+
+--------------------------------------------------------------------------------
+6. Wang et al. (2024) — Calibrating Verbalized Probabilities for Large
+   Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  Verbalized probabilities from LLMs are poorly calibrated but can be
+  improved by post-hoc logit scaling, using an "invert softmax" trick to
+  approximate underlying logits from verbalized text.
+
+- Methodology:
+  Elicit verbalized probabilities; apply temperature scaling and binning
+  to correct miscalibration; compare with internal logit-based
+  probabilities.
+
+- Relevance to my work:
+  Directly relevant to your logit-based self-report methodology. Their
+  finding that verbalized probabilities need correction parallels your
+  finding that greedy numeric reports collapse and logit-based extraction
+  is more informative.
+
+- What it lacks relative to my work:
+  Calibration for factual correctness. No emotive concepts. No probing of
+  internal state. No multi-turn conversation. No temporal dynamics. No
+  steering. No comparison with independently measured concept directions.
+
+- Overall takeaway:
+  Cite as methodological precedent for the idea that raw verbalized
+  numbers are unreliable and logit-level information is needed. Your
+  logit-based estimator pursues the same insight in a different domain.
+
+--------------------------------------------------------------------------------
+7. Xiong et al. (2024) — Can LLMs Express Their Uncertainty? An Empirical
+   Evaluation of Confidence Elicitation in LLMs
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs struggle to faithfully express intrinsic uncertainty verbally.
+  Numeric self-reports cluster in 80-100% range and appear in multiples
+  of five, mimicking human conversational patterns rather than reflecting
+  true probabilistic calibration.
+
+- Methodology:
+  Systematic evaluation of multiple confidence elicitation methods (verbal,
+  numeric, sampling-based); analysis of calibration, discrimination, and
+  distribution of expressed confidence across tasks and models.
+
+- Relevance to my work:
+  Directly supports your finding that greedy numeric self-reports collapse
+  to narrow high-confidence ranges. The clustering in multiples of five
+  specifically motivates your logit-based approach that bypasses these
+  human-mimicking artifacts.
+
+- What it lacks relative to my work:
+  Uncertainty about factual correctness only. No emotive concepts. No
+  probing. No multi-turn conversation. No temporal dynamics. No steering.
+  No comparison with internal state measurements.
+
+- Overall takeaway:
+  Key citation for motivating your logit-based estimator. Their findings
+  about collapsed greedy reports directly parallel yours, and your approach
+  provides the solution their work lacks.
+
+--------------------------------------------------------------------------------
+8. Kumar et al. (2024) — Confidence Under the Hood: An Investigation into
+   the Confidence-Probability Alignment in Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  The explicit numeric certainty expressed in LLM responses often misaligns
+  with internal token probabilities. There is a fundamental disconnect
+  between external verbal reports and internal latent confidence signals.
+
+- Methodology:
+  Compare verbalized confidence scores with actual token-level probabilities;
+  measure Confidence-Probability Alignment across tasks and models; analyze
+  where and why misalignment occurs.
+
+- Relevance to my work:
+  Central to your argument. The verbal-internal disconnect is exactly what
+  your logit-based estimator addresses. Your probe-report coupling analysis
+  extends this beyond probability alignment to concept-state alignment.
+
+- What it lacks relative to my work:
+  Factual confidence focus. No emotive concepts. No probing for concept
+  directions. No multi-turn context. No temporal dynamics. No steering.
+  Does not propose a method to recover better alignment (only documents
+  the problem).
+
+- Overall takeaway:
+  Essential citation when introducing your logit-based estimator. Their
+  documentation of the verbal-internal disconnect motivates your solution.
+
+--------------------------------------------------------------------------------
+9. Farquhar et al. (2024) — Detecting Hallucinations in Large Language Models
+   Using Semantic Entropy
+--------------------------------------------------------------------------------
+- Central finding:
+  Semantic Entropy — clustering sampled answers by bidirectional entailment
+  before computing entropy — provides a highly accurate uncertainty signal
+  that measures confidence in meaning rather than specific token sequences,
+  solving the surface-form competition problem.
+
+- Methodology:
+  Sample multiple outputs; cluster by semantic equivalence (entailment);
+  compute entropy over semantic clusters; evaluate on hallucination
+  detection and uncertainty benchmarks.
+
+- Relevance to my work:
+  Alternative approach to recovering rich uncertainty signals from models.
+  Semantic entropy measures meaning-level confidence, while your logit-based
+  approach measures token-level probability allocation. Both go beyond
+  naive greedy outputs.
+
+- What it lacks relative to my work:
+  Hallucination/uncertainty focus. No emotive concepts. No probing. No
+  multi-turn conversation. No temporal dynamics. No self-report of internal
+  concept state. Requires multiple samples.
+
+- Overall takeaway:
+  Cite as a complementary approach to recovering rich model signals. Your
+  single-pass logit-based method is more practical for per-turn tracking.
+
+--------------------------------------------------------------------------------
+10. Yona, Aharoni, and Geva (2024) — Can Large Language Models Faithfully
+    Express Their Intrinsic Uncertainty in Words?
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs frequently fail to faithfully express their intrinsic uncertainty in
+  words, generating incorrect information with high verbalized confidence.
+  The faithful expression of internal uncertainty remains an unsolved
+  problem.
+
+- Methodology:
+  Evaluate alignment between model-expressed verbal uncertainty and actual
+  internal token-level uncertainty; test across multiple domains and models.
+
+- Relevance to my work:
+  Directly motivates your work: if models cannot faithfully express their
+  uncertainty verbally, then external measures (probes) and richer
+  extraction methods (logit-based) are needed. Your paper provides both.
+
+- What it lacks relative to my work:
+  Uncertainty about factual correctness. No emotive concepts. No probing of
+  internal concept directions. No multi-turn context. No temporal dynamics.
+  No steering. Does not propose probe-based solutions.
+
+- Overall takeaway:
+  Cite as motivation for why self-reports need independent validation and
+  richer extraction methods. Your logit-based estimator plus probe
+  comparison addresses exactly the problem they identify.
+
+--------------------------------------------------------------------------------
+11. Band et al. (2024) — Linguistic Calibration of Long-Form Generations
+--------------------------------------------------------------------------------
+- Central finding:
+  Linguistic calibration can be optimized for long-form text generation
+  so that hedging and uncertainty markers in generated text lead to
+  well-calibrated downstream forecasts from users.
+
+- Methodology:
+  RL-based optimization of linguistic uncertainty expression; human
+  evaluation of calibration quality in long-form text; comparison with
+  baseline models.
+
+- Relevance to my work:
+  Shows that calibration is relevant beyond single-turn QA, extending to
+  generative settings. Tangentially related to your conversational setting.
+
+- What it lacks relative to my work:
+  Linguistic hedging in text, not numeric self-report. No emotive concepts.
+  No probing. No multi-turn conversation. No temporal dynamics. No probe-
+  report coupling. No steering.
+
+- Overall takeaway:
+  Minor citation. Relevant as background on calibration in generative
+  settings.
+
+--------------------------------------------------------------------------------
+12. Griot et al. (2024) — Large Language Models Lack Essential Metacognition
+    for Reliable Medical Reasoning
+--------------------------------------------------------------------------------
+- Central finding:
+  In medical reasoning, LLMs demonstrate poor metacognitive calibration —
+  they cannot reliably judge when their medical answers are correct,
+  highlighting the limits of LLM self-knowledge in high-stakes domains.
+
+- Methodology:
+  Evaluate LLM self-assessed confidence against medical question accuracy;
+  measure calibration, discrimination, and appropriate abstention in
+  medical contexts.
+
+- Relevance to my work:
+  Another domain-specific demonstration that LLM self-assessment is
+  unreliable, reinforcing the need for independent validation tools like
+  your probe-based framework.
+
+- What it lacks relative to my work:
+  Medical domain. Factual correctness focus. No emotive concepts. No
+  probing. No multi-turn conversation. No temporal dynamics. No steering.
+
+- Overall takeaway:
+  Minor citation. Further evidence that self-reports need validation.
+
+--------------------------------------------------------------------------------
+13. Geng et al. (2024) — A Survey of Confidence Estimation and Calibration
+    in Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  Comprehensive survey establishing that LLM confidence estimation methods
+  span verbalized, logit-based, sampling-based, and hybrid approaches, with
+  each having distinct strengths and weaknesses. Logit-based methods
+  generally offer stronger baseline calibration.
+
+- Methodology:
+  Systematic literature review and taxonomy of confidence estimation methods;
+  comparison of approaches across dimensions of calibration quality,
+  computational cost, and applicability.
+
+- Relevance to my work:
+  Situates your logit-based self-report estimator within the broader
+  confidence estimation landscape. Their finding that logit-based methods
+  outperform verbalized confidence supports your methodological choice.
+
+- What it lacks relative to my work:
+  Survey paper, no new experiments. All methods are evaluated on factual
+  correctness, not emotive concept state. No probing. No multi-turn
+  setting. No temporal dynamics. No steering.
+
+- Overall takeaway:
+  Cite for situating your logit-based estimator within the confidence
+  estimation literature and for precedent that logit-based methods
+  outperform verbalized reports.
+
+--------------------------------------------------------------------------------
+14. Bodhwani et al. (2025) — A Calibrated Reflection Approach for Enhancing
+    Confidence Estimation in LLMs
+--------------------------------------------------------------------------------
+- Central finding:
+  Combining Maximum Confidence Selection across labels with a reflection-
+  based prompting mechanism forces models to evaluate their initial numeric
+  estimates, improving calibration.
+
+- Methodology:
+  Calibrated Reflection framework: generate confidence → reflect and
+  revise → final calibrated estimate; evaluate on factual QA benchmarks.
+
+- Relevance to my work:
+  Another prompting-based approach to improving numeric self-reports.
+  The reflection mechanism is tangentially related to the idea that
+  self-assessment can be improved, paralleling your finding that steering
+  can improve introspection.
+
+- What it lacks relative to my work:
+  Factual calibration. No emotive concepts. No probing. No multi-turn
+  conversation. No temporal dynamics. No steering. The improvement
+  mechanism is prompting-based, not activation-based.
+
+- Overall takeaway:
+  Minor citation for the calibrated numeric self-report literature.
+
+--------------------------------------------------------------------------------
+15. Li et al. (2025) — ConfTuner: Training Large Language Models to Express
+    Their Confidence Verbally
+--------------------------------------------------------------------------------
+- Central finding:
+  Fine-tuning with a tokenized Brier score as a proper scoring rule trains
+  models to output numeric probabilities that accurately reflect the
+  likelihood of correctness, without requiring proxy labels.
+
+- Methodology:
+  Supervised fine-tuning with Brier score loss on numeric confidence tokens;
+  evaluate calibration on factual QA benchmarks; compare with baseline
+  prompting approaches.
+
+- Relevance to my work:
+  Shows that models can be trained to produce better-calibrated numeric
+  outputs. Interesting parallel: their approach trains confidence on
+  correctness, while your steering approach causally improves self-reports
+  of internal concept state.
+
+- What it lacks relative to my work:
+  Requires fine-tuning (not inference-time). Factual correctness target.
+  No emotive concepts. No probing. No multi-turn conversation. No temporal
+  dynamics. No comparison with independently measured internal state.
+
+- Overall takeaway:
+  Cite for precedent that numeric self-report quality can be improved via
+  training. Contrast with your inference-time steering approach that
+  requires no fine-tuning.
+
+--------------------------------------------------------------------------------
+16. Zhang et al. (2025) — Direct Confidence Alignment: Aligning Verbalized
+    Confidence with Internal Confidence in Large Language Models (DCA)
+--------------------------------------------------------------------------------
+- Central finding:
+  DPO can directly align a model's generated verbal confidence with its
+  internal token-level confidence, treating the latent state as the target
+  truth for self-report — bypassing the need for external accuracy labels.
+
+- Methodology:
+  Direct Preference Optimization (DPO) to align verbalized confidence with
+  internal token probabilities; no external factual labels required;
+  evaluate calibration improvement.
+
+- Relevance to my work:
+  Closest methodological parallel in the calibration literature. DCA aligns
+  verbal reports with internal token confidence; your work aligns verbal
+  reports with probe-defined concept state. Both treat the internal signal
+  as the "ground truth" rather than external accuracy.
+
+- What it lacks relative to my work:
+  Aligns with token-level confidence (surface-level uncertainty), not with
+  concept-specific probe directions. Requires training (DPO). No emotive
+  concepts. No multi-turn conversation. No temporal dynamics. No activation
+  steering. Does not test whether alignment transfers across concepts.
+
+- Overall takeaway:
+  Important citation. Your work extends the "align report with internal
+  state" idea from token confidence to probe-defined concept directions,
+  in a richer experimental setting, without requiring training.
+
+--------------------------------------------------------------------------------
+17. Steyvers, Belem, and Smyth (2025) — Improving Metacognition and
+    Uncertainty Communication in Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  Multitask fine-tuning on metacognitive tasks (single-question confidence,
+  pairwise confidence comparison) improves both calibration and
+  discrimination across diverse domains.
+
+- Methodology:
+  Fine-tune on multiple metacognitive tasks simultaneously; evaluate
+  transfer of calibration improvement across domains.
+
+- Relevance to my work:
+  Shows that metacognitive capability can be trained and can generalize.
+  Parallels your finding that steering some concepts can improve
+  introspection for others.
+
+- What it lacks relative to my work:
+  Requires fine-tuning. Factual metacognition only. No emotive concepts.
+  No probing. No multi-turn conversation. No temporal dynamics. No
+  activation steering.
+
+- Overall takeaway:
+  Cite for the finding that metacognitive improvement can transfer across
+  domains, supporting your cross-concept steering results.
+
+--------------------------------------------------------------------------------
+18. Manggala et al. (2025) — QA-Calibration of Language Model Confidence
+    Scores
+--------------------------------------------------------------------------------
+- Central finding:
+  Post-hoc binning and logit scaling applied to verbalized confidence scores
+  (via an "invert softmax" trick) can significantly improve calibration
+  quality.
+
+- Methodology:
+  Collect verbalized confidence; apply QA-binning to approximate underlying
+  logits; scale; evaluate calibration improvement.
+
+- Relevance to my work:
+  Methodologically adjacent to your logit-based estimator. Both recognize
+  that raw verbalized numbers need transformation to recover meaningful
+  signals.
+
+- What it lacks relative to my work:
+  Post-hoc correction of existing reports, not direct extraction from
+  logits. Factual correctness target. No emotive concepts. No probing.
+  No multi-turn context. No temporal dynamics. No steering.
+
+- Overall takeaway:
+  Cite for precedent on logit-level correction of self-reports.
+
+--------------------------------------------------------------------------------
+19. Lamb et al. (2025) — Semantic-Level Confidence Calibration of Language
+    Models via Temperature Scaling
+--------------------------------------------------------------------------------
+- Central finding:
+  Simple scalar temperature scaling on token generation drastically improves
+  calibration of semantic-level confidence distributions.
+
+- Methodology:
+  Apply temperature scaling during generation; evaluate calibration at the
+  semantic level (meaning-equivalent clusters); compare with baseline and
+  per-token calibration.
+
+- Relevance to my work:
+  Demonstrates that simple interventions at the generation level can
+  significantly improve confidence signal quality — paralleling your
+  finding that logit-based extraction recovers signals greedy decoding
+  misses.
+
+- What it lacks relative to my work:
+  Temperature scaling for factual calibration. No emotive concepts. No
+  probing. No multi-turn context. No temporal dynamics. No steering.
+
+- Overall takeaway:
+  Minor citation for the principle that generation-level adjustments
+  improve signals.
+
+--------------------------------------------------------------------------------
+20. Wu et al. (2025) — Thought Calibration: Efficient and Confident Test-Time
+    Scaling
+--------------------------------------------------------------------------------
+- Central finding:
+  Lightweight linear probes on hidden layers can dynamically predict
+  reasoning consistency and terminate generation early, achieving efficient
+  test-time scaling.
+
+- Methodology:
+  Train linear probes on hidden states to predict reasoning consistency;
+  use probe predictions to decide when to stop generation; evaluate
+  efficiency-accuracy tradeoffs.
+
+- Relevance to my work:
+  Uses linear probes on hidden states for decision-making during generation,
+  directly paralleling your per-turn probe measurements. Shows that probes
+  can provide real-time signals about model state during generation.
+
+- What it lacks relative to my work:
+  Reasoning consistency, not emotive concept state. No self-report. No
+  multi-turn conversation. No temporal dynamics. No steering. No emotive
+  concepts.
+
+- Overall takeaway:
+  Cite for the idea that probe-based monitoring during generation is
+  practical and informative.
+
+--------------------------------------------------------------------------------
+21. Wang and Stengel-Eskin (2026) — Calibrating Verbalized Confidence with
+    Self-Generated Distractors (DINCO)
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs artificially inflate confidence when a claim is presented in the
+  prompt (suggestibility). Normalizing confidence against self-generated
+  distractor claims removes this bias and improves calibration.
+
+- Methodology:
+  Model generates alternative claims (distractors); confidence in original
+  claim is normalized by sum of confidences across all claims; evaluated
+  on fact-checking and QA tasks.
+
+- Relevance to my work:
+  The suggestibility problem — inflated confidence due to prompt framing —
+  is analogous to the concern that your self-report prompts might bias the
+  model's numeric response. Your logit-based approach may partially
+  mitigate this by extracting implicit probability allocation rather than
+  prompted verbalization.
+
+- What it lacks relative to my work:
+  Factual claim verification. No emotive concepts. No probing. No multi-
+  turn conversation. No temporal dynamics. No steering.
+
+- Overall takeaway:
+  Cite for the prompt-suggestibility confound, relevant to discussing
+  limitations of your self-report prompting methodology.
+
+--------------------------------------------------------------------------------
+22. Wang et al. (2026) — Are LLM Decisions Faithful to Verbal Confidence?
+--------------------------------------------------------------------------------
+- Central finding:
+  Even when LLMs output calibrated verbal confidence scores, they lack the
+  strategic agency to act on them. When facing high-penalty scenarios for
+  incorrect answers, models fail to adjust abstention rates accordingly.
+  Verbalized confidence does not reliably govern downstream behavior.
+
+- Methodology:
+  Test whether LLMs adjust behavioral strategies (abstention, answer
+  revision) based on their own stated confidence; manipulate penalty
+  structures; compare stated confidence with behavioral adaptation.
+
+- Relevance to my work:
+  Reveals a dissociation between expressed confidence and behavioral
+  control. Analogous to the broader question of whether self-reports
+  actually reflect functional internal states. Your probe-based framework
+  tests this alignment directly.
+
+- What it lacks relative to my work:
+  Behavioral decision-making, not internal state tracking. No emotive
+  concepts. No probing. No multi-turn context. No temporal dynamics.
+  No steering. No concept direction comparison.
+
+- Overall takeaway:
+  Cite as evidence that self-reports and behavior can dissociate, further
+  motivating the need for independent internal state measurement (probes)
+  to validate what models report.
+
+================================================================================

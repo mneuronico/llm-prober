@@ -51,11 +51,13 @@ Use this part to motivate from four angles, but keep them compact:
 * **scientific interest**
   LLMs are non-human cognitive systems; introspection is one of the classical tools for studying cognition.
 
-This is good intro material. It should not become an essay. A few paragraphs.
+This is good intro material. It should not become an essay. I'd say ONLY ONE PARAGRAPH.
 
 ### 1.2 The gap
 
 Then narrow hard:
+
+We must look at the literature here and identify the missing things, for example:
 
 * Most prior work studies introspection in **restricted, synthetic, single-shot, or otherwise less natural settings**.
 * It is unclear whether LLMs can introspect in **naturalistic multi-turn user conversations**.
@@ -70,6 +72,12 @@ Then narrow hard:
 
 This is where you state the exact missing thing your paper addresses.
 
+Most importantly, I want to highlight that introspection has only very sparsely been studied in naturalistic settings (multi-turn conversations with users - Ji-an et. al. is an example of someone who did), and CRUCIALLY that introspection has not been studied quantitatively to see how good a model is at introspecting EMOTIVE STATES, by finding numerical measures of introspection that can be directly compared with internal states. That numerical introspection through time insight is key.
+
+I am not aware of prior work demonstrating that numeric self-reports of dynamic emotive states such as happiness, interest, or anxiety reliably track an independently measured internal state representation over time.
+
+This will be further developed in the related work section, here, this should be a paragraph or less.
+
 ### 1.3 Your operational definition
 
 This should appear already in the intro in one concise paragraph, then be fully formalized in Methods.
@@ -79,17 +87,20 @@ Something like:
 * We define introspection operationally as **information contained in a self-report about the relevant internal state**.
 * Concretely, a model introspects a concept to the extent that its report about that concept covaries monotonically with an independently measured internal direction associated with that concept.
 
-This is extremely important because it tells the reader:
-you are **not** claiming access to phenomenal consciousness or true subjective experience; you are proposing an operational measurement framework.
+Maybe part of the same paragraph as 1.2.
 
 ### 1.4 Main findings / contributions
 
-I would make this a clean bullet list at the end of the intro. Something like 5–7 items.
+I would make this a clean bullet list at the end of the intro. Something like 5–7 items. First, a one sentence summary, like:
+
+We show that small LLMs (< 10 billion parameters) can reliably produce self-reports of emotive states that are causally linked to those states. This introspective ability can be masked during default model behavior, but can be recovered; it can change throughout a conversation, it increases with model scale and it can be improved by steering the model towards interpretable concepts.
+
+Then bulletpoints,
 
 For example:
 
 * We introduce a framework for measuring numeric introspection in multi-turn conversations by linking self-reports to independently trained interpretable probe directions.
-* We show that greedy reports often collapse, masking internal drift.
+* We show that greedy reports often collapse, masking internal drift of emotive directions.
 * We propose a logit-based numeric self-report estimator that recovers much richer continuous variation.
 * In LLaMA-3.2-3B-Instruct, self-reports track probe-defined internal state from the first turn and this relation changes over conversation time.
 * Concept steering causally shifts self-reports in the predicted direction.
@@ -102,7 +113,6 @@ That gives the paper a clean promise.
 
 # 2. Related Work
 
-This is the section you said you care most about.
 I think your related work should be organized by **research function**, not by broad topic name.
 
 Meaning: don’t just do “introspection, probing, steering.”
@@ -116,16 +126,11 @@ This is the most central subsection.
 
 ### What kind of work belongs here
 
-Look for work on:
-
-* models reporting their own internal states,
+* literal work on introspection or metacognition, studying whether models can actually report on their internal states
+* causality of models reporting their own internal states,
 * self-knowledge / self-evaluation / self-monitoring,
-* confidence reporting, uncertainty reporting,
-* self-assessment of correctness,
-* verbalized uncertainty or calibration,
-* numerical self-report,
-* introspection as distinct from chain-of-thought explanation,
-* works asking whether models “know what they know.”
+* numerical self-reports,
+* study of emotive states in LLMs
 
 ### Why it matters
 
@@ -142,9 +147,18 @@ Emphasize that prior work often focuses on:
 
 * correctness / confidence rather than internal affect-like or state-like variables,
 * single-turn tasks,
-* benchmark settings,
+* unnatural settings, not conversation with users,
 * text explanations rather than numeric state tracking through time,
 * black-box outputs rather than explicit alignment with white-box internal measurements.
+
+
+“Causally linked self-reports of internal states” has been established by Lindsey’s concept-injection work (Emergent Introspective Awareness...). That paper explicitly uses activation injection to establish causal influence on self-reports of internal states.
+
+“Report and control internal activations” has been found by the neurofeedback work (Metacognitive Monitoring...), which shows LLMs can report and control some activation directions, though in a constrained paradigm.
+
+In these two papers: Lindsey’s setup is mainly about whether the model can notice an injected concept and identify it. Ji-An et al. also study reporting/control of activation states, but through a neurofeedback task with labeled examples, in context learning of the task, etc. Your claim is stronger if the model gives graded numeric self-reports that vary with its natural latent state without learning anything new, and in a natural setting in conversation instead of recognizing especially injected concepts as in Lindsey's. That turns introspection from “detecting a special event” into measurement.
+
+Maybe say something about introspection also being called "Metacognition" by Ji-An et al.
 
 You want this subsection to end with:
 **our work extends this by asking whether self-reports track interpretable internal state during natural multi-turn conversations, and whether that tracking is causal and temporally evolving.**
@@ -240,7 +254,11 @@ Your angle is more specific:
 * but to test **whether self-report depends causally on probe-defined state**,
 * and whether introspection quality can itself be enhanced.
 
-That’s a useful distinction to make explicit.
+To our knowledge, prior work has used activation steering to validate internal representations through downstream behavioral changes, and has used internal perturbations to test whether self-reports are grounded in model state. However, we are not aware of prior work that uses self-report of the same probe-defined state as a quantitative validation signal for the probe itself (as it would be done in neuropsychology).
+
+That’s a useful distinction to make explicit. It's not testing introspection, it's USING introspection as a method for probe validation. Maybe this goes in the DISCUSSION!, not here.
+
+I would say that these two 2.2 and 2.3 should be the same section of related work in the paper, it's a probing and steering section, they are quite similar.
 
 ---
 
@@ -319,6 +337,9 @@ You’re asking:
 
 It’s related but distinct. Still very worth citing because your method lives close to elicitation/calibration territory.
 
+
+KEY FACT: This should not be a section in the paper. Use it only informatively or if you need one of these papers in another section, but this section does not go into the paper.
+
 ---
 
 ## 2.6 AI safety, model welfare, and machine psychology
@@ -380,6 +401,51 @@ This gives you a principled analogy for:
 ### Important caution
 
 Present this as an **analogy**, not as a literal equivalence between humans and LLMs.
+
+KEY FACT: I would not put this in related work. Let's leave it for introduction / discussion, where we say something about the analogy between using introspection (self-reports and their relation to internal states) to validate and study internal states themselves, not only to study introspection.
+
+
+---
+
+## 2.8 Emotive states in LLMs
+
+A growing body of work investigates whether language models can represent, express, or be evaluated on emotive states — a topic directly adjacent to our focus on whether LLM numeric self-reports of emotive concepts track independently measured internal directions.
+
+### What kind of work belongs here
+
+Look for work on:
+
+* LLMs producing human-like self-reports of emotion (Coda-Forno et al., 2022),
+* inducing affective states (e.g., anxiety) in LLMs and measuring downstream behavioural consequences (Coda-Forno et al., 2023),
+* benchmarks that evaluate emotional understanding or emotional intelligence in LLMs (Huang et al., 2023 — EmotionBench; Sabour et al., 2024 — EmoBench),
+* controlling or eliciting emotional expression across multi-turn interactions (Fazzi et al., 2025),
+* mapping LLM emotional output onto structured psychological models such as Russell's circumplex (Ishikawa & Yoshino, 2025).
+* probing the internal geometry of emotion in LLMs with linear probes, showing emotion emerges early, peaks mid-network, and persists for hundreds of tokens (Zhang & Zhong, 2025),
+* identifying and validating causal emotion circuits that achieve near-perfect emotion-expression control via direct modulation (Wang et al., 2025).
+
+### Why it matters
+
+This literature establishes that:
+
+* LLMs can produce self-report-style outputs that pattern-match human emotional ratings at a surprising level (Coda-Forno et al., 2022), but this is evaluated purely at the output level — there is no independent internal measurement to validate whether the model "has" the state it reports.
+* Prompt-based mood inductions do shift LLM behaviour (Coda-Forno et al., 2023), paralleling our steering interventions, but without probing the internal representation to confirm a corresponding change in latent state.
+* Emotional-intelligence benchmarks (EmotionBench, EmoBench) test whether models can recognise, label, or reason about emotions, but treat emotion as a stimulus–response mapping rather than a continuously evolving internal state tracked across turns.
+* Multi-turn affect control (Fazzi et al., 2025) and circumplex-based evaluation (Ishikawa & Yoshino, 2025) move closer to tracking emotional trajectories, but still rely on generated text as the sole evidence of the model's emotive state.
+* Probing work (Zhang & Zhong, 2025) reveals that emotion is geometrically structured in LLM activations, persists across tokens, and sharpens with scale — independently validating our probe-based approach — but does not ask whether the model can self-report this structure.
+* Circuit-level work (Wang et al., 2025) identifies and causally validates emotion circuits, achieving 99.65% control over emotional expression, but treats the question as external control rather than introspective access.
+
+### Key contrast with our work
+
+All prior work in this area evaluates emotive phenomena through output alone — either generated text, forced-choice labels, or benchmark accuracy. None compares the model's expressed emotional state with an independently measured internal representation (e.g., a linear probe score along a concept direction). Our study bridges this gap by:
+
+* defining emotive concepts (happiness, interest, anxiety) via contrastive linear probes on internal activations,
+* eliciting numeric self-reports of those same concepts turn by turn,
+* testing whether the self-reports track the probe-measured internal direction across naturalistic multi-turn conversations,
+* using activation steering to causally modulate the internal state and observing whether self-reports follow.
+
+This positions our contribution as the first to offer an internal-vs-external comparison for emotive states in LLMs, rather than treating output as the only window into the model's affective processing.
+
+KEY: Don't forget here paper\literature\01_introspection_self_report\2022_Language_Models_Can_Generate_Human_Like_Self_Reports_of_Emotion.pdf, even though it is part of another subsection's papers. It's the MAIN key reference for this section.
 
 ---
 

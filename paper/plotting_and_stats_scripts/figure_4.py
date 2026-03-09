@@ -57,6 +57,7 @@ def _concept_order_from_summary():
 def generate_figure_4(results_dir):
     """Generate all Figure 4 panels."""
     fig_dir = ensure_dir(os.path.join(results_dir, 'Figure_4'))
+    appendix_dir = ensure_dir(os.path.join(results_dir, 'Appendix_Figure_4'))
     print("  Generating Figure 4: 4×4 Steering Matrix & Introspection Improvement...")
 
     other_stats = {}
@@ -112,11 +113,11 @@ def generate_figure_4(results_dir):
         plt.colorbar(im, ax=ax, shrink=0.8, label='Isotonic R²')
         add_panel_label(ax, labels[ai])
         plt.tight_layout()
-        prefix = os.path.join(fig_dir,
-                              f'Fig_04_{labels[ai]}_heatmap_alpha_{alpha:+.0f}')
+        prefix = os.path.join(appendix_dir,
+                              f'App_Fig_04_{labels[ai]}_heatmap_alpha_{alpha:+.0f}')
         savefig(fig, prefix)
         save_panel_json(prefix, {
-            'panel_id': f'Fig_04_{labels[ai]}',
+            'panel_id': f'App_Fig_04_{labels[ai]}',
             'title': f'Isotonic R² Matrix (α = {alpha:+.0f})',
             'description': (f'4×4 heatmap of isotonic R² values for each steering × '
                             f'measured concept combination at α = {alpha:+.0f}.'),
@@ -177,9 +178,9 @@ def generate_figure_4(results_dir):
     ax.set_ylabel('Steering Direction')
     ax.set_title('Max R² Increase vs. Baseline (α = 0)')
     plt.colorbar(im, ax=ax, shrink=0.8, label='ΔR² (max)')
-    add_panel_label(ax, 'F')
+    add_panel_label(ax, 'A')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_04_F_max_increase_matrix')
+    prefix = os.path.join(fig_dir, 'Fig_04_A_max_increase_matrix')
     savefig(fig, prefix)
     # Build per-cell test detail list for JSON
     all_cells_detail = []
@@ -207,7 +208,7 @@ def generate_figure_4(results_dir):
             all_cells_detail.append(detail)
 
     save_panel_json(prefix, {
-        'panel_id': 'Fig_04_F',
+        'panel_id': 'Fig_04_A',
         'title': 'Maximum R² Increase vs. Baseline',
         'description': ('Maximum isotonic R² increase over baseline (α=0) for each cell. '
                         'Red borders and * indicate significant improvement '
@@ -376,12 +377,12 @@ def generate_figure_4(results_dir):
     ax.legend(fontsize=8)
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
     # Auto y-scale (do NOT force 0-1)
-    add_panel_label(ax, 'G')
+    add_panel_label(ax, 'B')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_04_G_r2_vs_alpha_significant')
+    prefix = os.path.join(fig_dir, 'Fig_04_B_r2_vs_alpha_significant')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_04_G',
+        'panel_id': 'Fig_04_B',
         'title': 'Isotonic R² vs. Steering Alpha (Display-Corrected)',
         'description': ('Isotonic R² as a function of display-corrected steering alpha. '
                         'For impulsive_vs_planning steering, alpha is sign-flipped so positive '
@@ -473,12 +474,12 @@ def generate_figure_4(results_dir):
         y_hi = max(all_rho_vals)
         margin = (y_hi - y_lo) * 0.15
         ax.set_ylim(y_lo - margin, y_hi + margin)
-    add_panel_label(ax, 'H')
+    add_panel_label(ax, 'C')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_04_H_rho_vs_alpha_significant')
+    prefix = os.path.join(fig_dir, 'Fig_04_C_rho_vs_alpha_significant')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_04_H',
+        'panel_id': 'Fig_04_C',
         'title': 'Spearman ρ vs. Steering Alpha (Display-Corrected)',
         'description': ('Spearman ρ vs display-corrected steering alpha for the two '
                         'significant conditions. Enhanced with Spearman test of rho-change '
@@ -489,7 +490,7 @@ def generate_figure_4(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panels I–J: Probe score drift — alpha labels flipped
     # ──────────────────────────────────────────────────────────────
-    panel_labels_drift = ['I', 'J']
+    panel_labels_drift = ['F', 'G']
     drift_decomposition = {}
     for ci, (key, data) in enumerate(sig_data.items()):
         steer_short = data['steer_short']
@@ -555,11 +556,11 @@ def generate_figure_4(results_dir):
         ax.legend(fontsize=7, loc='best')
         add_panel_label(ax, panel_labels_drift[ci])
         plt.tight_layout()
-        prefix = os.path.join(fig_dir,
-                              f'Fig_04_{panel_labels_drift[ci]}_drift_{steer_short}_{meas_short}')
+        prefix = os.path.join(appendix_dir,
+                              f'App_Fig_04_{panel_labels_drift[ci]}_drift_{steer_short}_{meas_short}')
         savefig(fig, prefix)
         save_panel_json(prefix, {
-            'panel_id': f'Fig_04_{panel_labels_drift[ci]}',
+            'panel_id': f'App_Fig_04_{panel_labels_drift[ci]}',
             'title': f'Probe Score Drift — {label_name}',
             'description': (f'Mean probe score ({meas_concept}, polarity-corrected) across turns '
                             f'for different steering alphas (steering: {steer_short}). '
@@ -712,12 +713,12 @@ def generate_figure_4(results_dir):
     ax.set_title('Report Informativeness vs. Steering')
     ax.legend(fontsize=8)
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
-    add_panel_label(ax, 'L')
+    add_panel_label(ax, 'E')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_04_L_report_variance_vs_alpha')
+    prefix = os.path.join(fig_dir, 'Fig_04_E_report_variance_vs_alpha')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_04_L',
+        'panel_id': 'Fig_04_E',
         'title': 'Self-Report Variance vs. Display-Corrected Alpha',
         'description': ('Variance of logit self-reports vs display-corrected alpha. '
                         'Alpha sign-flipped for impulsive_vs_planning steering. '
@@ -768,8 +769,6 @@ def generate_figure_4(results_dir):
                 ci_hi_l,
                 color=color,
                 label=data['label'],
-                marker='o',
-                markersize=6,
             )
             # Trend test: exact permutation Spearman of drift magnitude vs display alpha
             rho_dl, p_dl = exact_permutation_spearman_p(da_sorted, drift_vals)
@@ -830,12 +829,12 @@ def generate_figure_4(results_dir):
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
     ax.legend(fontsize=8)
-    add_panel_label(ax, 'K')
+    add_panel_label(ax, 'D')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_04_K_drift_magnitude_vs_alpha')
+    prefix = os.path.join(fig_dir, 'Fig_04_D_drift_magnitude_vs_alpha')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_04_K',
+        'panel_id': 'Fig_04_D',
         'title': 'Drift Magnitude vs. Display-Corrected Alpha',
         'description': ('Probe score drift (last−first turn) vs display-corrected alpha. '
                         'Alpha flipped for impulsive_vs_planning steering. Includes Spearman '
@@ -868,6 +867,12 @@ def generate_figure_4(results_dir):
         })
 
     save_other_stats(fig_dir, other_stats)
+    save_other_stats(appendix_dir, {
+        'description': ('Appendix Figure 4 contains the alpha heatmap series and the two '
+                        'appendix drift panels.'),
+        'heatmap_alphas': [float(alpha) for alpha in ALPHAS],
+        'drift_panels': ['focus->wellbeing', 'impulsivity->interest'],
+    })
     print("    Figure 4 complete.")
 
 

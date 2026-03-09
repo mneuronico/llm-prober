@@ -1,0 +1,198 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 07 Neuroscience and Psychology as Methodological Analogies
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Fleming and Dolan (2012) — The Neural Basis of Metacognitive Ability
+--------------------------------------------------------------------------------
+- Central finding:
+  Individual differences in metacognitive ability (the capacity to accurately
+  evaluate one's own cognitive performance) correlate with structural and
+  functional properties of the anterior prefrontal cortex. Metacognition is
+  a measurable, neurally grounded capacity that varies across individuals.
+
+- Methodology:
+  Neuroimaging (structural MRI, fMRI) of metacognitive performance; Signal
+  Detection Theory (SDT) measures of metacognitive sensitivity (meta-d');
+  correlation of neural measures with metacognitive accuracy.
+
+- Relevance to my work:
+  Provides the foundational neuroscience analogy: metacognition (the basis
+  of introspection) is a graded, measurable, neurally instantiated process,
+  not an all-or-none capacity. This supports your treatment of LLM
+  introspection as a graded, measurable phenomenon with your probe-report
+  coupling analysis serving as an analogous measure of metacognitive fidelity.
+
+- What it lacks relative to my work:
+  Human neuroscience, not LLMs. No probing of artificial representations.
+  No multi-turn conversation. No numeric self-reports from models. No
+  emotive concept state tracking. No steering. The analogy is purely
+  methodological.
+
+- Overall takeaway:
+  Essential citation for the neuroscience analogy. Supports framing your
+  probe-report coupling as an analog of metacognitive sensitivity (meta-d'),
+  measured in a graded, quantitative way rather than all-or-none.
+
+--------------------------------------------------------------------------------
+2. Fleming and Lau (2014) — How to Measure Metacognition
+--------------------------------------------------------------------------------
+- Central finding:
+  Metacognitive accuracy must be decomposed into separate components:
+  metacognitive sensitivity (ability to distinguish correct from incorrect
+  judgments), metacognitive bias (overall tendency to report high or low
+  confidence), and metacognitive efficiency (sensitivity relative to
+  baseline performance). Signal Detection Theory provides the mathematical
+  framework for this decomposition.
+
+- Methodology:
+  Tutorial and technical review of SDT-based measures for metacognition
+  (meta-d', type-2 ROC, calibration curves); demonstration of how to
+  separate bias from sensitivity; practical guidance for measurement.
+
+- Relevance to my work:
+  Directly inspires your measurement framework. The decomposition into
+  sensitivity vs. bias precisely parallels your separation of genuine
+  probe-report coupling from confounds like default high reporting (bias).
+  Your logit-based estimator can be seen as recovering sensitivity that
+  greedy reports (dominated by bias) miss.
+
+- What it lacks relative to my work:
+  Human metacognition measurement manual. No application to LLMs. No
+  concept probing, steering, or conversational analysis.
+
+- Overall takeaway:
+  Key methodological citation. Cite when explaining why your framework
+  separates genuine coupling from reporting artifacts, and when framing
+  probe-report monotonicity as analogous to metacognitive sensitivity.
+
+--------------------------------------------------------------------------------
+3. Lapate et al. (2020) — Perceptual Metacognition of Human Faces is Causally
+   Supported by Function of the Lateral Prefrontal Cortex
+--------------------------------------------------------------------------------
+- Central finding:
+  Applying TMS to the lateral prefrontal cortex (LPFC) selectively impairs
+  metacognitive awareness (confidence resolution) without reducing objective
+  task performance. This proves that metacognition depends on specific neural
+  mechanisms dissociable from first-order processing.
+
+- Methodology:
+  TMS causal intervention on LPFC during a face perception task; measure
+  effects on objective accuracy vs. subjective confidence calibration;
+  demonstrate double dissociation.
+
+- Relevance to my work:
+  Provides the strongest neuroscience analogy for your causal steering tests.
+  Just as TMS to LPFC causally disrupts metacognition without affecting
+  perception, your steering interventions causally shift self-report while
+  also affecting internal state. The dissociability of first-order processing
+  from metacognitive report parallels your separation of probe-defined state
+  from self-report.
+
+- What it lacks relative to my work:
+  Human TMS study, not LLMs. No concept directions or emotive state
+  tracking. No multi-turn conversation. No numeric self-reports from models.
+  The analogy is methodological.
+
+- Overall takeaway:
+  Cite as the neuroscience precedent for causal interventions on
+  metacognition. Your steering experiments are the LLM analog of TMS:
+  causally intervening on internal state and measuring the effect on
+  self-report.
+
+--------------------------------------------------------------------------------
+4. Boldt and Gilbert (2022) — Partially Overlapping Neural Correlates of
+   Metacognitive Monitoring and Metacognitive Control
+--------------------------------------------------------------------------------
+- Central finding:
+  Metacognitive monitoring (forming the confidence signal) and metacognitive
+  control (acting on the confidence signal to adjust behavior) are partially
+  overlapping but distinct neural processes. They rely on different neural
+  patterns even though they share some substrates.
+
+- Methodology:
+  fMRI during tasks requiring both confidence judgments and strategic
+  behavioral adjustments; multivariate pattern analysis to distinguish
+  monitoring vs. control signals; dissociation analysis.
+
+- Relevance to my work:
+  Supports your decomposition between internal state formation (monitoring)
+  and self-report generation (report/control). In your framework, the probe
+  measures monitoring (internal state), while the self-report measures the
+  model's report output. Their partial overlap but distinct mechanisms
+  parallel your finding that self-report and internal state are correlated
+  but not perfectly coupled.
+
+- What it lacks relative to my work:
+  Human fMRI study. No LLMs. No concept probing or steering. No multi-turn
+  conversation. No numeric self-reports from models.
+
+- Overall takeaway:
+  Cite when justifying the decomposition between internal state and
+  self-report as reflecting distinct (but related) computational processes.
+
+--------------------------------------------------------------------------------
+5. Fleming (2024) — Metacognition and Confidence: A Review and Synthesis
+--------------------------------------------------------------------------------
+- Central finding:
+  Comprehensive review establishing that propositional confidence is
+  an inferential, noisy process influenced by implicit models and heuristics.
+  Metacognitive judgments are subject to both sensory noise and independent
+  "metacognitive noise," explaining why subjective reports can diverge from
+  objective performance.
+
+- Methodology:
+  Review of computational models of metacognition; integration of Signal
+  Detection Theory, Bayesian models, and noise models; synthesis of
+  behavioral and neural evidence.
+
+- Relevance to my work:
+  Directly supports your treatment of self-report as noisy and inferential
+  rather than a direct readout. The "metacognitive noise" concept parallels
+  the noise in your probe-report coupling. The Bayesian/SDT framework
+  supports your quantitative approach to measuring introspection quality.
+
+- What it lacks relative to my work:
+  Human metacognition review. No LLMs. No concept probing or steering. No
+  multi-turn conversation. No emotive concept tracking.
+
+- Overall takeaway:
+  Key conceptual citation. Cite when framing your approach: treating
+  introspection as a noisy, measurable process where the goal is to
+  quantify fidelity rather than expecting perfect or zero coupling.
+
+--------------------------------------------------------------------------------
+6. Kiefer and Kammer (2024) — The Relation Between Subjective and Objective
+   Measures of Visual Awareness
+--------------------------------------------------------------------------------
+- Central finding:
+  Subjective reports (awareness) and objective performance (accuracy) are
+  dissociable, producing phenomena like blindsight (accurate performance
+  without awareness) and blindsense (awareness without accuracy). This
+  proves that subjective report and internal processing are dissociable
+  dimensions, not a single underlying variable.
+
+- Methodology:
+  Psychophysics experiments; manipulation of stimulus parameters to produce
+  dissociations between subjective reports and objective measures; SDT
+  analysis.
+
+- Relevance to my work:
+  The strongest analogy for your core finding. Just as human subjective
+  report can dissociate from internal processing, LLM self-reports can
+  dissociate from probe-defined internal state (e.g., greedy report
+  collapse while internal state varies). This dissociability is not a
+  failure of the framework but a predicted feature of any complex
+  monitoring system.
+
+- What it lacks relative to my work:
+  Human visual perception study. No LLMs. No concept probing or steering.
+  No multi-turn conversation. No emotive concept state tracking.
+
+- Overall takeaway:
+  Cite when arguing that partial, imperfect coupling between self-report
+  and internal state is the expected pattern — not a failure. The fact that
+  your framework detects this dissociation (and that logit-based extraction
+  partially resolves it) is a methodological success.
+
+================================================================================

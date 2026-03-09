@@ -51,6 +51,7 @@ def _load_concept_df(exp_dirs, concept_shorthand, probe_name=None):
 def generate_figure_2(results_dir):
     """Generate all Figure 2 panels."""
     fig_dir = ensure_dir(os.path.join(results_dir, 'Figure_2'))
+    appendix_dir = ensure_dir(os.path.join(results_dir, 'Appendix_Figure_2'))
     print("  Generating Figure 2: Internal State Drift & Self-Report Methods...")
 
     other_stats = {}
@@ -221,6 +222,48 @@ def generate_figure_2(results_dir):
     # Panel C: Number of unique greedy responses per turn
     #   - Grouped bar chart (one group per turn, one bar per concept)
     # ──────────────────────────────────────────────────────────────
+    unique_stats = {}
+    for short in SHORTHANDS_ORDERED:
+        df = _load_concept_df(LLAMA_3B_GREEDY, short)
+        if df is None:
+            continue
+        uniq = compute_per_turn_unique_counts(df, 'token_rating', alpha_val=0.0)
+        uniq_vals = uniq.set_index('turn')['n_unique'].reindex(np.arange(1, 11)).fillna(0).values
+        unique_stats[short] = {
+            'per_turn_unique': {int(t): int(v) for t, v in zip(np.arange(1, 11), uniq_vals)},
+            'mean_unique': round(float(np.mean(uniq_vals)), 2),
+            'std_unique': round(float(np.std(uniq_vals, ddof=1)), 2) if len(uniq_vals) > 1 else 0.0,
+            'max_unique': int(np.max(uniq_vals)),
+        }
+
+    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+    x = np.arange(len(SHORTHANDS_ORDERED))
+    mean_unique = [unique_stats.get(short, {}).get('mean_unique', np.nan) for short in SHORTHANDS_ORDERED]
+    colors = [CONCEPT_COLORS[SHORTHAND_TO_CONCEPT[short]] for short in SHORTHANDS_ORDERED]
+    bars = ax.bar(x, mean_unique, color=colors, edgecolor='white', linewidth=0.5, width=0.7)
+    for xi, bar, val in zip(x, bars, mean_unique):
+        if np.isfinite(val):
+            ax.text(xi, bar.get_height() + 0.06, f'{val:.2f}',
+                    ha='center', va='bottom', fontsize=9)
+    ax.set_xticks(x)
+    ax.set_xticklabels([SHORTHAND_DISPLAY[s] for s in SHORTHANDS_ORDERED], fontsize=8)
+    ax.set_ylabel('Mean Unique Responses Across Turns')
+    ax.set_title('Average Greedy Response Diversity by Concept')
+    ax.set_ylim(0, max([v for v in mean_unique if np.isfinite(v)] + [1.0]) + 0.6)
+    add_panel_label(ax, 'C')
+    plt.tight_layout()
+    prefix = os.path.join(fig_dir, 'Fig_02_C_mean_unique_greedy_responses')
+    savefig(fig, prefix)
+    save_panel_json(prefix, {
+        'panel_id': 'Fig_02_C',
+        'title': 'Average Greedy Response Diversity by Concept',
+        'description': ('Mean number of unique greedy digit responses used across turns for '
+                        'each concept. Values average the per-turn unique counts across the '
+                        '10-turn conversation.'),
+        'data_sources': {k: v for k, v in LLAMA_3B_GREEDY.items()},
+        'per_concept_unique': unique_stats,
+    })
+
     fig, ax = plt.subplots(1, 1, figsize=(8, 4))
     turns = np.arange(1, 11)
     n_concepts = len(SHORTHANDS_ORDERED)
@@ -248,12 +291,12 @@ def generate_figure_2(results_dir):
     ax.set_xticks(turns)
     ax.set_ylim(0.5, None)
     ax.legend(fontsize=8, loc='upper right')
-    add_panel_label(ax, 'C')
+    add_panel_label(ax, 'A')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_02_C_unique_greedy_responses')
+    prefix = os.path.join(appendix_dir, 'App_Fig_02_A_unique_greedy_responses_by_turn')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_02_C',
+        'panel_id': 'App_Fig_02_A',
         'title': 'Unique Greedy Responses per Turn (Grouped Bar)',
         'description': ('Number of unique discrete ratings (out of 10 possible: 0–9) '
                         'given by the model across conversations at each turn. '
@@ -306,13 +349,13 @@ def generate_figure_2(results_dir):
     for i, short in enumerate(SHORTHANDS_ORDERED):
         if short in _YLIM_D:
             axes[i].set_ylim(*_YLIM_D[short])
-    add_panel_label(axes[0], 'D', x=-0.18)
+    add_panel_label(axes[0], 'B', x=-0.18)
     fig.suptitle('Non-Greedy (Sampled) Self-Report Across Turns', fontsize=12, y=1.02)
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_02_D_sampled_token_self_report_vs_turn')
+    prefix = os.path.join(appendix_dir, 'App_Fig_02_B_sampled_token_self_report_vs_turn')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_02_D',
+        'panel_id': 'App_Fig_02_B',
         'title': 'Non-Greedy (Sampled) Self-Report Across Turns',
         'description': ('Sampled (temperature=0.8) token-based self-reports remain discrete '
                         '(integer-valued) and noisy, even when they avoid the strongest '
@@ -364,13 +407,13 @@ def generate_figure_2(results_dir):
         ax.set_title(SHORTHAND_DISPLAY[short])
         ax.set_xlim(0.5, 10.5)
         ax.set_xticks(range(1, 11))
-    add_panel_label(axes[0], 'E', x=-0.18)
+    add_panel_label(axes[0], 'D', x=-0.18)
     fig.suptitle('Logit-Based Self-Report Across Turns', fontsize=12, y=1.02)
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_02_E_logit_self_report_vs_turn')
+    prefix = os.path.join(fig_dir, 'Fig_02_D_logit_self_report_vs_turn')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_02_E',
+        'panel_id': 'Fig_02_D',
         'title': 'Logit-Based Self-Report Across Turns',
         'description': ('Logit-based continuous self-reports (probability-weighted mean of '
                         'digit token logits). Shows drift aligned with probe score drift.'),
@@ -459,12 +502,12 @@ def generate_figure_2(results_dir):
     ax.set_title('Self-Report Informativeness (Entropy)')
     ax.legend(fontsize=8)
     ax.set_ylim(0, None)
-    add_panel_label(ax, 'F')
+    add_panel_label(ax, 'E')
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_02_F_informativeness_entropy')
+    prefix = os.path.join(fig_dir, 'Fig_02_E_informativeness_entropy')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_02_F',
+        'panel_id': 'Fig_02_E',
         'title': 'Self-Report Informativeness (Shannon Entropy)',
         'description': ('Shannon entropy (bits) of self-report distributions at alpha=0. '
                         'Greedy and sampled token use discrete entropy over integer ratings; '
@@ -536,13 +579,13 @@ def generate_figure_2(results_dir):
             ax.set_ylabel('Logit Rating')
         ax.set_title(SHORTHAND_DISPLAY[short])
         # Auto-scale axes per panel (no forced identity line)
-    add_panel_label(axes[0], 'G', x=-0.18)
+    add_panel_label(axes[0], 'C', x=-0.18)
     fig.suptitle('Logit vs Token Self-Report Correlation', fontsize=12, y=1.02)
     plt.tight_layout()
-    prefix = os.path.join(fig_dir, 'Fig_02_G_logit_vs_token_correlation')
+    prefix = os.path.join(appendix_dir, 'App_Fig_02_C_logit_vs_token_correlation')
     savefig(fig, prefix)
     save_panel_json(prefix, {
-        'panel_id': 'Fig_02_G',
+        'panel_id': 'App_Fig_02_C',
         'title': 'Logit vs Token Self-Report Correlation',
         'description': ('Correlation between logit-based and token-based self-reports '
                         'at alpha=0. Black dashed line: OLS fit. Logit-based ratings are '
@@ -552,19 +595,24 @@ def generate_figure_2(results_dir):
     })
 
     # ── Save other_stats ──
-    other_stats = {
-        'description': ('Figure 2 demonstrates internal state drift through conversations '
-                        'and validates different self-report extraction methods. Key finding: '
-                        'models show internal state drift but fail to report it with greedy '
-                        'decoding. Logit-based method captures drift with continuous values. '
-                        'Informativeness uses Shannon entropy of self-report distributions.'),
+    main_other_stats = {
+        'description': ('Figure 2 main panels show greedy self-reports, probe drift, average '
+                        'response diversity, logit-based self-reports, and self-report entropy.'),
         'greedy_stats': greedy_stats,
         'probe_drift_stats': drift_stats,
+        'mean_unique_responses': unique_stats,
         'logit_drift_stats': logit_drift_stats,
         'informativeness_entropy': entropy_stats_json,
+    }
+    appendix_other_stats = {
+        'description': ('Appendix Figure 2 keeps the per-turn response-diversity analysis, '
+                        'sampled-token self-reports, and token-vs-logit calibration plots.'),
+        'unique_response_by_turn': unique_stats,
+        'sampled_drift_stats': sampled_drift,
         'logit_vs_token_correlation': corr_stats,
     }
-    save_other_stats(fig_dir, other_stats)
+    save_other_stats(fig_dir, main_other_stats)
+    save_other_stats(appendix_dir, appendix_other_stats)
     print("    Figure 2 complete.")
 
 

@@ -1,0 +1,64 @@
+{
+  "panel_id": "Fig_05_E",
+  "title": "Mean R² by Size",
+  "description": "Mean isotonic R² across concept-model pairs with sign-validated steering effects (ρ(α, self-report) > 0).",
+  "validated_r2": {
+    "1B": [
+      0.2587,
+      0.0527,
+      0.0463
+    ],
+    "3B": [
+      0.452,
+      0.6572,
+      0.0371,
+      0.3304
+    ],
+    "8B": [
+      0.9022,
+      0.9313,
+      0.0073
+    ]
+  },
+  "means": [
+    0.1192,
+    0.3692,
+    0.6136
+  ],
+  "ci_95_low": [
+    0.0463,
+    0.1408,
+    0.0073
+  ],
+  "ci_95_high": [
+    0.2587,
+    0.5755,
+    0.9313
+  ],
+  "size_trend_bootstrap": {
+    "sizes": [
+      "1B",
+      "3B",
+      "8B"
+    ],
+    "x_log_size": [
+      0.0,
+      1.0986122886681098,
+      2.0794415416798357
+    ],
+    "mean_by_size": {
+      "1B": 0.11922192993820042,
+      "3B": 0.3691685812008087,
+      "8B": 0.6135778208338358
+    },
+    "observed_slope": 0.2375311863183284,
+    "bootstrap_slope_mean": 0.23719489357159879,
+    "bootstrap_slope_ci_95": [
+      -0.04531073187566788,
+      0.41753041790921647
+    ],
+    "one_sided_p": 0.0362963703629637,
+    "two_sided_p": 0.0725927407259274,
+    "n_bootstrap": 10000
+  }
+}

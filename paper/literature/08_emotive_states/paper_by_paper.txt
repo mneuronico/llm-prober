@@ -1,0 +1,343 @@
+================================================================================
+PAPER-BY-PAPER ANALYSIS — 08 Emotive States in LLMs
+================================================================================
+
+--------------------------------------------------------------------------------
+1. Coda-Forno et al. (2022) — Language Models Can Generate Human-Like
+   Self-Reports of Emotion
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can produce self-reports of emotional states that resemble human
+  emotional self-reports in structure and pattern, suggesting that the
+  statistical regularities of emotional language are well-captured by
+  language models.
+
+- Methodology:
+  Prompt LLMs to self-report emotional states in response to scenarios;
+  compare structure and patterns of LLM emotional self-reports with human
+  baselines; analyze dimensional structure of reported emotions.
+
+- Relevance to my work:
+  Establishes that LLMs can produce emotionally structured self-reports,
+  which is a prerequisite for your work. If models could not produce
+  meaningful emotional self-reports at all, your probe-report coupling
+  analysis would have no foundation.
+
+- What it lacks relative to my work:
+  Tests whether reports "look human-like" (surface similarity), not whether
+  they track actual internal states. No probing of internal representations.
+  No independent measurement of internal emotive state. No multi-turn
+  conversational setting. No temporal dynamics. No causal steering. No
+  logit-based estimation. No probe-report coupling analysis.
+
+- Overall takeaway:
+  Cite as early evidence that LLMs can produce structured emotional
+  self-reports. Your work asks the much deeper question: do those reports
+  actually track an independently measured internal state?
+
+--------------------------------------------------------------------------------
+2. Coda-Forno, Witte, Jagadish, Binz, Akata, and Schulz (2023) — Inducing
+   Anxiety in Large Language Models Can Induce Bias
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs respond robustly to anxiety questionnaires, producing comparable
+  anxiety scores to humans. Anxiety-inducing prompts predictably increase
+  both anxiety questionnaire scores and behavioral biases (racism, ageism).
+  Greater anxiety-inducing text leads to stronger bias increases.
+
+- Methodology:
+  Administer standardized psychiatric anxiety questionnaires (GAD-7/similar)
+  to 12 LLMs; induce anxiety via prompt manipulation; measure effect on
+  anxiety scores and on established bias benchmarks; dose-response analysis
+  linking anxiety intensity to bias magnitude.
+
+- Relevance to my work:
+  Highly relevant. Demonstrates that emotive states (anxiety) can be
+  induced in LLMs and that these states causally affect downstream behavior,
+  establishing that emotive concepts are not merely surface text but have
+  functional consequences. The dose-response finding (more anxiety → more
+  bias) parallels your finding that steering strength modulates self-report.
+  Also relevant: they use a concept (anxiety) that you also probe.
+
+- What it lacks relative to my work:
+  Induces emotion via prompt manipulation, not via activation steering.
+  Measures behavioral outcomes (bias benchmarks), not internal
+  representation tracking with probes. No comparison of self-report with
+  independently measured internal state. No multi-turn conversational
+  dynamics. No temporal evolution analysis. No logit-based self-report
+  extraction. No probe-report coupling measurement. Single-shot
+  questionnaire format.
+
+- Overall takeaway:
+  Key citation for the functional reality of emotive states in LLMs. The
+  dose-response anxiety→bias link establishes that emotive concepts have
+  causal behavioral consequences, supporting your claim that probing and
+  steering emotive directions is scientifically meaningful. Your work adds
+  the internal measurement dimension (probes) and the temporal tracking
+  that this paper lacks.
+
+--------------------------------------------------------------------------------
+3. Huang et al. (2023) — Emotionally Numb or Empathetic? Evaluating How LLMs
+   Feel Using EmotionBench
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs can generally respond appropriately to emotion-eliciting situations,
+  but they fall short in alignment with human emotional behavior patterns
+  and cannot establish connections between similar situations. Uses emotion
+  appraisal theory from psychology to evaluate eight emotions across 36
+  situational factors.
+
+- Methodology:
+  Collect 400+ emotion-eliciting situations validated by 1,200+ human
+  subjects worldwide; administer to 7 LLMs (GPT-4, Mixtral, LLaMA-3.1,
+  etc.); compare LLM emotional responses with human baselines; categorize
+  into 36 factors across 8 emotions. Published at NeurIPS 2024.
+
+- Relevance to my work:
+  Provides a systematic evaluation of LLM emotional responses grounded in
+  psychological appraisal theory. Establishes that LLMs have partial but
+  imperfect emotional response capabilities, motivating the need for your
+  deeper investigation of whether these responses connect to internal
+  state.
+
+- What it lacks relative to my work:
+  Evaluates behavioral responses to situations (output text), not internal
+  representation tracking. No probing of internal concept directions. No
+  comparison of self-report with probe-defined state. No multi-turn
+  conversation. No temporal dynamics. No activation steering. No
+  logit-based estimation. Single-shot scenario evaluation. No causal
+  testing of whether emotional responses depend on internal emotive state.
+
+- Overall takeaway:
+  Cite as a comprehensive benchmark for LLM emotional responses. Note that
+  EmotionBench evaluates whether models produce appropriate emotional
+  outputs, while your work tests whether models can accurately report
+  independently measured internal emotive states — a fundamentally deeper
+  question.
+
+--------------------------------------------------------------------------------
+4. Sabour et al. (2024) — EmoBench: Evaluating the Emotional Intelligence
+   of Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs show a considerable gap compared to average human emotional
+  intelligence. Proposes a comprehensive definition of machine EI including
+  Emotional Understanding and Emotional Application, with 400 hand-crafted
+  questions requiring thorough reasoning. Published at ACL 2024.
+
+- Methodology:
+  Design benchmark based on psychological EI theories; create 400 hand-
+  crafted questions in English and Chinese; require emotional understanding
+  (recognizing, predicting emotions) and emotional application (using
+  emotions to facilitate thought, regulate emotions); evaluate multiple LLMs
+  vs. human baselines.
+
+- Relevance to my work:
+  Establishes that emotional intelligence in LLMs is limited, motivating
+  the need for better tools to measure and understand emotive processing.
+  The distinction between emotional understanding and application connects
+  to your decomposition between internal state (understanding) and
+  self-report (application/expression).
+
+- What it lacks relative to my work:
+  Benchmark evaluation of emotional reasoning ability, not tracking of
+  internal emotive states. No probing of internal representations. No
+  self-report of internal concept state. No multi-turn conversation. No
+  temporal dynamics. No activation steering. No logit-based estimation.
+  No probe-report coupling. Tests task performance, not introspection.
+
+- Overall takeaway:
+  Cite as background establishing that LLM emotional capability is limited
+  and that the field needs better methods for evaluating emotive processing
+  — which your probe-based framework provides at the representation level.
+
+--------------------------------------------------------------------------------
+5. Fazzi, Hinge, Heinrich, and Burelli (2025) — Don't Get Too Excited:
+   Eliciting Emotions in LLMs
+--------------------------------------------------------------------------------
+- Central finding:
+  State-of-the-art LLMs show significant variation in their ability to
+  maintain consistent affect (arousal and valence) during extended multi-
+  turn dialogues. Some models maintain stable emotional trajectories while
+  others fluctuate. Models struggle to produce and maintain extreme
+  emotional states and to adapt affect to changing conversational contexts.
+
+- Methodology:
+  Multi-turn dialogue simulations between LLMs; quantify affective
+  expressive range using Russell's circumplex model (arousal and valence
+  axes); LLM-based sentiment analysis to evaluate emotional expression;
+  measure trajectory stability across conversation turns.
+
+- Relevance to my work:
+  Very closely related: also studies emotive expression across multi-turn
+  conversations and uses the arousal-valence dimensional framework. Their
+  finding that emotional trajectories fluctuate across turns directly
+  parallels your observation that probe-defined internal state drifts
+  through conversation. The multi-turn dialogue paradigm is similar to
+  your experimental setup.
+
+- What it lacks relative to my work:
+  Measures emotional expression in output text (via external sentiment
+  analysis), not internal representation tracking with probes. No
+  comparison of expressed emotion with independently measured internal
+  emotive state. No probe-defined concept directions. No self-report of
+  internal state (just expressed emotion in text). No activation steering.
+  No logit-based estimation. No probe-report coupling analysis. No causal
+  testing. Uses external LLM-based sentiment analysis rather than internal
+  probes for measurement.
+
+- Overall takeaway:
+  Important citation as the most methodologically similar prior work in the
+  emotive states space. Both your work and theirs study emotive dynamics
+  across multi-turn conversations, but they measure the output side
+  (expressed emotion in text) while you measure the internal side (probe-
+  defined activation state) AND the output side (numeric self-report),
+  and then test their coupling. Your work adds the internal measurement
+  dimension, causal steering, and probe-report coupling analysis.
+
+--------------------------------------------------------------------------------
+6. Ishikawa and Yoshino (2025) — AI with Emotions: Exploring Emotional
+   Expressions in Large Language Models
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs (GPT, Gemini, Llama3, Cohere) can successfully role-play as agents
+  with specified emotional states using Russell's circumplex model (arousal
+  and valence axes). Sentiment analysis confirms that generated responses
+  are consistent with the specified emotional states, demonstrating LLM
+  capability for emotional expression.
+
+- Methodology:
+  Instruct LLMs to role-play with specified emotional states defined on
+  Russell's circumplex model; evaluate generated responses using a
+  sentiment analysis model trained on GoEmotions; measure consistency
+  between specified and expressed emotions. Published at NLP4DH workshop,
+  NAACL 2025.
+
+- Relevance to my work:
+  Shows that LLMs can produce outputs consistent with instructed emotional
+  states, which is conceptually similar to your steering experiments
+  (shifting internal state and observing output changes). The circumplex
+  model framing (continuous arousal-valence space) connects to your
+  treatment of emotive concepts as continuous dimensions.
+
+- What it lacks relative to my work:
+  Emotional expression via role-play instruction, not via internal
+  activation steering. No probing of internal representations. No
+  comparison with independently measured internal state. No naturalistic
+  conversation (explicitly instructed to feel specific emotions). No
+  temporal dynamics of emotion emerging naturally. No self-report of
+  internal state (just role-played output). No logit-based estimation.
+  No probe-report coupling. No causal testing beyond instruction-following.
+
+- Overall takeaway:
+  Cite for the demonstration that LLMs can express emotions along
+  continuous arousal-valence dimensions. Contrast with your approach: they
+  specify emotions externally and check outputs, while you measure
+  naturally emerging internal emotive states with probes and test whether
+  the model can self-report them accurately.
+
+--------------------------------------------------------------------------------
+7. Zhang and Zhong (2025) — Decoding Emotion in the Deep: A Systematic Study
+   of How LLMs Represent, Retain, and Express Emotion
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs develop a well-defined internal geometry of emotion that sharpens
+  with model scale and significantly outperforms zero-shot prompting. The
+  emotional signal is not a final-layer phenomenon but emerges early and
+  peaks mid-network. Internal emotional states are both malleable (can be
+  influenced by system prompts) and persistent (initial emotional tone
+  remains detectable for hundreds of subsequent tokens).
+
+- Methodology:
+  Construct a large-scale Reddit corpus (~400K utterances) balanced across
+  seven basic emotions via classification, rewriting, and synthetic
+  generation. Train lightweight linear probes to read emotional information
+  from hidden layers of Qwen3 and LLaMA models without altering parameters.
+  Layer-by-layer analysis of where emotion is encoded. Persistence analysis
+  of how long emotional signal endures in the token stream.
+
+- Relevance to my work:
+  Extremely relevant — the most directly related paper in this subfolder.
+  Like your work, uses linear probes to measure internal emotional
+  representations. Their findings about emotion geometry sharpening with
+  scale, mid-network peak, and signal persistence all corroborate your
+  approach (probing internal concept directions across layers). Their
+  persistence finding (emotional tone detectable for hundreds of tokens)
+  directly supports your temporal dynamics analysis. The malleable-via-
+  prompt finding connects to your steering experiments.
+
+- What it lacks relative to my work:
+  Does not study self-report or probe-report coupling. Does not ask whether
+  the model can accurately report its own internal emotive state. No
+  numeric self-report extraction. No logit-based estimation. No multi-turn
+  naturalistic conversation (uses single-utterance corpus). No activation
+  steering (only prompt-based influence). No temporal tracking across
+  conversation turns (persistence is measured in tokens, not conversational
+  turns). No causal steering interventions. No comparison of internal
+  measurement with behavioral output. Focuses on probing alone, not on
+  the introspection question.
+
+- Overall takeaway:
+  Essential citation for establishing that emotion is geometrically
+  structured in LLM representations and detectable via probes. Their
+  probe-based findings independently validate your methodological approach.
+  Your work extends this by asking the next question: given that we can
+  probe emotional states, can the model itself report them accurately?
+  This paper provides the representational foundation; yours adds the
+  introspective dimension.
+
+--------------------------------------------------------------------------------
+8. Wang, Zhang, Yu, Zheng, Gao, Song, Xu, Xia, and Zhang (2025) — Do LLMs
+   "Feel"? Emotion Circuits Discovery and Control
+--------------------------------------------------------------------------------
+- Central finding:
+  LLMs contain context-agnostic mechanisms shaping emotional expression.
+  Emotion directions reveal consistent, cross-context encoding of emotion.
+  Specific neurons and attention heads locally implement emotional
+  computation. These components form coherent global emotion circuits.
+  Directly modulating these circuits achieves 99.65% emotion-expression
+  accuracy, surpassing prompting- and steering-based methods.
+
+- Methodology:
+  Construct a controlled dataset (SEV: Scenario-Event with Valence) to
+  elicit comparable internal states across emotions. Extract context-
+  agnostic emotion directions. Identify emotion-relevant neurons and
+  attention heads via analytical decomposition and causal analysis.
+  Validate causal roles via ablation and enhancement interventions.
+  Quantify sublayer causal influence. Integrate components into global
+  emotion circuits. Modulate circuits directly for emotion control.
+
+- Relevance to my work:
+  Highly relevant: demonstrates that emotion is encoded in identifiable
+  circuits (not just directions), that these circuits are causal (validated
+  via ablation), and that modulating them controls emotional expression
+  with near-perfect accuracy. Goes beyond linear probing to identify the
+  full mechanistic circuitry of emotion. Their causal validation approach
+  (ablation, enhancement) parallels your steering experiments:
+  both confirm that internal representations causally influence output.
+  The emotion direction finding confirms that emotion has a linear
+  subspace in activations, consistent with your probe-defined concept
+  directions.
+
+- What it lacks relative to my work:
+  Focuses on controlling emotional expression in generated text, not on
+  whether the model can introspectively report its own internal emotive
+  state. No self-report analysis. No numeric self-report extraction. No
+  logit-based estimation. No probe-report coupling. No multi-turn
+  naturalistic conversation. No temporal dynamics across turns. Controls
+  emotion from outside (circuit modulation for output control), whereas
+  your work asks whether the model itself has access to its internal
+  state. Mechanism identification (circuits) is deeper than probing,
+  but the question asked is different: their question is "can we control
+  emotion?" while yours is "can the model report its own emotion?"
+
+- Overall takeaway:
+  Important citation for mechanistic understanding of emotion in LLMs.
+  Establishes that emotion encoding is causal and circuit-level, not
+  merely correlational. Complements your work: they find the circuits
+  that produce emotional expression, while you test whether the model's
+  own report tracks its internal emotive state. Together, the two
+  perspectives (mechanistic control and introspective report) bracket the
+  question of emotional processing in LLMs from complementary angles.
+
+================================================================================
