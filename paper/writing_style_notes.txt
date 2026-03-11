@@ -1,0 +1,172 @@
+WRITING STYLE NOTES — Nicolas Martorell
+Extracted from "From Text to Space: Mapping Abstract Spatial Models in LLMs during a Grid-World Navigation Task"
+These notes should guide the writing style of the new paper.
+
+================================================================================
+1. SENTENCE STRUCTURE
+================================================================================
+
+- Favors long, information-dense sentences that pack multiple facts with
+  embedded clauses, but keeps them readable by using clear logical connectors.
+  
+  Example: "By evaluating models of various sizes on a task that requires
+  navigating toward a goal, we examine how the format used to encode spatial
+  information impacts decision-making."
+  
+  Example: "Our analysis revealed parameters that significantly predicted the
+  position of the agent in the grid, as well as parameters that predicted action
+  correctness in the subsequent step, regardless of how spatial information was
+  represented in the prompt."
+
+- DO NOT use em-dashes (—, ---). Use parentheses, commas, semicolons, colons,
+  or restructured sentences instead. For parenthetical asides, prefer
+  parentheses or commas. For elaboration, prefer colons or semicolons.
+
+- Frequently uses "Interestingly," and "Notably," to call attention to
+  surprising or important results. This is effective in moderation.
+
+- Tends to front-load motivation before stating results: "To investigate
+  whether..., we conducted..." / "With this in mind, we next investigated..."
+
+================================================================================
+2. PARAGRAPH STRUCTURE
+================================================================================
+
+- Opening paragraphs establish a tension or question, then narrow toward the
+  specific contribution. Does NOT start with "In this paper, we..."
+
+  Example intro opening: "Large language models (LLMs) have demonstrated
+  impressive capabilities in processing and generating text, yet a critical
+  question remains: do these models develop abstract internal representations
+  of the world, or do they simply memorize typical reasoning paths?"
+
+- Results paragraphs typically: (1) state what was done, (2) report the finding,
+  (3) provide statistical evidence inline, (4) interpret what it means.
+
+- Discussion is structured around thematic points, not section-by-section recap.
+  Each paragraph in the discussion advances an interpretive argument rather than
+  just restating results.
+
+================================================================================
+3. STATISTICAL REPORTING
+================================================================================
+
+- Reports statistics inline within flowing prose, not in separate tables:
+  "(Linear Regression, β = 0.008, p < .001)"
+  "(Welch's t-test; Cartesian: t = -3.055, p = 0.004)"
+  "(Wilcoxon signed-rank test, W = 16634, p = 0.005)"
+
+- Uses significance language carefully: "marginally significant" for p = 0.053,
+  "significantly higher than zero" for p = 0.005.
+
+- Prefers concrete quantitative statements over vague ones:
+  "the 8B model achieves a 66% success rate with the JSON SIR but only 30%
+  with its best non-cartesian SIR"
+
+================================================================================
+4. VOICE AND TONE
+================================================================================
+
+- First person plural ("we") throughout. Active voice for experiments:
+  "We evaluated...", "We trained...", "We then asked..."
+
+- Passive voice used only when emphasizing the finding over the actor:
+  "These correlations might reflect..."
+
+- Confident but measured. Uses hedging when appropriate:
+  "These findings point to..." (not "prove")
+  "This suggests that..." (not "demonstrates that..." for weaker evidence)
+  "It is also interesting that..." for speculative observations.
+
+- Does NOT use overly casual language. No colloquialisms.
+  But also not stiff or overly formal — reads as clear, direct scientific prose.
+
+================================================================================
+5. FIGURE AND REFERENCE INTEGRATION
+================================================================================
+
+- Figures are referenced with explicit panel descriptions:
+  "see green curve in left-most panel of Fig. 4"
+  "The first three panels of Figure 2 summarize..."
+
+- Cross-references are specific: "(compare same-color curves in the left panel
+  of Fig. 2—both JSON and Chess Notation outperform...)"
+
+- Related work citations are woven into sentences, not dumped as lists:
+  "Several studies have shown that LLMs can learn and solve tasks in these
+  domains [refs], and that their internal representations can be linearly mapped
+  to those external structures [ref]."
+
+================================================================================
+6. CONTRIBUTIONS FORMAT
+================================================================================
+
+- Contributions are a bullet list at the end of the intro, each starting with
+  "We demonstrate/show/reveal/find..." — active, discovery-oriented phrasing.
+
+- They are concise (one sentence each) and empirically grounded:
+  "We demonstrate that spatial orientation performance scales with model size."
+  "We reveal that LLMs can represent the position of an agent in 2D space in
+  ways that are partially invariant to prompting."
+
+================================================================================
+7. SECTION TRANSITIONS
+================================================================================
+
+- Smooth transitions between sections using motivating questions:
+  "Spatial reasoning does not only involve representing locations in
+  space—it requires detecting relations between objects' positions to make
+  predictions and guide decision-making."
+
+- Sections often end with a forward-looking sentence:
+  "Based on this observation, we turned to look for abstract components of the
+  model that could be representing spatial information irrespective of SIR type."
+
+- Uses "We then wondered if..." / "We next explored whether..." to chain
+  analyses into a natural investigative narrative.
+
+================================================================================
+8. HEDGING AND CAUTION
+================================================================================
+
+- Careful about overclaiming. Acknowledges limitations within results sections,
+  not just in a separate limitations section:
+  "However, it's important to note that these units may not exclusively process
+  spatial information (i.e. they might not be monosemantic)."
+  
+- Uses "may", "might", "could" for interpretive claims, reserving "demonstrate"
+  and "show" for well-supported empirical findings.
+
+- Acknowledges alternative explanations:
+  "However, these correlations might reflect the encoding of particular textual
+  motifs within a SIR rather than a true, abstract spatial model."
+
+================================================================================
+9. DISCUSSION PATTERNS
+================================================================================
+
+- Discussion paragraphs are interpretive essays, not result summaries.
+  They explain WHY results matter and connect to broader questions.
+
+  Example: "It's interesting, but perhaps expected, that LLMs prefer to process
+  spatial information when it's presented mathematically, where the x and y
+  dimensions can be operated separately to find the correct orientation."
+
+- Explicitly identifies future directions in concrete terms:
+  "In the future, it would be interesting to investigate whether the abstract
+  components of the spatial model are necessary when solving harder problems."
+
+- Connects findings across experiments to build a coherent narrative.
+
+================================================================================
+10. OVERALL WRITING PHILOSOPHY
+================================================================================
+
+- Tell a story. Each section leads to the next through a question-answer chain.
+- Be precise with numbers and statistical claims.
+- Use active voice. First person plural. Direct statements.
+- Front-load context, then narrow to specific result.
+- Moderate use of emphasis words (Interestingly, Notably, Crucially).
+- Acknowledge limitations honestly, within the text, not just at the end.
+- Keep related work functional (what does each cited work do for YOUR argument?).
+- Make contributions clear, concise, and empirically grounded.

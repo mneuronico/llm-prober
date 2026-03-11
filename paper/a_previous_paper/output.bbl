@@ -1,0 +1,177 @@
+\begin{thebibliography}{10}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{Abdou2021}
+Abdou, M., Kulmizev, A., Hershcovich, D., Frank, S., Pavlick, E., Søgaard, A.: Can language models encode perceptual structure without grounding? a case study in color (2021), arXiv preprint arXiv:2109.06129
+
+\bibitem{Aghzal2023}
+Aghzal, M., Plaku, E., Yao, Z.: Can large language models be good path planners? a benchmark and investigation on spatial-temporal reasoning (2023), arXiv preprint arXiv:2310.03249
+
+\bibitem{AlainBengio2016}
+Alain, G., Bengio, Y.: Understanding intermediate layers using linear classifier probes (2016), arXiv preprint arXiv:1610.01644
+
+\bibitem{Anagnostidis2024}
+Anagnostidis, S., Bulian, J.: How susceptible are llms to influence in prompts? (2024), arXiv preprint arXiv:2408.11865
+
+\bibitem{BenderEtAl2021}
+Bender, E., Gebru, T., McMillan-Major, A., Shmitchell, S.: On the dangers of stochastic parrots: Can language models be too big? In: Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency. pp. 610--623 (2021)
+
+\bibitem{BenderKoller2020}
+Bender, E., Koller, A.: Climbing towards nlu: On meaning, form, and understanding in the age of data. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics. pp. 5185--5198 (2020)
+
+\bibitem{Bereska2024}
+Bereska, L., Gavves, E.: Mechanistic interpretability for ai safety--a review (2024), arXiv preprint arXiv:2404.14082
+
+\bibitem{Bisk2020}
+Bisk, Y., Holtzman, A., Thomason, J., Andreas, J., Bengio, Y., Chai, J., et~al.: Experience grounds language (2020), arXiv preprint arXiv:2004.10151
+
+\bibitem{Bommasani2021}
+Bommasani, R., Hudson, D., Adeli, E., Altman, R., Arora, S., von Arx, S., et~al.: On the opportunities and risks of foundation models (2021), arXiv preprint arXiv:2108.07258
+
+\bibitem{Bricken2023}
+Bricken, e.a.: Towards monosemanticity: Decomposing language models with dictionary learning (2023), transformer Circuits Thread
+
+\bibitem{Brown2020}
+Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., et~al.: Language models are few-shot learners. In: Advances in Neural Information Processing Systems. vol.~33, pp. 1877--1901 (2020)
+
+\bibitem{ChevalierBoisvert2024}
+Chevalier-Boisvert, M., Dai, B., Towers, M., Perez-Vicente, R., Willems, L., Lahlou, S., et~al.: Minigrid \& miniworld: Modular \& customizable reinforcement learning environments for goal-oriented tasks. In: Advances in Neural Information Processing Systems. vol.~36 (2024)
+
+\bibitem{ChevalierBoisvert2018}
+Chevalier-Boisvert, M., Willems, L., Pal, S.: Minimalistic gridworld environment for gymnasium. In: Advances in Neural Information Processing Systems. pp. 8024--8035 (2018)
+
+\bibitem{Cote2019}
+C\^{o}t\'{e}, M., K\'{a}d\'{a}r, A., Yuan, X., Kybartas, B., Barnes, T., Fine, E., et~al.: Textworld: A learning environment for text-based games. In: Computer Games: 7th Workshop, CGW 2018, held in conjunction with the 27th International Conference on Artificial Intelligence, IJCAI 2018, Stockholm, Sweden, July 13, 2018, Revised Selected Papers 7. pp. 41--75. Springer International Publishing (2019)
+
+\bibitem{Driess2023}
+Driess, D., Xia, F., Sajjadi, M., Lynch, C., Chowdhery, A., Ichter, B., Wahid, A., Tompson, J., Vuong, Q., Yu, T., Huang, W., Chebotar, Y., Sermanet, P., Duckworth, D., Levine, S., Vanhoucke, V., Hausman, K., Toussaint, M., Greff, K., Zeng, A., Mordatch, I., Florence, P.: Palm-e: An embodied multimodal language model (2023), arXiv preprint arXiv:2303.03378
+
+\bibitem{Dubey2024}
+Dubey, A., Jauhri, A., Pandey, A., Kadian, A., Al-Dahle, A., Letman, A., et~al.: The llama 3 herd of models (2024), arXiv preprint arXiv:2407.21783
+
+\bibitem{Durrani2022}
+Durrani, N., Dalvi, F., Sajjad, H.: Discovering salient neurons in deep nlp models. Journal of Machine Learning Research  \textbf{24},  362:1--362:40 (2022)
+
+\bibitem{Elhage2021}
+Elhange, e.a.: A mathematical framework for transformer circuits (2021), transformer Circuits Thread
+
+\bibitem{Geva2020}
+Geva, M., Schuster, R., Berant, J., Levy, O.: Transformer feed-forward layers are key-value memories (2020), arXiv preprint arXiv:2012.14913
+
+\bibitem{Gurnee2023}
+Gurnee, W., Nanda, N., Pauly, M., Harvey, K., Troitskii, D., Bertsimas, D.: Finding neurons in a haystack: Case studies with sparse probing (2023), arXiv preprint arXiv:2305.01610
+
+\bibitem{GurneeTegmark2023}
+Gurnee, W., Tegmark, M.: Language models represent space and time (2023), arXiv preprint arXiv:2310.02207
+
+\bibitem{HaSchmidhuber2018}
+Ha, D., Schmidhuber, J.: World models (2018), arXiv preprint arXiv:1803.10122
+
+\bibitem{Hafting2005}
+Hafting, T., Fyhn, M., Molden, S., Moser, M., Moser, E.: Microstructure of a spatial map in the entorhinal cortex. Nature  \textbf{436}(7052),  801--806 (2005)
+
+\bibitem{Huang2022}
+Huang, W., Abbeel, P., Pathak, D., Mordatch, I.: Language models as zero-shot planners: Extracting actionable knowledge for embodied agents. In: International Conference on Machine Learning. pp. 9118--9147. PMLR (2022)
+
+\bibitem{Leidinger2023}
+Leidinger, A., Van~Rooij, R., Shutova, E.: The language of prompting: What linguistic properties make a prompt successful? (2023), arXiv preprint arXiv:2311.01967
+
+\bibitem{LengXiong2024}
+Leng, Y., Xiong, D.: Towards understanding multi-task learning (generalization) of llms via detecting and exploring task-specific neurons (2024), arXiv preprint arXiv:2407.06488
+
+\bibitem{Lever2009}
+Lever, C., Burton, S., Jeewajee, A., O'Keefe, J., Burgess, N.: Boundary vector cells in the subiculum of the hippocampal formation. Journal of Neuroscience  \textbf{29}(31),  9771--9777 (2009)
+
+\bibitem{LiNyeAndreas2021}
+Li, B., Nye, M., Andreas, J.: Implicit representations of meaning in neural language models (2021), arXiv preprint arXiv:2106.00737
+
+\bibitem{Li2024}
+Li, W., Duan, M., An, D., Shao, Y.: Large language models understand layout (2024), arXiv preprint arXiv:2407.05750
+
+\bibitem{Li2021}
+Li, Z., Cao, Y., Cheung, J.: Do llms build world representations? probing through the lens of state abstraction. In: Proceedings of the 38th Annual Conference on Neural Information Processing Systems (2021)
+
+\bibitem{Lin2023}
+Lin, J., Gao, H., Xu, R., Wang, C., Guo, L., Xu, S.: Advances in embodied navigation using large language models: A survey (2023)
+
+\bibitem{McDonald2023}
+McDonald, C., Malloy, T., Nguyen, T., Gonzalez, C.: Exploring the path from instructions to rewards with large language models in instance-based learning. In: Proceedings of the AAAI Symposium Series. vol.~2, pp. 334--339 (2023)
+
+\bibitem{Meng2022}
+Meng, K., Bau, D., Andonian, A., Belinkov, Y.: Locating and editing factual associations in gpt. In: Advances in Neural Information Processing Systems. vol.~35, pp. 17359--17372 (2022)
+
+\bibitem{Nanda2023}
+Nanda, N., Chan, L., Lieberum, T., Smith, J., Steinhardt, J.: Progress measures for grokking via mechanistic interpretability (2023), arXiv preprint arXiv:2301.05217
+
+\bibitem{OKeefe1976}
+O'Keefe, J.: Place units in the hippocampus of the freely moving rat. Experimental Neurology  \textbf{51}(1),  78--109 (1976)
+
+\bibitem{OKeefeDostrovsky1971}
+O'Keefe, J., Dostrovsky, J.: The hippocampus as a spatial map: preliminary evidence from unit activity in the freely-moving rat. Brain Research  (1971)
+
+\bibitem{Olah2020}
+Olah, C., Cammarata, N., Schubert, L., Goh, G., Petrov, M., Carter, S.: Zoom in: An introduction to circuits. Distill  \textbf{5}(3),  e00024--001 (2020)
+
+\bibitem{PatelPavlick2022}
+Patel, R., Pavlick, E.: Mapping language models to grounded conceptual spaces. In: International Conference on Learning Representations (2022)
+
+\bibitem{Ranasinghe2024}
+Ranasinghe, K., Shukla, S., Poursaeed, O., Ryoo, M., Lin, T.: Learning to localize objects improves spatial reasoning in visual-llms. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp. 12977--12987 (2024)
+
+\bibitem{Sahoo2024}
+Sahoo, P., Singh, A., Saha, S., Jain, V., Mondal, S., Chadha, A.: A systematic survey of prompt engineering in large language models: Techniques and applications (2024), arXiv preprint arXiv:2402.07927
+
+\bibitem{Salinas2024}
+Salinas, A., Morstatter, F.: The butterfly effect of altering prompts: How small changes and jailbreaks affect large language model performance (2024), arXiv preprint arXiv:2401.03729
+
+\bibitem{Schumann2023}
+Schumann, A., Agarwal, S., Batra, D.: Velma: Verbalization embodiment of llm agents for vision and language navigation in street view (2023), arXiv preprint arXiv:2302.05739
+
+\bibitem{Sclar2023}
+Sclar, M., Choi, Y., Tsvetkov, Y., Suhr, A.: Quantifying language models' sensitivity to spurious features in prompt design or: How i learned to start worrying about prompt formatting (2023), arXiv preprint arXiv:2310.11324
+
+\bibitem{Song2024}
+Song, R., He, S., Jiang, S., Xian, Y., Gao, S., Liu, K., Yu, Z.: Does large language model contain task-specific neurons? In: Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing. pp. 7101--7113 (2024)
+
+\bibitem{Taube1990}
+Taube, J., Muller, R., Ranck, J.: Head-direction cells recorded from the postsubiculum in freely moving rats. i. description and quantitative analysis. Journal of Neuroscience  \textbf{10}(2),  420--435 (1990)
+
+\bibitem{Templeton2024}
+Templeton, e.a.: Scaling monosemanticity: Extracting interpretable features from claude~3 sonnet (2024), transformer Circuits Thread
+
+\bibitem{Vafa2024}
+Vafa, K., Chen, J., Kleinberg, J., Mullainathan, S., Rambachan, A.: Evaluating the world model implicit in a generative model (2024), arXiv preprint arXiv:2406.03689
+
+\bibitem{Wang2023}
+Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., et~al.: Voyager: An open-ended embodied agent with large language models (2023), arXiv preprint arXiv:2305.16291
+
+\bibitem{Wang2024}
+Wang, J., Ming, Y., Shi, Z., Vineet, V., Wang, X., Li, Y., Joshi, N.: Is a picture worth a thousand words? delving into spatial reasoning for vision language models (2024), arXiv preprint arXiv:2406.14852
+
+\bibitem{Wang2022}
+Wang, K., Variengien, A., Conmy, A., Shlegeris, B., Steinhardt, J.: Interpretability in the wild: a circuit for indirect object identification in gpt-2 small (2022), arXiv preprint arXiv:2211.00593
+
+\bibitem{Wang2022b}
+Wang, X., Wen, K., Zhang, Z., Hou, L., Liu, Z., Li, J.: Finding skill neurons in pre-trained transformer-based language models (2022), arXiv preprint arXiv:2211.07349
+
+\bibitem{Wei2022}
+Wei, J., Tay, Y., Bommasani, R., Raffel, C., Zoph, B., Borgeaud, S., et~al.: Emergent abilities of large language models (2022), arXiv preprint arXiv:2206.07682
+
+\bibitem{Wei2022Chain}
+Wei, J., Wang, X., Schuurmans, D., Bosma, M., Xia, F., Chi, E., et~al.: Chain-of-thought prompting elicits reasoning in large language models. In: Advances in Neural Information Processing Systems. vol.~35, pp. 24824--24837 (2022)
+
+\bibitem{Yamada2023}
+Yamada, Y., Bao, Y., Lampinen, A., Kasai, J., Yildirim, I.: Evaluating spatial understanding of large language models (2023), arXiv preprint arXiv:2310.14540
+
+\bibitem{Yao2022}
+Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., Cao, Y.: React: Synergizing reasoning and acting in language models (2022), arXiv preprint arXiv:2210.03629
+
+\bibitem{Zheng2023}
+Zheng, S., Liu, J., Feng, Y., Lu, Z.: Steve-eye: Equipping llm-based embodied agents with visual perception in open worlds (2023), arXiv preprint arXiv:2310.13255
+
+\bibitem{Zhu2023}
+Zhu, X., Chen, Y., Tian, H., Tao, C., Su, W., Yang, C., Huang, G., Li, B., Lu, L., Wang, X., Qiao, Y., Zhang, Z., Dai, J.: Ghost in the minecraft: Generally capable agents for open-world environments via large language models with text-based knowledge and memory (2023), arXiv preprint arXiv:2305.17144
+
+\end{thebibliography}

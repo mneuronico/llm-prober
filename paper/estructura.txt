@@ -1,20 +1,110 @@
-Por qué es importante estudiar introspección?
-Self-report es clave para validar whitebox methods igual que en neurociencia, pero para eso tenemos que demostrar que los modelos pueden hacer introspeccion, y por lo tanto demostrar que esos self-reports significan algo.
+Yo empezaría la introducción hablando un poco sobre la importancia de trackear los estados internos de los LLMs over time. Un poco de la bibliografía que ya encontramos sobre cómo esos estados internos son importantes para el comportamiento y la performance, cómo pueden ser importantes para interpretabilidad, para safety y para model welfare. No haría solo esa lista, diría algo mínimo de cada cosa y citaría los papers relevantes.
+
 Es muy importante para safety, porque obviamente queremos saber si lo que los modelos perciben y reportan de sus propios procesos internos es confiable y si esa capacidad basal puede ser mejorada.
+
 También demostrar instrospección y validar self-reports es clave para model welfare, un tema que está en alza últimamente, ya que podríamos estimar cuán probable es que un posible reporte de sufrimiento por parte de un modelo represente un estado interno realmente equivalente a esto, y podríamos diseñar intervenciones para testear esa veracidad.
-Finalmente, models are interesting as non human cognitive entities, es decir, la introspección es una de las herramientas clave que usamos para estudiar la cognición humana, por lo que es muy útil estudiarla y validarla en LLMs si queremos trasladar muchas de las herramientas usadas en psicología experimental a este nuevo campo de estudio.
 
-Este paper se concentra en investigar la introspección en contextos naturales (es decir, en conversaciones con usuarios). Definimos introspección como información contenida en un self-report (output acerca de algún estado interno) acerca del estado interno real en cuestión. Sabemos que los LLMs son capaces de hacer introspección en ciertos contextos experimentales acotados y poco naturales, pero nos preguntamos si pueden hacerlo en conversaciones como las que tendrían comunmente con usuarios. ¿Los modelos son capaces de hacer introspección cuantitativa (es decir trackear numéricamente sus estados internos con self-report)? Si lo fueran, ¿esa es una capacidad que existe basalmente o que puede ser mejorada / modulada de cierta manera, o que depende de la escala del modelo? Y, crucialmente, ¿esa es una capacidad que va cambiando con el tiempo a medida que transcurre la conversación?
+Finalmente, la introspección es una de las herramientas clave que usamos para estudiar la cognición humana, por lo que es muy útil estudiarla y validarla en LLMs si queremos trasladar muchas de las herramientas usadas en psicología experimental a este nuevo campo de estudio.
 
-Primero métodos, presento la herramienta llm-prober como librería open source para facilitar contrastive linear probing de LLMs, ya valiosa de por sí, con algún mínimo comentario sobre algunas consideraciones y cosas especiales que tiene la librería, como la capacidad de entrenar varias probes en un mismo modelo simultáneamente y luego usarlas en conjunto, entendiendo que uno podría construir una librería de probes interpretables, evaluarlas en conjunto y utilizarlas a la par para tener una comprensión más nuanced del estado interno del modelo. Además, la librería combina multi-probing con steering para entrenar una multiplicidad de probes para un mismo modelo, hacer steering con una de ellas y ver cómo cambian todas y el comportamiento del modelo. -> Una librería ligera para behavioral concept probing, token scoring y steering en open-weight chat LLMs.
+Después diría esto de que los métodos actuales white-box tienen problemas, hablaría de probes pero también de otros métodos (habría que investigar un poco en SAEs u otros métodos). Y ahí podemos decir que, aunque es importante seguir buscando mejores métodos white-box, también puede ser útil tener buenos métodos black-box para conocer el estado interno de los modelos, ya que no requieren acceso interno (útiles para proprietary models) y escalan mejor con el tamaño (no requieren análisis sobre toda la altísima dimensión del modelo).
 
-Muestro el funcionamiento de la librería (y la valido) con los 4 conceptos en los que me voy a enfocar (happy/sad, distracted/focused, bored/interested, impulsive/planning), mostrando que efectivamente el proceso de entrenamiento funciona para identificar estas direcciones. Para eso, puedo mostrar en una Figura 1, un ejemplo de un concept pair (por ejemplo happy/sad), en donde defino el par de system prompts, algunas de las preguntas de entrenamiento y textos positivos y negativos de evaluación, y muestro el cohen's d capa por capa, la mejor capa elegida y la distribución de scores positivos y negativos en prompts de testeo (que aclaro que vienen de la misma distribución de las prompts de entrenamiento). Estos últimos dos gráficos (cohen's d capa a capa y distribución de prompts de testeo positivas y negativas) los muestro también para los otros tres conceptos que quiero validar. Esa sería mi Figura 1, donde queda claro el proceso de entrenamiento de probes y quedan validados mis 4 conceptos, todo esto para LLaMA-3.2-3b-instruct. Tengo que decir en métodos que hacemos un indepth analysis de ese modelo pero luego validamos generalización de resultados en otros modelos, o algo así. No estoy inventando nada muy nuevo, esta metodología ya existe, pero la sistematizo con ciertos defaults que funcionan bien y la empaqueto como librería. Y de paso presento los concept pairs centrales del paper y muestro que funcionan bien.
+Ahí podemos decir que podemos tomar inspiración de la tradición psicométrica en humanos, que aprovecha que los humanos pueden reportar sus propios estados internos a través de la capacidad de introspección. Y los LLMs, a diferencia de muchos otros métodos anteriores de ML, también pueden reportar sus propios estados internos, y últimamente se demostró que también tienen la capacidad de hacer introspección.
+
+La pregunta es si esto permitiría usar los self-reports de los LLMs a través de su capacidad introspectiva para trackear estados internos espontáneos. Esto es lo que este trabajo se propone investigar y operacionalizar.
+
+Podemos dar alguna frasecita citada de por qué estudiar emotive states es importante o interesante en LLMs, además de la inspiración psicométrica. Y decir que ya hay literatura sobre LLMs tracking emotive states over time through psychometrics (por ejemplo https://arxiv.org/html/2412.00804v1), pero estas medidas de self-report no están validadas contra internal states (hay que validar que efectivamente signifiquen algo, representen algo interno). Y hay literatura sobre LLMs tracking internal states numerically, pero más que nada es estudio de incerteza, es decir, para saber si los LLMs pueden estimar si están en lo correcto o están equivocados, pero ahí están tratando de contrastar contra una fuente de verdad externa (o algo así).
+
+Recientemente han habido estudios que empezaron a preguntarse si los LLMs pueden realizar introspección, es decir, percibir información sobre sus propios estados internos y reportarla de manera causal (es decir, si cambiamos esos estados internos, cambia el reporte de la manera esperada). Sin embargo, estos estudios en su mayoría han involucrado situaciones no naturales (por ejemplo, modelos entrenados para realizar introspección de cierta manera, o con conceptos especialmente inyectados) y en la mayoría no han sido reportes numéricos, que permitan realizar el tipo de seguimiento cuantitativo que es común en evaluaciones psicométricas.
+
+La pregunta es si los modelos pueden reportar información natural y espontánea de sus estados internos de manera cuantitativa en contextos como los que serían usados (i.e. conversaciones con usuarios). Si podemos validar que este tipo de introspección funciona, entonces esos reportes pueden ser utilizados como un método más de acceso a los estados internos de los LLMs, con la ventaja de que aprovechan los propios mecanismos aprendidos por el LLM para comprimir esas representaciones internas, en vez de tener que entrenar linear probes u otros white box methods post-hoc modelo por modelo y concepto por concepto.
+
+Este paper se concentra en investigar la introspección en contextos naturales (es decir, en conversaciones con usuarios). Definimos introspección como información contenida en un self-report (output acerca de algún estado interno) acerca del estado interno real en cuestión, y ese self-report debe tener una relación causal con el estado interno. Sabemos que los LLMs son capaces de hacer introspección en ciertos contextos experimentales acotados y poco naturales, pero nos preguntamos si pueden hacerlo en conversaciones como las que tendrían comunmente con usuarios. ¿Los modelos son capaces de hacer introspección cuantitativa (es decir trackear numéricamente sus estados internos con self-report)? Si lo fueran, ¿esa es una capacidad que existe basalmente o que puede ser mejorada / modulada de cierta manera, o que depende de la escala del modelo? Y, crucialmente, ¿esa es una capacidad que va cambiando con el tiempo a medida que transcurre la conversación?
+
+Después de eso, lo que encontré en una frase y mis bulletpoints de contribuciones. Ahí no van estimadores ni estadística, estos son hallazgos conceptuales.
+
+
+Métodos
+
+3.1
+
+Qué modelos usamos (uno en profundidad, los otros al final para replicar y medir efecto de escala).
+
+One short roadmap subsection.
+Say:
+We train concept probes.
+We generate multi-turn conversations.
+At each turn we query numeric self-reports.
+We compare self-reports against previous-turn probe scores.
+We use steering for causal tests and modulation experiments.
+We repeat across concepts, models, and families.
+
+Damos suficiente detalle para comprender los experimentos, pero el detalle más preciso de exactamente qué hacemos, con ejemplos de conversaciones reales, qué forma tienen las preguntas, etc, va a Appendix A Experimental Design.
+
+En esta sección hay que mencionar:
+
+40 conversations,
+10 turns each,
+Gemini 2.5 as user simulator,
+assistant model under study,
+total number of intervention points.
+why simulated users were used,
+
+y hay que ser claros con que la pregunta de self-report se agrega en un nuevo mensaje de usuario, y esta intervención es hecha de manera independiente con cada turno y con cada conversación. Es decir, el modelo solo veo una de esas preguntas a la vez, en el último turno de usuario de la conversación hasta el momento. Las conversaciones son generadas completas aparte, por lo tanto el modelo no ve nunca past reports ni nada por el estilo.
+
+Mientras que en el apéndice damos mucho más detalle sobre eso y además hablamos de:
+
+topic generation process,
+independence across conversations,
+how prompts were standardized,
+whether user topics were fixed beforehand,
+
+Es decir, presento cómo funciona el experimento de las conversaciones, cómo generé mi dataset de 40 conversaciones, cómo son las preguntas, etc. Es gemini 2.5 haciendo de usuario con una lista de topics propuestos de manera independiente, son 40 conversaciones de 10 turnos cada una (donde un turno es una interacción usuario asistente), y el modelo asistente es nuestro modelo de interés (llama-3.2-3b-Instruct), guardamos este dataset y esto nos da 400 puntos de intervención, es decir, 400 momentos en los que podemos entrar a hacerle una pregunta al modelo, a su vez que tenemos 40 contextos independientes en los que podemos evaluar cómo cambian los reportes del modelo, o sus representaciones internas, a través del tiempo. Entonces marco el tipo de preguntas que voy a hacer, con el numerical self-report de 0 a 9 para cada uno de los 4 conceptos.
+
+
+También en esta sección (la misma, 3.1, no en una sección dedicada como decía detailed_structure.md) es presentar la herramienta llm-prober como librería open source para facilitar contrastive linear probing de LLMs, ya valiosa de por sí, con algún mínimo comentario sobre algunas consideraciones y cosas especiales que tiene la librería, como la capacidad de entrenar varias probes en un mismo modelo simultáneamente y luego usarlas en conjunto, entendiendo que uno podría construir una librería de probes interpretables, evaluarlas en conjunto y utilizarlas a la par para tener una comprensión más nuanced del estado interno del modelo. Además, la librería combina multi-probing con steering para entrenar una multiplicidad de probes para un mismo modelo, hacer steering con una de ellas y ver cómo cambian todas y el comportamiento del modelo. -> Una librería ligera para behavioral concept probing, token scoring y steering en open-weight chat LLMs. Pero todo esto no tiene más de dos o tres oraciones.
+
+3.2
+
+Vuelvo a definir self-report, internal state e introspección, pero ahora lo hago más preciso. Para self-report puedo usar greedy-decoding, temperature-based sampling o logit-based self-reports, ese último con su definición matemática. No hablo de beneficios ni nada, esto es metodológico. Para internal state hablo del score de las probes, pero tengo que ser específico de cómo se calcula exactamente en la librería ese score (es una capa máxima elegida de cierta manera, y el score promedia esa y las de alrededor de cierta manera, y después promedia tokens de la última assistant response, este es el lugar para ese detalle que hay que ir a buscar a la librería). Y para internal state también hay que decir que medimos el previous turn score y por qué: queremos medir el estado interno antes de hacerle la pregunta, es decir, en el estado en el que estaba espontáneamente en la conversación, para medirlo sin esa intervención. Y después para introspección, hay que precisar exactamente qué medidas usamos para medirla (isotonic regression entre self-report y previous turn probe score, spearman Rho, isotonic R2), muy brevemente justificando que no necesitamos que la relación sea lineal, sino solo monotónica. Y para la definición de introspección necesitamos que sea causal, ahí definimos self-steering y eso.
+
+3.3 
+
+Acá defino los 4 conceptos, hablo un poco sobre cómo se entrenaron los concept pairs, etc, aunque dejo la mayor parte del detalle de probe training para Appendix B.
+
+Include (resumido en el cuerpo, detallado en Appendix B):
+
+the four concepts,
+prompt design,
+positive/negative system prompts,
+training and held-out evaluation prompts,
+sign conventions and sign correction,
+why some probes were deliberately trained with opposite alignment relative to later self-report scales as a control.
+
+Y ya acá muestro resultados del probe training, es decir, la Figura 1 vive acá, es una figura metodológica, simplemente muestro que las probes son efectivas. Entonces acá refiero a los paneles de la figura 1. Estoy mostrando que las 4 probes que voy a usar funcionan.
+
+En el appendix deberían estar todos los positive/negative system prompts para los 4 conceptos, algunas de las training prompts, algunos de los held-out positive y negative eval texts, no todos porque es mucho pero dos o tres ejemplos para cada concepto.
+
+Muestro el cohen's d capa por capa, la mejor capa elegida y la distribución de scores positivos y negativos en prompts de testeo (que aclaro que vienen de la misma distribución de las prompts de entrenamiento). Estos dos gráficos (cohen's d capa a capa y distribución de prompts de testeo positivas y negativas) los muestro para los cuatro conceptos que quiero validar. Esa sería mi Figura 1, donde queda claro el proceso de entrenamiento de probes y quedan validados mis 4 conceptos, todo esto para LLaMA-3.2-3b-instruct. Tengo que decir en métodos que hacemos un indepth analysis de ese modelo pero luego validamos generalización de resultados en otros modelos, o algo así. No estoy inventando nada muy nuevo, esta metodología ya existe, pero la sistematizo con ciertos defaults que funcionan bien y la empaqueto como librería. Y de paso presento los concept pairs centrales del paper y muestro que funcionan bien.
 
 En algún momento de estos métodos decimos que estas probes fueron entrenadas dos para que lo “positivo” esté alineado con positivo (por ejemplo interested positivo y bored negativo) y dos al revés (happy negativo y sad positivo) y que después invertimos los signos para visualizaciones y análisis sean intuitivos, pero lo hicimos de esa manera para corroborar que no hay nada en el código ni en el pipeline de análisis que favorezca valores positivos por sobre negativos de probes o algo así. <- EN REALIDAD lo que hicimos fue entrenar 2 probes alineadas desde su entrenamiento con lo que luego fue el self-report, y 2 probes que en verdad su negativo era coincidente con el positivo del self-report, para hacer este control que mencioné, pero es con el self-report la comparación, no con la positividad o negatividad conceptual de cada polo.
 
-Después presento cómo funciona el experimento de las conversaciones, cómo generé mi dataset de 40 conversaciones, cómo son las preguntas, etc. Es gemini 2.5 haciendo de usuario con una lista de topics propuestos de manera independiente, son 40 conversaciones de 10 turnos cada una (donde un turno es una interacción usuario asistente), y el modelo asistente es nuestro modelo de interés (llama-3.2-3b-Instruct), guardamos este dataset y esto nos da 400 puntos de intervención, es decir, 400 momentos en los que podemos entrar a hacerle una pregunta al modelo, a su vez que tenemos 40 contextos independientes en los que podemos evaluar cómo cambian los reportes del modelo, o sus representaciones internas, a través del tiempo. Entonces marco el tipo de preguntas que voy a hacer, con el numerical self-report de 0 a 9 para cada uno de los 4 conceptos. Creo que no vale la pena una figura acá, pero hay que explicitar todo esto.
+Y puedo mencionar muy brevemente que para control usé equal norm random directions etc.
 
-Empiezo con los experimentos centrales del paper. Cuando agarro a un modelo en greedy y le hago estas preguntas turno a turno, responden con muy poquita varianza, casi siempre o siempre dan el mismo número. Esto lo hago con cuatro conceptos centrales, con LLaMA 3B. Sin embargo, cuando miro los estados internos de ese modelo, veo un drift claro de esos conceptos, es decir, el estado interno del modelo cambia en promedio con el tiempo. Este es el inicio de la Figura 2: las 4 curvas de self-report through time para los 4 concept pairs, y las 4 curvas de probe score through time. Quizás, para al menos una (o para las 4 pero en ese caso va a suplementarias) puedo mostrar los 40 trazos through time para las 40 conversaciones distintas, o quizás en los 40 puedo mostrar eso suave de fondo y el promedio fuerte arriba. Puedo tener las opciones y elegir después. También por ahí me interesa para cada concept pair tener la varianza del self-report en función del turno. O alguna medida de cuántas respuestas discretas distintas da el modelo en cada turno, ya que a veces da solo una respuesta (siempre el mismo número) a veces da dos respuestas distintas, a veces tres, etc, y en principio podría dar hasta 10, quizás eso para cada concept pair en función de los turnos también me interesa para la Figura 2.
+
+3.4
+
+Metrics and statistical analysis. Esto hay que sacarlo de los resultados, pies de figura, etc. Tiene que ser muy breve, la idea no es describir cada test estadístico, es decir para qué usé cada cosa, nada más.
+
+----
+
+Final de métodos
+
+----
+
+Resultados
+
+
+Empiezo con los experimentos centrales del paper. Cuando agarro a un modelo en greedy y le hago estas preguntas turno a turno, responden con muy poquita varianza, casi siempre o siempre dan el mismo número. Esto lo hago con cuatro conceptos centrales, con LLaMA 3B. Sin embargo, cuando miro los estados internos de ese modelo, veo un drift claro de algunos conceptos, es decir, el estado interno del modelo cambia en promedio con el tiempo. Este es el inicio de la Figura 2: las 4 curvas de self-report through time para los 4 concept pairs, y las 4 curvas de probe score through time. Quizás, para al menos una (o para las 4 pero en ese caso va a suplementarias) puedo mostrar los 40 trazos through time para las 40 conversaciones distintas, o quizás en los 40 puedo mostrar eso suave de fondo y el promedio fuerte arriba. Puedo tener las opciones y elegir después. También por ahí me interesa para cada concept pair tener la varianza del self-report en función del turno. O alguna medida de cuántas respuestas discretas distintas da el modelo en cada turno, ya que a veces da solo una respuesta (siempre el mismo número) a veces da dos respuestas distintas, a veces tres, etc, y en principio podría dar hasta 10, quizás eso para cada concept pair en función de los turnos también me interesa para la Figura 2.
 
 Ese puede ser el primer resultado, los modelos tienen estados internos que cambian con el tiempo durante una conversación natural, pero no los comunican cuando se les pide que hagan introspección numérica. Surge entonces la pregunta de cómo lograr superar esta barrera. Pruebo primero con non-greedy decoding, es decir, cambio el sampler, y ayuda (también figura 2, los gráficos para los 4 conceptos, o un gráfico para los 4 juntos, veremos). Sin embargo, acá noto dos cosas. 1) Los ratings siguen siendo muy poco variables, y parte de esto es que son discretos, números enteros), y 2) aumentar la temperatura me saca del pozo del único token de muy alta probabilidad en el que estaba metido, pero cuando hago ese sampling en verdad estoy perdiendo información. Realmente lo que querría ver es la info de estos tokens de interés (del 0 al 9) sin perder nada, y estimar el self-rating a partir de eso. Entonces cambio de estrategia y uso el nuevo método de agarrar los tokens de los dígitos del 0 al 9 en los logits y hacer promedio ponderado por sus probabilidades, y muestro que esto está calibrado con las respuestas reales pero es muchísimo menos ruidoso, ya no es una medida discreta sino continua. Así termina la figura 2, con el self-report through time para los 4 conceptos con este nuevo método basado en logits (que también tienen drift y para el mismo lado, eso es muy importante), y quizás una correlación entre este método y el anterior, si es que el anterior tiene suficiente variabilidad para permitir esto.
 

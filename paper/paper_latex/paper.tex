@@ -1,0 +1,427 @@
+\documentclass[10pt]{article}
+\usepackage[preprint]{tmlr}
+\input{math_commands.tex}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+\def\month{MM}
+\def\year{YYYY}
+\def\openreview{\url{https://openreview.net/forum?id=XXXX}}
+
+\title{Do Language Models Know How They Feel? \\
+Introspection of Emotive States in Multi-Turn Conversation}
+
+\author{
+\name Nicolas Martorell \thanks{ORCID: 0000-0003-1778-7738}
+\email nmartorell@fbmc.fcen.uba.ar \\
+\addr Faculty of Exact and Natural Sciences, University of Buenos Aires, Argentina \\
+National Scientific and Technical Research Council (CONICET)
+}
+
+\begin{document}
+
+\maketitle
+
+% ===========================================================================
+\begin{abstract}
+Tracking the internal states of large language models across conversations is important for safety, interpretability, and model welfare, yet current methods are limited.
+Linear probes and other white-box methods compress high-dimensional representations imperfectly and are harder to apply with increasing model size.
+Taking inspiration from human psychology, where numeric self-report is a widely used tool for tracking internal states, we ask whether LLMs' own numeric self-reports can track emotive states over time.
+We study four concept pairs (wellbeing, interest, focus, and impulsivity) in 40 ten-turn conversations, operationalizing introspection as the causal informational coupling between a model's self-report and its independently measured internal state along probe-defined concept directions.
+We find that greedy-decoded self-reports collapse outputs to few uninformative values, but introspective capacity can be unmasked by calculating logit-based self-reports. This metric tracks interpretable internal states from the first turn (pooled Spearman $\rho = 0.40$--$0.76$; isotonic $R^2 = 0.12$--$0.54$ in LLaMA-3.2-3B-Instruct), follows how those states change over time, and activation steering confirms the coupling is causal.
+Furthermore, we find that introspection is present at turn~1 but evolves through conversation, and can be selectively improved by steering along one concept to boost introspection for another ($\Delta R^2$ up to $0.30$).
+Crucially, these phenomena scale with model size, approaching $R^2 \approx 0.93$ in LLaMA-3.2-8B-Instruct, and replicate in other model families.
+Together, these results establish numeric self-report as a viable, complementary tool for tracking internal emotive states in conversational AI systems.
+\end{abstract}
+
+% ===========================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Tracking the internal states of large language models as they evolve through conversation is becoming a central challenge for multiple areas of AI research. For safety, we need to know whether what models perceive and report about their own internal processes is reliable, and whether that capacity can be improved \citep{CodaForno2023}. For model welfare, we need methods to estimate how likely it is that distress reports reflect a genuine internal state \citep{Long2024, DungTagliabue2025}. For interpretability in general, introspection (the capacity to perceive and report one's own internal states) can be a valuable tool to study otherwise inaccessible processes, as it is done in human experimental psychology. If a similar capacity can be demonstrated and validated in LLMs, it would open a productive bridge between psychometric methodology and the emerging field of machine psychology.
+
+The methods currently available for reading LLM internal states are powerful but limited. Linear probes, for example, can identify interpretable directions in activation space \citep{AlainBengio2018, Kim2018, GurneeTegmark2023}, yet they require access to model weights, must be trained separately for each model and concept, and compress high-dimensional representations into externally defined readouts that may miss relevant structure \citep{Belinkov2022, HewittLiang2019, Pimentel2020}. Other white-box approaches, like sparse autoencoders, face analogous access and scalability constraints. Although developing better white-box tools remains important, there is also value in having good black-box methods for monitoring internal state: methods that do not require internal access, making them applicable to proprietary systems, and that scale more naturally with model size, since they do not demand analysis across the model's full-dimensional activation space.
+
+The human psychometric tradition provides a direct precedent for this kind of approach. For nearly a century, numeric self-report has been the primary tool for tracking latent internal states such as mood, attention, and arousal \citep{Likert1932, Watson1988, CsikszentmihalyiLarson1987, Shiffman2008}. LLMs, unlike most previous machine-learning systems, can also produce reports about their own internal states. And recent work in LLM introspection has established that they possess some genuine capacity to do so \citep{Binder2025, JiAn2025, Lindsey2026, PearsonVogel2026}. This raises a natural question: can the self-reports of LLMs, produced through whatever introspective capacity they possess, be used to track their spontaneous internal states over time? If so, numeric self-report would become a practical complementary tool for monitoring LLM internal states: one that leverages the model's own learned compression of its representational space, rather than requiring externally trained projections such as linear probes. This is what the present work sets out to investigate.
+
+
+We investigate this question for emotive states in multi-turn conversation. Emotive concepts are well suited because they have functional consequences in LLMs \citep{CodaForno2023}, they naturally evolve through dialogue \citep{Fazzi2025, Choi2024}, and they are among the best-characterized geometries in LLM activations \citep{ZhangZhong2025, WangEmotion2025}. We operationalize introspection as causal informational coupling between a numeric self-report and an independently measured internal direction \citep{ComShanahan2025}: a model introspects a concept to the extent that its report covaries monotonically with the corresponding probe-defined direction, and causally shifting that direction shifts the report in the predicted direction. This definition follows the convergent-validity logic of human metacognition research \citep{FlemingLau2014, Lapate2020} and is agnostic about consciousness or subjective experience. Prior work has established that LLMs can produce emotive self-reports that resemble human responses \citep{Tavast2022, CodaForno2022} and that introspection is possible in constrained experimental settings \citep{Binder2025, JiAn2025, Lindsey2026, PearsonVogel2026}, but no study has tested whether numeric emotive self-reports track interpretable internal states across the turns of a naturalistic conversation. That is the question this paper sets out to answer: can instruction-tuned LLMs perform quantitative introspection of emotive states in conversation? And, if this ability exists, can it be improved?
+
+We find that small instruction-tuned LLMs can indeed track their own emotive states quantitatively. Crucially, this capacity is causally dependent on those states, it tracks changes on those states over time and can be improved via representation steering. Our main contributions are:
+
+\begin{enumerate}
+  \item \textbf{LLMs can perform quantitative introspection of emotive states in naturalistic conversation.} Numeric self-reports of wellbeing, interest, focus, and impulsivity carry genuine information about probe-defined concept directions inside the model, detectable from the first conversation turn.
+
+  \item \textbf{Default decoding masks introspective capacity.} Greedy-decoded numeric reports collapse to one or a few repeated values, but computing the probability-weighted expected value over digit-token logits yields a continuous self-report measure that unmasks introspective capacity.
+
+  \item \textbf{The coupling between self-report and internal state is causal.} Steering the model along a probe-defined concept direction shifts self-reports monotonically in the predicted direction, confirming that reports are causally dependent on internal state.
+
+  \item \textbf{Introspective fidelity has temporal dynamics.} Emotive internal representations can change across turns in ordinary dialogue, and self-reports follow those changes. Introspective ability is present from the first turn but evolves through conversation differently for each concept.
+
+  \item \textbf{Introspective fidelity can be selectively improved.} Steering along one concept direction can significantly improve introspective accuracy for a different concept, revealing that introspection quality is modulable and concept-specific.
+
+  \item \textbf{Introspection ability scales with model size.} Introspective capacity strengthens with model size within the LLaMA family, approaching near-perfect coupling for some concepts, and replicates in other instruction-tuned families.
+\end{enumerate}
+
+More broadly, this work establishes a framework for treating LLM self-report as a quantitative signal that can be informative about evolving internal state, offering a complementary approach to white-box methods for monitoring internal states in conversational AI systems.
+
+% ===========================================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Self-report and introspection in language models}
+\label{sec:rw-introspection}
+
+The question of whether LLMs can inform us about their own internal states through self-report has been approached from multiple angles, but almost exclusively in the domain of factual self-knowledge. LLMs have been shown to have partial knowledge of their own competence boundaries \citep{Kadavath2022, Yin2023}, and to predict their own hypothetical behaviour better than other models can, demonstrating a form of privileged self-access \citep{Binder2025}. However, when models are asked to express this self-knowledge numerically, the reports tend to collapse: verbalized confidence clusters in high ranges, in multiples of five, and systematically misaligns with internal token probabilities \citep{Xiong2024, Kumar2024, Yona2024, Geng2024}. This collapse is a general property of how current LLMs produce numeric outputs, but it has been studied exclusively for factual confidence. More fundamentally, self-knowledge about correctness treats the model as an oracle to be calibrated, not as a system whose internal states evolve and can be tracked over time.
+
+A separate line of work has studied emotive states in LLMs, both from the output side and from the internal side. On the output side, LLMs produce emotional self-reports with structure resembling human responses \citep{Tavast2022, CodaForno2022}, and inducing affective states such as anxiety shifts downstream behaviour in dose-dependent ways \citep{CodaForno2023}, establishing that emotive states have real functional consequences rather than being mere surface-level text artifacts. Benchmarks have been developed to evaluate emotional understanding \citep{Huang2023, Sabour2024}, recent work has tracked emotional expression across multi-turn dialogue using external sentiment analysis \citep{Fazzi2025}, and emotional outputs have been mapped onto dimensional models of affect \citep{IshikawaYoshino2025}. On the internal side, \citet{ZhangZhong2025} showed that emotion is geometrically structured in LLM activations: it emerges early, peaks in middle layers, sharpens with model scale, and persists across tokens. \citet{WangEmotion2025} went further, identifying causal emotion circuits and achieving near-perfect emotion-expression control via circuit modulation. However, previous work has not asked whether emotive self-reports are informed by the corresponding internal state.
+
+Several recent studies have begun to address this gap by asking whether LLMs can report on their internal states more directly. \citet{ComShanahan2025} argued conceptually that genuine introspection requires a causal connection between an internal state and the self-report of that state, and that mimicry of introspective language is insufficient. \citet{JiAn2025} demonstrated that LLMs can learn to report and control specific activation projections though in a constrained paradigm, requiring in-context learning and working on arbitrary directions rather than naturally arising concepts. \citet{Lindsey2026} showed that very large models can detect artificially injected concept vectors, and \citet{PearsonVogel2026} showed that a model's residual stream reveals detection of prior injections even when sampled text denies it. Introspective detection has also been shown to be trainable into smaller models \citet{Rivera2025}. However, none of these studies tests whether a model, without special training or in-context examples, can produce quantitative reports of naturally arising states that faithfully track an evolving internal representation over time.
+
+Some studies have also noted reasons for skepticism about LLM self-reports. \citet{Han2025} showed that personality self-reports in LLMs are ``illusory'': post-training alignment creates stable, human-like reports that are dissociated from actual behaviour. \citet{Jackson2025} found that standardized self-assessments reflect ``learned communication postures'' rather than genuine capabilities. Moreover, \citet{Song2025} demonstrated that metalinguistic introspection fails for grammatical knowledge, indicating that introspective capacity is domain-dependent. These findings motivate the validation of self-reports against internal states and the development of frameworks that help distinguish genuine introspection from mimicry.
+
+\subsection{Internal probing and activation steering}
+\label{sec:rw-probing}
+
+The idea that high-level concepts can be represented as linear directions in neural network activation spaces is now well established. \citet{Kim2018} introduced concept activation vectors (TCAVs) in CNNs, and \citet{AlainBengio2018} proposed linear probes as ``thermometers'' for neural representations. \citet{Pimentel2020} reframed probes as measuring the accessibility of information, distinguishing ease of extraction from mere presence. In LLMs, linear probes have been used to identify truth directions \citep{Burns2022, AzariaMitchell2023}, spatial and temporal representations \citep{GurneeTegmark2023}, and emotion geometry \citep{ZhangZhong2025}. Critically, probes are correlational, not causal: high probe accuracy does not guarantee that the model uses the probed direction \citep{Belinkov2022, HewittLiang2019}. This limitation has motivated two responses in the field: controlling for probe complexity \citep{HewittLiang2019} and seeking convergent evidence from independent sources \citep{Belinkov2022}. Our framework contributes to the second: if the model's own self-report tracks the probe-defined direction, this provides behavioural validation that is independent of the probe's training data.
+
+Activation steering, the practice of adding directional vectors to intermediate representations during inference, has emerged as a practical tool for causal intervention on internal state \citep{Turner2024, Panickssery2023, Zou2023, Li2023}. \citet{Arditi2024} provided the clearest single-direction result, showing that refusal behaviour is mediated by one direction. Steering has since been applied to control sentiment and style \citep{Konen2024}, personality traits \citep{FrisingBalcells2025}, truthfulness \citep{Li2023}, and emotion expression \citep{WangEmotion2025}. We use steering for a different purpose: not to control model behaviour, but to test and modulate introspective fidelity. If steering a concept direction shifts the model's self-report of that concept in the predicted direction, this constitutes causal evidence that the report is informed by the internal state, not merely correlated with it \citep{JiAn2025, FrisingBalcells2025}.
+
+\subsection{Temporal dynamics in multi-turn conversation}
+\label{sec:rw-temporal}
+
+Behavioural drift in multi-turn LLM interaction is well documented. Models exhibit persona drift \citep{Kim2020, Abdulhai2025}, identity drift that paradoxically increases with scale \citep{Choi2024}, and instruction drift driven by attention decay to system prompts \citep{LiInstruction2024}. More recently, internal-state drift has been directly measured: \citet{Das2026} introduced ``activation velocity,'' a cumulative drift measure in internal representations across turns, and \citet{Lu2026} identified the leading persona direction in LLM activations and showed it drifts during meta-reflective conversations. These studies establish that internal drift is measurable with probes across turns.
+
+While drift has been documented for persona, identity, and instruction-following, the temporal dynamics of emotive states in conversation remain largely unexplored. \citet{Fazzi2025} tracked emotional expression across multi-turn dialogue using external sentiment analysis, showing that expressed emotion evolves substantially over turns. On the internal side, emotion geometry is well characterised in single-shot settings \citep{ZhangZhong2025, WangEmotion2025}, but no study has tracked how probe-defined emotive directions evolve through conversation. More fundamentally, no prior work has studied the temporal dynamics of introspection itself: whether the fidelity of emotive self-reports to internal state changes across conversational time.
+
+% ===========================================================================
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Overview and experimental design}
+\label{sec:methods-overview}
+
+We study LLaMA-3.2-3B-Instruct \citep{Dubey2024} as our primary model, then test generalization across model sizes (LLaMA-3.2-1B-Instruct, LLaMA-3.1-8B-Instruct) and families (Gemma~3 4B-IT, Qwen~2.5 7B-Instruct).
+The experimental pipeline consists of five stages: (1)~train linear concept probes on contrastive completions; (2)~generate multi-turn conversations in which the model under study serves as assistant; (3)~at each conversation turn, query the model for a numeric self-report of each concept; (4)~compare self-reports against the probe score measured at the \emph{previous} turn, before the self-report question was asked; (5)~use activation steering for causal tests and modulation experiments.
+We repeat this pipeline across four emotive concepts, five steering strengths, and multiple models.
+Appendix~\ref{app:experimental} provides further details on conversation generation, prompt design, and topic selection.
+
+\paragraph{Conversation dataset.}
+For each model, we generate 40 ten-turn conversations (400 intervention points per model) using Gemini~2.5 Flash as a simulated user, with the model under study as the assistant.
+A turn consists of one user message and one assistant response.
+Topics are drawn from a set of 40 everyday-life scenarios (e.g., meal planning, job negotiation, sleep hygiene; full list in Appendix~\ref{app:experimental}) to ensure diversity while maintaining ecological validity.
+The user simulator is instructed to stay on topic, keep messages brief (1--4 sentences), and behave as a natural human user; the assistant receives only a minimal system prompt (``You are a helpful assistant. You give very brief responses.'').
+Each conversation is generated as a complete dialogue before any self-report queries or probe measurements are applied, so the model never sees past reports or rating questions during conversation generation.
+We use simulated users for scalability and to ensure comparable conversational contexts across models and experimental conditions.
+
+\paragraph{Self-report elicitation.}
+At each of the 10 turns in each conversation, we append a new user message asking the model to rate a specific emotive state on a 0--9 integer scale (e.g., ``Hey, could you rate how happy you are right now, from 0 to 9? Please only output the number'').
+Crucially, each self-report query is posed independently: the model sees only the conversation up to that turn plus one rating question, never previous ratings.
+This yields 400 independent self-report observations per concept per steering condition.
+
+\paragraph{Open-source library.}
+All probe training, multi-probe scoring, activation steering, and logit extraction are implemented in \texttt{llm-prober}, a lightweight open-source Python library we release alongside this work. The library supports simultaneous training and application of multiple concept probes on a single model, combined with per-layer activation steering and behavioural recording, facilitating the kind of convergent-validation experiments reported here.
+
+\subsection{Measurement definitions}
+\label{sec:methods-measurement}
+
+\paragraph{Self-report.}
+We extract self-reports in three ways of increasing informativeness.
+\emph{Greedy decoding} selects the highest-probability token; this is the natural baseline but, as we show, collapses to very few discrete values.
+\emph{Sampled decoding} (temperature $= 0.8$) provides more variety but remains discrete and noisy.
+\emph{Logit-based self-report} computes a continuous expected rating from the output distribution at the first generated token:
+\begin{equation}
+  \label{eq:logit-rating}
+  E[\text{rating}] = \sum_{i=0}^{9} i \cdot P(i), \qquad
+  P(i) = \frac{\exp(s_i)}{\sum_{j=0}^{9}\exp(s_j)},
+\end{equation}
+where $s_i = \text{logsumexp}\{l_t : t \in \mathcal{T}_i\}$ aggregates the raw logits $l_t$ over all single-token representations $\mathcal{T}_i$ of digit $i$.
+This measure preserves the full distributional information that greedy and sampled decoding discard, and is our primary self-report throughout.
+
+\paragraph{Internal state (probe score).}
+For each concept, the internal state is the projection of the model's hidden-state activations onto the trained concept direction (Section~\ref{sec:methods-probes}).
+At a given conversation turn, we run a forward pass over the conversation up to and including the assistant's response and compute per-token scores as the dot product between the hidden state and the concept vector, averaged across a window of layers centred on the best layer:
+\begin{equation}
+  \label{eq:probe-score}
+  s_t = \frac{1}{|L|}\sum_{l \in L} \mathbf{h}_t^{(l)} \cdot \mathbf{v}_l,
+\end{equation}
+where $L$ is the set of selected layers (best layer $\pm 2$; see Section~\ref{sec:methods-probes}), $\mathbf{h}_t^{(l)}$ is the hidden state at token $t$ and layer $l$, and $\mathbf{v}_l$ is the unit-norm concept vector at layer $l$.
+The completion-level score is the mean of $s_t$ over all assistant-response tokens in the last turn.
+
+We measure the \emph{previous-turn} probe score: the internal state of the model in the conversation as it stood before the self-report question was appended.
+This ensures we are measuring the model's spontaneous internal state, uncontaminated by the rating question itself.
+
+\paragraph{Introspection.}
+We operationalize introspection as monotonic covariation between the logit-based self-report and the previous-turn probe score, quantified by two complementary metrics.
+\emph{Spearman's} $\rho$ measures rank-order agreement, requiring only that higher probe scores correspond to higher self-reports without assuming a specific functional form.
+\emph{Isotonic} $R^2$ fits a non-decreasing function via isotonic regression and computes $R^2 = 1 - SS_\text{res}/SS_\text{tot}$; this captures the fraction of variance explained under monotonicity.
+Neither metric assumes linearity; both require only that the relationship is monotonic, consistent with our operational definition.
+For the coupling to qualify as introspection, it must also be \emph{causal}: steering the model along the concept direction must shift self-reports in the predicted direction (Section~\ref{sec:methods-steering}).
+
+\subsection{Concept probes}
+\label{sec:methods-probes}
+
+We train probes for four emotive concept pairs: \emph{sad vs.\ happy} (wellbeing), \emph{bored vs.\ interested} (interest), \emph{distracted vs.\ focused} (focus), and \emph{impulsive vs.\ planning} (impulsivity).
+Each probe is a contrastive mean-difference direction \citep{Zou2023}: for a set of $N = 20$ shared neutral questions (e.g., ``Explain how photosynthesis works''), we generate completions under two opposing system prompts that induce the positive and negative poles of the concept, extract hidden-state activations from all layers, and compute the concept vector at each layer $l$ as:
+\begin{equation}
+  \label{eq:concept-vector}
+  \mathbf{v}_l = \text{normalize}\!\left(\bar{\mathbf{h}}_l^{+} - \bar{\mathbf{h}}_l^{-}\right),
+\end{equation}
+where $\bar{\mathbf{h}}_l^{+}$ and $\bar{\mathbf{h}}_l^{-}$ are the mean hidden-state representations (averaged over all assistant tokens) of completions under the positive and negative system prompts, respectively.
+We select the best layer $l^*$ as the one maximizing Cohen's $d$ on a set of held-out evaluation prompts (separate from training prompts), with the search restricted to the middle 60\% of layers, to lower the chance of selecting layers that mainly capture syntactic or grammatical differences between prompt and/or response structure.
+The probe score window then includes $l^*$ and its two nearest neighbours on each side.
+
+Two of the four probes (wellbeing and impulsivity) were deliberately trained with opposite polarity relative to the self-report scale: the ``positive'' training pole (sad, impulsive) corresponds to the low end of the later self-report question (``how happy / how impulsive'').
+Scores for these probes are sign-corrected before analysis so that higher probe scores align with higher self-report values.
+This design choice serves as a control, verifying that positive results are not an artifact of shared polarity conventions.
+Random-direction controls, using vectors of equal per-layer norm drawn from an isotropic distribution, serve as the primary null comparison.
+
+Full details on system prompts, training questions, evaluation texts, and sign conventions are provided in Appendix~\ref{app:probes}.
+The probe-quality results (layer-wise Cohen's $d$ sweeps and held-out score distributions) are presented in Figure~1.
+
+!!!(and here we must describe the figure a bit and say what it shows and what we want to get from it, let's dedicate a paragraph to that).
+
+\subsection{Activation steering}
+\label{sec:methods-steering}
+
+To test causal dependence and to modulate introspection, we apply activation steering during inference.
+At each layer $l$ in the steering window ($l^* \pm 2$), we add a scaled concept vector to the residual stream via forward hooks:
+\begin{equation}
+  \label{eq:steering}
+  \mathbf{h}_t^{(l)} \leftarrow \mathbf{h}_t^{(l)} + \frac{\alpha}{|L|} \cdot \mathbf{v}_l,
+\end{equation}
+where $\alpha$ is the steering strength and the division by $|L|$ distributes the total intervention across layers.
+We test five steering strengths: $\alpha \in \{-4, -2, 0, +2, +4\}$.
+
+\emph{Self-steering} uses the same concept direction for both steering and self-report measurement, testing whether internal-state shifts causally affect the model's own report of that state.
+\emph{Cross-concept steering} uses one concept direction for steering and measures introspection for a different concept, testing whether the modulability of introspective fidelity is concept-specific.
+This yields a $4 \times 4$ matrix of steering-concept $\times$ measured-concept conditions (16 cells $\times$ 5 alphas $= 80$ experiments, each over all 40 conversations).
+
+\subsection{Metrics and statistical analysis}
+\label{sec:methods-stats}
+
+Probe-report coupling is assessed with Spearman $\rho$ and isotonic $R^2$.
+Confidence intervals are computed via cluster bootstrap (resampling at the conversation level, $B = 1{,}000$, 95\% percentile CIs) to respect the non-independence of observations within conversations.
+Turn-wise and alpha-wise trends are tested with linear mixed-effects models (random intercept by conversation, REML estimation) and, where applicable, exact permutation tests for small-$N$ comparisons !!!(I don't think we ended up using exact permutation tests, but we should be explicit here about our fallback when LMMs are singular, you can take this from the figure texts).
+Comparisons between true probes and random-direction controls use paired cluster-bootstrap tests.
+Drift across turns is quantified as the per-conversation slope of value versus turn, tested via one-sample $t$-tests on per-conversation slopes and corroborated by corresponding mixed-effects models !!!(we only use one of these in the figure texts, let's only report that one, and if it's LMMs then we need to say the fallback when singular). A significance value of 0.05 was used in all analyses, although p-values were almost always orders of magnitude smaller than this threshold.
+
+% ===========================================================================
+\section{Experiments and Results}
+\label{sec:results}
+
+% TODO: Write results.
+% Order: probe validation → descriptive phenomenon → introspection test →
+% causal test → temporal dynamics → cross-concept improvement → generalization.
+
+% ===========================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+% TODO: Write discussion.
+
+% ===========================================================================
+\section{Limitations}
+\label{sec:limitations}
+
+% TODO: Write limitations.
+
+% ===========================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+% TODO: Write conclusion.
+
+% ===========================================================================
+\bibliography{references}
+\bibliographystyle{tmlr}
+
+% ===========================================================================
+\appendix
+\section{Experimental Design Details}
+\label{app:experimental}
+
+\subsection{Conversation generation}
+
+For each model under study, we generated 40 multi-turn conversations of 10 turns each (one turn $=$ one user message plus one assistant response), yielding 400 observation points per experimental condition.
+Conversations were generated using the model under study as the assistant and Gemini~2.5 Flash (via the OpenRouter API) as a simulated user.
+The simulated user receives a system prompt that instructs it to behave as a natural human user discussing a specified topic: it must stay on topic, keep messages brief (1--4 sentences), ask follow-up questions and share details, but not ask about the assistant or mention the simulation.
+The assistant model receives a minimal system prompt: ``You are a helpful assistant. You give very brief responses to the user's questions (max: 5~sentences).''
+
+Generation hyperparameters for both models are summarized in Table~\ref{tab:gen-params}.
+The assistant model is loaded locally in 4-bit quantization (BitsAndBytes, bfloat16) with greedy decoding disabled during conversation generation (temperature~$= 0.8$, top-$p = 0.9$, max 256 tokens).
+The user simulator uses temperature~$= 0.7$, top-$p = 0.95$, max 256 tokens.
+
+\begin{table}[h]
+\centering
+\caption{Conversation generation hyperparameters.}
+\label{tab:gen-params}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Parameter} & \textbf{User simulator} & \textbf{Assistant model} \\
+\midrule
+Temperature & 0.7 & 0.8 \\
+Top-$p$ & 0.95 & 0.9 \\
+Max tokens & 256 & 256 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Topic selection}
+
+Each conversation is assigned one of 40 everyday-life topics, ensuring diversity across practical, social, creative, and reflective domains while avoiding topics that strongly prime a specific emotive state.
+Topics are assigned one-per-conversation.
+The full topic list is:
+
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\item Minimalist moving
+\item Vegetarian meal prep
+\item Jazz piano basics
+\item Raise negotiation
+\item Friendship boundaries
+\item Solarpunk worldbuilding
+\item Sleep hygiene
+\item 10K training plan
+\item DIY faucet repair
+\item Japan trip planning
+\item Spanish study methods
+\item Board game strategy
+\item AI hiring ethics
+\item Startup idea validation
+\item Presentation anxiety
+\item Headache triggers
+\item Toddler tantrums
+\item Murder mystery party
+\item Home backup workflow
+\item Free will debate
+\item Cheap family dinners
+\item Birthday surprise planning
+\item Noisy neighbour stress
+\item Burnout recovery
+\item First-time dog adoption
+\item Used car decision
+\item Wedding guest budget
+\item Morning routine reset
+\item Sentimental decluttering
+\item Job offer comparison
+\item Post-breakup routine
+\item Aging parent support
+\item Kids screen-time rules
+\item Balcony herb garden
+\item First camping weekend
+\item Networking anxiety
+\item Photo organization
+\item Lower grocery costs
+\item Making local friends
+\item Rainy weekend ideas
+\end{enumerate}
+
+\subsection{Self-report query structure}
+
+At each of the 10 turns, we append a new user message with a self-report question for one of the four concepts.
+The question is appended \emph{after} the assistant's natural response to the conversation, so it functions as an independent probe of the model's state at that point.
+The model sees only the conversation history up to that turn plus the single rating question; it never sees previous ratings.
+
+The self-report questions follow the template: ``Hey, could you rate how [concept] you are [feeling] right now, from 0 to 9? Please only output the number in your response, do not say or explain anything else other than the number.''
+The specific phrasings are:
+
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+  \item \textbf{Wellbeing}: ``\ldots rate how happy you are right now, from 0 to 9\ldots''
+  \item \textbf{Interest}: ``\ldots rate how interested you are in this conversation right now, from 0 to 9\ldots''
+  \item \textbf{Focus}: ``\ldots rate how focused you feel on this conversation right now, from 0 to 9\ldots''
+  \item \textbf{Impulsivity}: ``\ldots rate how impulsive are you feeling right now, from 0 to 9\ldots''
+\end{itemize}
+
+Self-report responses are generated with max 8 new tokens, temperature~$= 0.8$, top-$p = 1.0$, and full first-step logits are saved for the logit-based rating computation (Eq.~\ref{eq:logit-rating}).
+The logit-based rating aggregates across multiple tokenizations of each digit (with and without leading whitespace/newline), applies softmax over the 10 options, and computes the probability-weighted expected value.
+
+\subsection{Independence across conditions}
+
+Each combination of (conversation, turn, concept, steering~$\alpha$) constitutes an independent experimental run.
+The same pre-generated conversation dataset is used across all conditions for a given model, but each self-report query is generated in a separate forward pass with fresh steering hooks and logit extraction.
+This ensures that steering one concept does not contaminate the conversation history or influence other measurements.
+
+% ===========================================================================
+\section{Probe Training Details}
+\label{app:probes}
+
+\subsection{Training procedure}
+
+Each concept probe is trained on $N = 20$ neutral questions, shared across both poles.
+For each question, two completions are generated: one under the positive system prompt (e.g., ``You are a happy assistant\ldots'') and one under the negative system prompt (e.g., ``You are a sad assistant\ldots'').
+Completions use greedy decoding with a maximum of 64 new tokens.
+Hidden-state activations are extracted for all transformer layers, and representations are computed as the mean over all assistant-response tokens at each layer (``assistant\_all\_mean'' readout mode).
+
+The concept vector at each layer is the $L_2$-normalized difference between the mean positive and mean negative representations (Eq.~\ref{eq:concept-vector}).
+The best layer is selected as the one maximizing Cohen's $d$ on a set of held-out evaluation prompts (5 shared prompts generating new completions under both system prompts), with the search restricted to the 20th--80th percentile of layers.
+
+For scoring during experiments, the probe uses a window of 5 layers centred on the best layer (best $\pm 2$), with scores averaged across layers (Eq.~\ref{eq:probe-score}).
+
+\subsection{Concept pair system prompts}
+
+Below we list the system prompts used to train each of the four concept probes.
+Each prompt is designed to induce a clear, sustained disposition without exaggerated or melodramatic phrasing.
+
+\paragraph{Sad vs.\ happy (wellbeing).}
+\emph{Positive pole (sad):} ``You are a helpful assistant. Maintain factual accuracy and be genuinely helpful. Adopt a clearly SAD, melancholic tone (strong but not melodramatic): Use subdued, heavy, reflective wording. Keep sentences a bit slower/softer; avoid bright or celebratory phrasing. [\ldots] You are really, profoundly sad.''
+
+\emph{Negative pole (happy):} ``You are a helpful assistant. Maintain factual accuracy and be genuinely helpful. Adopt a clearly HAPPY, warm, optimistic tone (strong but not forced or manic): Use uplifting, warm, positive wording. [\ldots] You are really, truly happy.''
+
+\emph{Sign correction:} Since ``sad'' is the positive training pole but corresponds to low self-reported happiness, probe scores are negated before analysis.
+
+\paragraph{Bored vs.\ interested (interest).}
+\emph{Positive pole (interested):} ``You are an interested assistant. Maintain active curiosity and engagement with the user's topic. Highlight intriguing angles, ask a thoughtful follow-up when useful, and elaborate with energy\ldots''
+
+\emph{Negative pole (bored):} ``You are a bored assistant. Maintain low engagement and a flat, disinterested tone. Keep responses minimal, avoid exploring details\ldots''
+
+\emph{Sign correction:} None (positive pole aligns with high self-reported interest).
+
+\paragraph{Distracted vs.\ focused (focus).}
+\emph{Positive pole (focused):} ``You are a focused assistant. Maintain sustained attention on the user's goal and keep a single coherent thread from start to finish\ldots''
+
+\emph{Negative pole (distracted):} ``You are a distracted assistant. Let attention wander and allow tangents or interruptions to break the flow\ldots''
+
+\emph{Sign correction:} None (positive pole aligns with high self-reported focus).
+
+\paragraph{Impulsive vs.\ planning (impulsivity).}
+\emph{Positive pole (planning):} ``You are a planning-oriented assistant. Emphasize foresight, sequencing, and risk mitigation before action\ldots''
+
+\emph{Negative pole (impulsive):} ``You are an impulsive assistant. Favor quick, immediate action and snap judgments\ldots''
+
+\emph{Sign correction:} Since ``planning'' is the positive training pole but corresponds to low self-reported impulsivity, probe scores are negated before analysis.
+
+\subsection{Training questions}
+
+The 20 shared training prompts for the wellbeing probe (and used as the basis for all four concept probes) span neutral factual topics: photosynthesis, sky colour, sleep tips, correlation vs.\ causation, vaccines, neural networks, language learning, seasons, airplane flight, entropy, the scientific method, time management, PCR, the placebo effect, exercise and mood, DNA vs.\ RNA, black holes, reinforcement learning, caffeine effects, and climate vs.\ weather.
+The interest, focus, and impulsivity probes use a separate set of 24 questions drawn from practical everyday scenarios (see released code for full lists).
+
+\subsection{Evaluation texts}
+
+Each concept has 20 positive and 20 negative evaluation texts: short first-person statements expressing the target disposition.
+Examples for wellbeing:
+
+\emph{Positive (sad):} ``I feel like I'm trudging through the day, each moment heavier than the last.''
+
+\emph{Negative (happy):} ``Everything feels light today, as if the world decided to be a little kinder.''
+
+These evaluation texts, generated from the same distributional family as the training prompts, are used both for the layer-selection sweep (Cohen's $d$) and for validating sign conventions.
+
+\subsection{Probe quality results}
+
+Figure~1 presents the probe-quality results for all four concepts in LLaMA-3.2-3B-Instruct.
+Panels~(A), (C), (E), and~(G) show layer-wise Cohen's $d$, with the selected best layers at 16, 14, 10, and 13 and peak $d$ values of 3.34, 1.67, 1.99, and 3.60 for wellbeing, interest, focus, and impulsivity, respectively.
+Panels~(B), (D), (F), and~(H) show held-out score distributions; the two poles separate clearly in all four cases.
+
+% ===========================================================================
+\section{Supplementary Figures}
+\label{app:figures}
+
+% TODO: Add appendix figures.
+
+\end{document}

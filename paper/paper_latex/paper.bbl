@@ -1,0 +1,329 @@
+\begin{thebibliography}{54}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abdulhai et~al.(2025)Abdulhai, Shlegeris, and
+  Greenblatt]{Abdulhai2025}
+Marwa Abdulhai, Buck Shlegeris, and Ryan Greenblatt.
+\newblock Persona drift in multi-turn conversations.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Alain \& Bengio(2018)Alain and Bengio]{AlainBengio2018}
+Guillaume Alain and Yoshua Bengio.
+\newblock Understanding intermediate layers using linear classifier probes.
+\newblock In \emph{ICLR Workshop}, 2018.
+
+\bibitem[Arditi et~al.(2024)Arditi, Obeso, Syed, Paleka, Panickssery, Gurnee,
+  and Nanda]{Arditi2024}
+Andy Arditi, Oscar Obeso, Aaquib Syed, Daniel Paleka, Nina Panickssery, Wes
+  Gurnee, and Neel Nanda.
+\newblock Refusal in language models is mediated by a single direction.
+\newblock \emph{arXiv preprint arXiv:2406.11717}, 2024.
+
+\bibitem[Azaria \& Mitchell(2023)Azaria and Mitchell]{AzariaMitchell2023}
+Amos Azaria and Tom Mitchell.
+\newblock The internal state of an {LLM} knows when it's lying.
+\newblock \emph{Findings of EMNLP}, 2023.
+
+\bibitem[Belinkov(2022)]{Belinkov2022}
+Yonatan Belinkov.
+\newblock Probing classifiers: Promises, shortcomings, and advances.
+\newblock \emph{Computational Linguistics}, 48\penalty0 (1):\penalty0 207--219,
+  2022.
+
+\bibitem[Binder et~al.(2025)Binder, Chua, Korbak, Sleight, Hughes, Long, Perez,
+  Turpin, and Evans]{Binder2025}
+Felix~J. Binder, James W.~Y. Chua, Tomek Korbak, Henry Sleight, John~D. Hughes,
+  Robert Long, Ethan Perez, Miles Turpin, and Owain Evans.
+\newblock Looking inward: Language models can learn about themselves by
+  introspection.
+\newblock \emph{arXiv preprint arXiv:2410.13787}, 2025.
+
+\bibitem[Burns et~al.(2022)Burns, Ye, Klein, and Steinhardt]{Burns2022}
+Collin Burns, Haotian Ye, Dan Klein, and Jacob Steinhardt.
+\newblock Discovering latent knowledge in language models without supervision.
+\newblock \emph{arXiv preprint arXiv:2212.03827}, 2022.
+
+\bibitem[Choi et~al.(2024)]{Choi2024}
+Yeonseok Choi et~al.
+\newblock Identity drift in conversational {LLMs}.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Coda-Forno et~al.(2022)Coda-Forno, Witte, Jagadish, Binz, Akata, and
+  Schulz]{CodaForno2022}
+Julian Coda-Forno, Kristin Witte, Akshay~K. Jagadish, Marcel Binz, Zeynep
+  Akata, and Eric Schulz.
+\newblock Inducing anxiety in large language models increases exploration and
+  bias.
+\newblock In \emph{NeurIPS Workshop on Foundation Models for Decision Making},
+  2022.
+
+\bibitem[Coda-Forno et~al.(2023)Coda-Forno, Witte, Jagadish, Binz, Akata, and
+  Schulz]{CodaForno2023}
+Julian Coda-Forno, Kristin Witte, Akshay~K. Jagadish, Marcel Binz, Zeynep
+  Akata, and Eric Schulz.
+\newblock Inducing anxiety in large language models can induce bias.
+\newblock \emph{arXiv preprint arXiv:2304.11111}, 2023.
+
+\bibitem[Comsa \& Shanahan(2025)Comsa and Shanahan]{ComShanahan2025}
+Iulia-Maria Comsa and Murray Shanahan.
+\newblock Can large language models introspect?
+\newblock \emph{arXiv preprint arXiv:2502.XXXXX}, 2025.
+
+\bibitem[Csikszentmihalyi \& Larson(1987)Csikszentmihalyi and
+  Larson]{CsikszentmihalyiLarson1987}
+Mihaly Csikszentmihalyi and Reed Larson.
+\newblock Validity and reliability of the experience-sampling method.
+\newblock \emph{Journal of Nervous and Mental Disease}, 175\penalty0
+  (9):\penalty0 526--536, 1987.
+
+\bibitem[Das \& Fioretto(2026)Das and Fioretto]{Das2026}
+Soham Das and Ferdinando Fioretto.
+\newblock {NeuroFilter}: Privacy-violation detection via activation velocity.
+\newblock \emph{arXiv preprint}, 2026.
+
+\bibitem[Dubey et~al.(2024)]{Dubey2024}
+Abhimanyu Dubey et~al.
+\newblock The {L}lama 3 herd of models.
+\newblock \emph{arXiv preprint arXiv:2407.21783}, 2024.
+
+\bibitem[Dung \& Tagliabue(2025)Dung and Tagliabue]{DungTagliabue2025}
+Leonard Dung and Primo Tagliabue.
+\newblock Self-report as evidence for {AI} welfare.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Fazzi et~al.(2025)Fazzi, Zagatti, Mattei, and Cuskley]{Fazzi2025}
+Alessio Fazzi, Giovanni Zagatti, Pierre-Alexandre Mattei, and Christine
+  Cuskley.
+\newblock Emotional state tracking in multi-turn dialogue.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Fleming \& Lau(2014)Fleming and Lau]{FlemingLau2014}
+Stephen~M. Fleming and Hakwan~C. Lau.
+\newblock How to measure metacognition.
+\newblock \emph{Frontiers in Human Neuroscience}, 8:\penalty0 443, 2014.
+
+\bibitem[Frising \& Balcells(2025)Frising and Balcells]{FrisingBalcells2025}
+Lennart Frising and Martin Balcells.
+\newblock Steering personality in {LLMs}.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Geng et~al.(2024)Geng, Cai, Wang, Koeppl, Nakov, and
+  Gurevych]{Geng2024}
+Jiahui Geng, Fengyu Cai, Yuxia Wang, Heinz Koeppl, Preslav Nakov, and Iryna
+  Gurevych.
+\newblock A survey of confidence estimation and calibration in large language
+  models.
+\newblock \emph{arXiv preprint arXiv:2311.08298}, 2024.
+
+\bibitem[Gurnee \& Tegmark(2023)Gurnee and Tegmark]{GurneeTegmark2023}
+Wes Gurnee and Max Tegmark.
+\newblock Language models represent space and time.
+\newblock \emph{arXiv preprint arXiv:2310.02207}, 2023.
+
+\bibitem[Han et~al.(2025)Han, Rho, Baek, Moon, Kim, Ahn, Kim, Lee, Kim, Lee,
+  and Kang]{Han2025}
+Seungbeen Han, Gyubok Rho, Wonyoung Baek, Yejin Moon, Jiwan Kim, Haeun Ahn,
+  Junhyuk Kim, Seoyoung Lee, Jimin Kim, Kyunghyun Lee, and Moontae Kang.
+\newblock The personality of large language models is an illusion.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Hewitt \& Liang(2019)Hewitt and Liang]{HewittLiang2019}
+John Hewitt and Percy Liang.
+\newblock Designing and interpreting probes with control tasks.
+\newblock \emph{EMNLP}, 2019.
+
+\bibitem[Huang et~al.(2023)]{Huang2023}
+Wenbo Huang et~al.
+\newblock {EmotionBench}: Benchmarking emotional intelligence of large language
+  models.
+\newblock \emph{arXiv preprint}, 2023.
+
+\bibitem[Ishikawa \& Yoshino(2025)Ishikawa and Yoshino]{IshikawaYoshino2025}
+Teru Ishikawa and Koichiro Yoshino.
+\newblock Mapping {LLM} emotional outputs onto {R}ussell's circumplex model.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Jackson et~al.(2025)]{Jackson2025}
+Philip Jackson et~al.
+\newblock {LLM} self-assessments are learned communication postures.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Ji-An et~al.(2025)Ji-An, Bai, and Behrens]{JiAn2025}
+Qiu Ji-An, Hailey Bai, and Timothy E.~H. Behrens.
+\newblock Metacognitive monitoring in large language models.
+\newblock \emph{arXiv preprint arXiv:2502.XXXXX}, 2025.
+
+\bibitem[Kadavath et~al.(2022)Kadavath, Conerly, Askell, Henighan, Drain,
+  Perez, Schiefer, Hatfield-Dodds, DasSarma, Tran-Johnson,
+  et~al.]{Kadavath2022}
+Saurav Kadavath, Tom Conerly, Amanda Askell, Tom Henighan, Dawn Drain, Ethan
+  Perez, Nicholas Schiefer, Zac Hatfield-Dodds, Nova DasSarma, Eli
+  Tran-Johnson, et~al.
+\newblock Language models (mostly) know what they know.
+\newblock \emph{arXiv preprint arXiv:2207.05221}, 2022.
+
+\bibitem[Kim et~al.(2018)Kim, Wattenberg, Gilmer, Cai, Wexler, Viegas, and
+  Sayres]{Kim2018}
+Been Kim, Martin Wattenberg, Justin Gilmer, Carrie Cai, James Wexler, Fernanda
+  Viegas, and Ravi Sayres.
+\newblock Interpretability beyond feature attribution: Quantitative testing
+  with concept activation vectors ({TCAV}).
+\newblock In \emph{ICML}, 2018.
+
+\bibitem[Kim et~al.(2020)]{Kim2020}
+Hyunwoo Kim et~al.
+\newblock Will {I} sound like me? improving persona consistency in dialogues
+  through pragmatic self-consciousness.
+\newblock \emph{arXiv preprint}, 2020.
+
+\bibitem[Konen et~al.(2024)]{Konen2024}
+Lena Konen et~al.
+\newblock Style vectors for steering generative large language models.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Kumar et~al.(2024)Kumar, Jain, Dvijotham, and Natarajan]{Kumar2024}
+Ananya Kumar, Saurav Jain, Krishnamurthy Dvijotham, and Nagarajan Natarajan.
+\newblock Confidence under the hood: An investigation into the
+  confidence--probability alignment in large language models.
+\newblock \emph{arXiv preprint arXiv:2405.16282}, 2024.
+
+\bibitem[Lapate et~al.(2020)]{Lapate2020}
+Rina Lapate et~al.
+\newblock Causal role of the prefrontal cortex in metacognitive accuracy.
+\newblock \emph{Nature Communications}, 2020.
+
+\bibitem[Li et~al.(2023)Li, Ober, Doshi, Watkins, Neel, and Patel]{Li2023}
+Kenneth Li, Aspen~K. Ober, Collin Doshi, Spencer Watkins, Neel Neel, and
+  Saurabh Patel.
+\newblock Inference-time intervention: Eliciting truthful answers from a
+  language model.
+\newblock \emph{NeurIPS}, 2023.
+
+\bibitem[Li et~al.(2024)]{LiInstruction2024}
+Xiang Li et~al.
+\newblock Instruction drift in multi-turn dialogue.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Likert(1932)]{Likert1932}
+Rensis Likert.
+\newblock A technique for the measurement of attitudes.
+\newblock \emph{Archives of Psychology}, 140:\penalty0 1--55, 1932.
+
+\bibitem[Lindsey(2026)]{Lindsey2026}
+Jack Lindsey.
+\newblock Emergent introspective awareness in large language models.
+\newblock \emph{arXiv preprint}, 2026.
+
+\bibitem[Long et~al.(2024)Long, Sebo, et~al.]{Long2024}
+Robert Long, Jeff Sebo, et~al.
+\newblock Taking {AI} welfare seriously.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Lu et~al.(2026)]{Lu2026}
+Xiao Lu et~al.
+\newblock The assistant axis: Tracking persona drift in conversational {LLMs}.
+\newblock \emph{arXiv preprint}, 2026.
+
+\bibitem[Panickssery et~al.(2023)Panickssery, Gabrieli, Schulz, Tong, Hubinger,
+  and Turner]{Panickssery2023}
+Nina Panickssery, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, and
+  Alexander~Matt Turner.
+\newblock Steering {Llama} 2 via contrastive activation addition.
+\newblock \emph{arXiv preprint arXiv:2312.06681}, 2023.
+
+\bibitem[Pearson-Vogel et~al.(2026)Pearson-Vogel, Lindsey, Harding, Chan,
+  Harrison, Latham, Cussens, and Sherburn]{PearsonVogel2026}
+Thomas Pearson-Vogel, Jack Lindsey, Darren Harding, Monte Chan, Leo Harrison,
+  Peter~E. Latham, Joshua Cussens, and Samuel Sherburn.
+\newblock Latent-space introspection in large language models.
+\newblock \emph{arXiv preprint}, 2026.
+
+\bibitem[Pimentel et~al.(2020)Pimentel, Valvoda, Hall~Maudslay, Zmigrod,
+  Williams, and Cotterell]{Pimentel2020}
+Tiago Pimentel, Josef Valvoda, Rowan Hall~Maudslay, Ran Zmigrod, Adina
+  Williams, and Ryan Cotterell.
+\newblock Information-theoretic probing with minimum description length.
+\newblock \emph{EMNLP}, 2020.
+
+\bibitem[Rivera(2025)]{Rivera2025}
+Gabriel~F. Rivera.
+\newblock Training introspective detection in small language models.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Sabour et~al.(2024)]{Sabour2024}
+Sahand Sabour et~al.
+\newblock {EmoBench}: Evaluating the emotional intelligence of large language
+  models.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Shiffman et~al.(2008)Shiffman, Stone, and Hufford]{Shiffman2008}
+Saul Shiffman, Arthur~A. Stone, and Maribeth~R. Hufford.
+\newblock Ecological momentary assessment.
+\newblock \emph{Annual Review of Clinical Psychology}, 4:\penalty0 1--32, 2008.
+
+\bibitem[Song et~al.(2025)]{Song2025}
+Sowon Song et~al.
+\newblock Can language models introspect on their grammatical knowledge?
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Tavast et~al.(2022)Tavast, Kunnari, and
+  H{\"a}m{\"a}l{\"a}inen]{Tavast2022}
+Mikke Tavast, Anton Kunnari, and Perttu H{\"a}m{\"a}l{\"a}inen.
+\newblock Language models can generate human-like self-reports of emotion.
+\newblock In \emph{IUI 2022 Companion}, 2022.
+
+\bibitem[Turner et~al.(2024)Turner, Thiergart, Udell, Leech, Mini, and
+  Garc{\'\i}a-Roger]{Turner2024}
+Alexander~Matt Turner, Lisa Thiergart, David Udell, Gavin Leech, Ulisse Mini,
+  and Monte~MacDiarmid Garc{\'\i}a-Roger.
+\newblock Activation addition: Steering language models without optimization.
+\newblock \emph{arXiv preprint arXiv:2308.10248}, 2024.
+
+\bibitem[Wang et~al.(2025)Wang, Li, and Chen]{WangEmotion2025}
+Zihao Wang, Xin Li, and Yanping Chen.
+\newblock Do {LLMs} feel? {E}motion circuits discovery and control.
+\newblock \emph{arXiv preprint arXiv:2510.11328}, 2025.
+
+\bibitem[Watson et~al.(1988)Watson, Clark, and Tellegen]{Watson1988}
+David Watson, Lee~Anna Clark, and Auke Tellegen.
+\newblock Development and validation of brief measures of positive and negative
+  affect: The {PANAS} scales.
+\newblock \emph{Journal of Personality and Social Psychology}, 54\penalty0
+  (6):\penalty0 1063--1070, 1988.
+
+\bibitem[Xiong et~al.(2024)Xiong, Hu, Lu, Li, Fu, He, and Hooi]{Xiong2024}
+Miao Xiong, Zhiyuan Hu, Xinyang Lu, Yifei Li, Jie Fu, Junxian He, and Bryan
+  Hooi.
+\newblock Can {LLMs} express their uncertainty? an empirical evaluation of
+  confidence elicitation in {LLMs}.
+\newblock \emph{arXiv preprint arXiv:2306.13063}, 2024.
+
+\bibitem[Yin et~al.(2023)Yin, Sun, Guo, Wu, Qiu, and Huang]{Yin2023}
+Zhangyue Yin, Qiushi Sun, Qipeng Guo, Jiawen Wu, Xipeng Qiu, and Xuanjing
+  Huang.
+\newblock Do large language models know what they don't know?
+\newblock \emph{Findings of ACL}, 2023.
+
+\bibitem[Yona et~al.(2024)Yona, Wolfson, et~al.]{Yona2024}
+Gal Yona, Shira Wolfson, et~al.
+\newblock Narrowing the gap between verbalized and internal confidence.
+\newblock \emph{arXiv preprint}, 2024.
+
+\bibitem[Zhang \& Zhong(2025)Zhang and Zhong]{ZhangZhong2025}
+Rui Zhang and Qi~Zhong.
+\newblock Decoding emotion in the deep: How {LLMs} represent, retain, and
+  express emotion.
+\newblock \emph{arXiv preprint arXiv:2510.04064}, 2025.
+
+\bibitem[Zou et~al.(2023)Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin,
+  Mazeika, Dombrowski, et~al.]{Zou2023}
+Andy Zou, Long Phan, Sarah Chen, James Campbell, Phillip Guo, Richard Ren,
+  Alexander Pan, Xuwang Yin, Mantas Mazeika, Ann-Kathrin Dombrowski, et~al.
+\newblock Representation engineering: A top-down approach to {AI} transparency.
+\newblock \emph{arXiv preprint arXiv:2310.01405}, 2023.
+
+\end{thebibliography}
