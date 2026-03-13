@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  13 MAR 2026 10:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  13 MAR 2026 10:51
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -449,10 +449,10 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
  [8] [9]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [10] [11] [12] [13] [14] [15]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+ [10] [11] [12]
+Underfull \vbox (badness 5175) has occurred while \output is active []
 
- [16] (paper.bbl
+ [13] [14] (paper.bbl [15]
 Underfull \hbox (badness 2253) in paragraph at lines 51--57
 []\T1/lmr/m/n/10 Trenton Bricken et al.  To-wards monose-man-tic-ity: De-com-pos-ing lan-guage mod-els with dic-tio-
  []
@@ -462,14 +462,14 @@ Underfull \hbox (badness 1888) in paragraph at lines 51--57
 \T1/lmr/m/n/10 nary learn-ing.  Trans-former Cir-cuits, 2023.  URL []$\T1/lmtt/m/n/10 https : / / transformer-[]circuits . pub / 2023 /
  []
 
-[17] [18] [19])
+[16] [17]) [18]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 509.
- [20] [21]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 581.
+(Font)              <9> on input line 491.
+ [19]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 563.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [22{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}] [23] [24] [25] (paper.aux)
+) [20{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}] [21] [22] [23] (paper.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -478,17 +478,17 @@ Package rerunfilecheck Info: File `paper.out' has not changed.
 (rerunfilecheck)             Checksum: 8B026905C433C5BD2E8AC478A36B4B44;9552.
  ) 
 Here is how much of TeX's memory you used:
- 13364 strings out of 467867
- 205648 string characters out of 5418818
+ 13347 strings out of 467867
+ 205525 string characters out of 5418818
  629695 words of memory out of 5000000
  41817 multiletter control sequences out of 15000+600000
  724828 words of font info for 108 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,90p,1979b,679s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,90p,1979b,649s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb>
-Output written on paper.pdf (25 pages, 528427 bytes).
+Output written on paper.pdf (23 pages, 521902 bytes).
 PDF statistics:
- 909 PDF objects out of 1000 (max. 8388607)
- 216 named destinations out of 1000 (max. 500000)
+ 891 PDF objects out of 1000 (max. 8388607)
+ 199 named destinations out of 1000 (max. 500000)
  329 words of extra memory for PDF output out of 10000 (max. 10000000)
 
