@@ -312,22 +312,17 @@ Figs.~4B--C trace the isotonic $R^2$ and Spearman $\rho$ as functions of alpha f
 It is important to note that introspection improvement appears to be concept-pair-specific: in most cells of the $4\times4$ matrix, steering has no significant effect over introspection fidelity. However, the fact that this effect exists at any single one of these conditions is already a significant finding: since the steering effect is constant inside a given condition, an increased association between self-reports and corresponding internal states cannot be explained away as an artifact of intervention, but actually reflects a true improvement in introspective fidelity of that emotive state. However, this does suggest that introspection is not a single ability that can be modulated equally for all internal directions, but might depend on the internal geometry relating the steered direction to the measured concept.
 
 \paragraph{What changes when introspection improves.}
-We next asked what changes in the two significant cross-steering conditions when introspective fidelity improves.
-Rather than privileging any single readout, we analyzed six quantities on equal footing: probe variance, probe drift, and probe entropy, plus report variance, report drift, and report entropy (Fig.~4D--I).
-These six measures are useful because they capture two conceptually distinct questions without assuming two mechanically separable processes: whether the internal state itself becomes more informative, and whether the report channel becomes more expressive given that state.
 
-For focus$\to$wellbeing, all six measures increase monotonically with display-corrected $\alpha$.
-Probe variance rises from $0.0010$ to $0.0031$, probe drift from $-0.0077$ to $0.1264$ (mixed-effects slope $= 0.0173$, $p = 2.69 \times 10^{-78}$), and probe entropy from $1.09$ to $1.67$ bits.
-On the report side, variance rises from $0.0091$ to $0.0626$, drift from $0.088$ to $0.655$ (slope $= 0.0706$, $p = 3.43 \times 10^{-36}$), and entropy from $0.875$ to $1.693$ bits.
-For the variance and entropy metrics, the alpha means are perfectly monotonic (exact-permutation trend tests over the five alpha levels, all $p = 0.0167$); the corresponding mixed-effects fits are singular because the ordering is nearly deterministic at the aggregate level.
+We next wanted to better understand what drives the improvement in the two significant conditions.
+Conceptually, one could decompose introspection into two components: (i)~the informativeness of the internal state itself (a noisier or flatter representation provides less signal to report on), and (ii)~the quality of the report given that state (a model with rich internal variation might still produce collapsed or uninformative reports).
+To distinguish these, we attempted to examine how steering affects each component separately.
+For this analysis, we focus on Shannon entropy of the previous-turn probe scores and the logit-based self-reports, as a measure of how much usable variation each channel contains.
 
-Impulsivity$\to$interest shows a related but more asymmetric pattern.
-All three probe-side measures increase with display-corrected $\alpha$ (variance slope $= 1.11 \times 10^{-4}$, $p = 8.65 \times 10^{-39}$; drift slope $= 0.00493$, $p = 9.28 \times 10^{-78}$; entropy slope $= 0.0242$, $p = 2.30 \times 10^{-4}$), and report variance and report drift also increase (slope $= 0.00435$, $p = 1.19 \times 10^{-5}$; slope $= 0.0195$, $p = 9.68 \times 10^{-6}$).
-The exception is report entropy, which does not show a robust trend (slope $= 0.0090$, $p = 0.106$).
+For focus$\to$wellbeing, both probe entropy and report entropy increase monotonically with $\alpha$.
+Probe entropy rises from $1.09$ to $1.67$ bits, and report entropy rises from $0.875$ to $1.693$ bits (LMM is singular, exact-permutation trend tests over the five alpha levels, both $p = 0.0167$).
+For impulsivity$\to$interest, instead, only probe entropy increases reliably with $\alpha$ (LMM, slope $= 0.0242$, $p = 2.30 \times 10^{-4}$), but report entropy does not show a robust trend (LMM, slope $= 0.0090$, $p = 0.106$).
 
-Overall, this analysis suggests that improved introspection can coincide with richer internal-state dynamics and more informative report distributions, but with pair-specific profiles.
-We do not interpret this as proof that ``state-side informativeness'' and ``report-side expressivity'' are independent mechanisms: because self-report is causally downstream of internal state, changes in the report channel may simply reflect changes in the internal signal.
-What the six-metric analysis provides is a practical way to localize where improvement is or is not expressed.
+Overall, this analysis suggests that improved introspection could be explained by a richer internal-state signal, but that this increase in internal informativeness is not always matched by a more expressive report distribution.
 
 \subsection{Generalization across model sizes and families}
 \label{sec:results-generalization}
@@ -382,7 +377,7 @@ However, both probe quality and self-report informativeness vary substantially a
   \item Highlight concept specificity: introspection quality and its steering modulation differ across concepts; this is not a single globally tunable ability.
   \item Interpret cross-steering improvement as evidence that modest representational interventions can improve introspective fidelity in targeted concept pairs. Again, here we don't find a single direction that can modulate introspective ability reliably. This might be because there is no such direction (if introspection is not a general ability of these models but is achieved on a case-by-case basis) but we cannot assert that, as we did not search for such a direction. Mark this as a direction for future work.
   \item Mention additional interpretable steering directions explored (e.g., truthfulness/authenticity-style directions) that did not yield robust cross-concept introspection gains (results not shown).
-  \item Discuss decomposition result: improvements can come from both state-side informativeness (probe variance/drift/entropy) and report-side expressivity (report variance/drift/entropy), with pair-specific profiles. We do not assert that these two components can be affected independently. For example, since the report is causally dependent on the internal state (we have proved this), an increase in report variance or entropy could simply be caused by an increase in internal state informativeness. However, this framework would allow to measure discrepancies in these components, for example, if only report informativeness increases while internal state remains the same, or if internal state increases informativeness but this is not reflected in report (we found partial evidence of the latter: report entropy in impulsivity$\to$interest). We don't state to have proved that these are actually two different mechanisms in the model, but these are two conceptually different things that one could care about and we provide a framework to think about and measure them.
+  \item Discuss entropy result: improvements can come from increased state-side informativeness (probe entropy) and/or increased report-side expressivity (report entropy), with pair-specific profiles. We do not assert that these two components can be affected independently. Since the report is causally dependent on the internal state, an increase in report entropy could simply be caused by an increase in internal-state informativeness. However, this framework still allows us to detect discrepancies, for example when internal-state entropy increases but report entropy does not (as in impulsivity$\to$interest). We do not claim to have proved two different mechanisms in the model, only that these are two conceptually different aspects of introspective fidelity that one may want to measure.
   \item Address probe-quality dependence across models: same training protocol does not guarantee equal probe validity in different architectures/scales. This is important and reiterates the problems with probes that we're trying to address. We must say again that training different probes for each model so that all of them worked was not a good option because then comparison was harder, and NOT finetuning the probes to the 3B model was also ill-suited for this work because probes can be difficult to fit well to desired concepts, they are not plug-and-play, some experimentation is necessary. Again this is part of what we are trying to address here, problems with probe training. This is a limitation of this work, but we note that even then we find much better introspection in two concepts in the 8B model and we replicate findings in Qwen.
   \item Discuss family differences: introspection appears in non-LLaMA families too, but with marked differences in probe quality and report channel characteristics. Again this is kind of the same point as the previous one.
   \item Discuss scaling evidence cautiously. We find some evidence in some concepts, but we worked only with three model scales, and only with small models due to compute budget constraints. Mark this as future work, we should check how well this works across concepts for larger models. Also say something about the fact that we found introspection in small models, a contribution in itself.
@@ -440,23 +435,21 @@ The cross-steering results are therefore best read as an existence proof, not as
 We show that modest representational interventions can improve introspective fidelity in targeted concept pairs, which is already important: it demonstrates that basal introspective performance is not always maximal, and that some failures cases may be solvable by intervention rather than show a complete absence of introspective capacity.
 But we did not search systematically for a universal steering direction that improves introspection across concepts. In pilot analyses we also examined additional interpretable directions, including truthfulness- and authenticity-style directions, but did not observe robust cross-concept introspection gains there (results not shown). The current evidence therefore points toward local, pair-specific improvement rather than a single globally tunable faculty. However, future work should still treat the search of this global faculty as an open problem.
 
-\subsection{What the six-metric analysis does and does not show}
+\subsection{Two components of introspective ability}
 
-We propose a conceptual distinction in introspective ability, between information internally available about a certain internal state and the capacity to transform that signal into precise output reports. We also show some metrics that one could use to evaluate these components separately (Fig.~4). This mirrors a standard metacognitive distinction between what is available to be monitored and how that information is transformed into explicit report or control \citep{BoldtGilbert2022, Fleming2024}.
+We propose a conceptual distinction in introspective ability, between information internally available about a certain internal state and the capacity to transform that signal into precise output reports. In the present paper, we evaluate that distinction using the entropy of the probe score for the internal signal, and the entropy of the self-reported rating for the output channel. This mirrors a standard metacognitive distinction between what is available to be monitored and how that information is transformed into explicit report or control \citep{BoldtGilbert2022, Fleming2024}.
 However, we do not claim to have identified two independently controllable mechanisms in the model.
-Because self-report is causally downstream of the internal state, a change in report variance or report entropy could arise simply because the internal signal itself became richer.
-The value of this framework is that it may allow to detect mismatches.
-For focus$\to$wellbeing, all measures rise together for the internal state and the report channels, consistent with an intervention that makes both channels more informative.
-For impulsivity$\to$interest, the picture is more selective: probe-side metrics strengthen consistently, and report variance/drift increase, but report entropy does not show a robust trend.
-That is partial evidence for a bottleneck between richer internal variation and the final report distribution, which agrees with previous findings !!!(citations) and with the fact that models can have internal drift in emotive states while showing almost fully collapsed self-reports when using greedy decoding (Fig.~2).
-
-!!!(Reading this, I think instead of the six metrics, we should only evaluate entropy for each channel; because variance is kind of like entropy but less informative with respect to what we want - more variance could be more noise without more information - and an average drift is not really necesary for a signal to be informative... and if we do this, then the picture becomes clearer and this conclusion becomes stronger)
+Because self-report is causally downstream of the internal state, a change in report entropy could arise simply because the internal signal itself became richer.
+The value of this framework is that it allows us to detect mismatches.
+For focus$\to$wellbeing, probe entropy and report entropy both increase, consistent with an intervention that makes both channels more informative.
+For impulsivity$\to$interest, probe entropy increases, but report entropy does not show a robust trend.
+That is partial evidence for a bottleneck between richer internal variation and the final report distribution, which agrees with previous findings that latent internal signals can be richer than the report channel that expresses them \citep{Xiong2024, Kumar2024, Yona2024, PearsonVogel2026} and with the fact that models can have internal drift in emotive states while showing almost fully collapsed self-reports when using greedy decoding (Fig.~2).
 
 \subsection{Generalization to other models and limitations of this work}
 
 The generalization results should be read with care because they entail a methodological issue that is inherent to this framework: the same probe-training protocol does not guarantee equally valid probes across different models.
 This is not incidental to our paper; it is part of the problem we are trying to address.
-Contrastive linear probes are widely used methods currently !!!(citations) but they are far from being plug-and-play: they require careful choice of system prompts, training and evaluation examples, as well as the choice of layer to measure them from.
+Contrastive linear probes are now widely used in interpretability research \citep{AlainBengio2018, Kim2018, Burns2022, GurneeTegmark2023, AzariaMitchell2023, Zou2023}, but they are far from being plug-and-play: they require careful choice of system prompts, training and evaluation examples, as well as the choice of layer to measure them from.
 If the quality of equivalent probes varies from model to model, then pure white-box comparison becomes fragile.
 At the same time, choosing a probe that works optimally in every architecture would make cross-model comparison much harder, because one would no longer be holding the measurement procedure fixed.
 We therefore chose a common probe-construction protocol tuned for the 3B model, as this was the main model used in our study, and used steering-sign checks as an additional validation filter.
@@ -670,36 +663,33 @@ Panels~A, C, E, and~G show layer-wise Cohen's $d$, with the selected best layers
 Panels~B, D, F, and~H show held-out score distributions; the two poles separate clearly in all four cases.
 
 % ===========================================================================
-\section{Supplementary Figures}
+\section{Supplementary Analyses}
 \label{app:figures}
 
-The following supplementary figures provide additional detail and robustness checks for the main analyses.
-We organize them by the main figure they extend, providing the statistical details and intermediate analyses that support the claims in the main text.
+The following supplementary figures provide the intermediate analyses and robustness checks that motivate several claims in the main text. We organize them by topic, one subsection per supplementary figure, so that each appendix figure is introduced with the question it addresses and the interpretation it supports.
 
-!!!(These are missing narrative, they read like a list of results. This is much better solved in the results section. I think this would be better if we made different appendices for different topics that we want to address, instead of one for all supplementary figures; one subsection per supplementary figure; where we must say what we did and why, the motivation for the analysis shown and then talk about them one after the other, not as a list, but as a narrative with some motivation, interpretation, etc just like we do in the results section)
+\subsection{Appendix Figure 2: Recovering informative self-reports}
 
-\paragraph{Appendix Fig.~2: Supplementary self-report analyses.}
-The main text establishes that greedy self-reports are largely collapsed and that the logit-based method recovers richer signal.
-Here we provide the intermediate evidence.
-Panel~A shows the number of distinct greedy responses at each turn across the 40 conversations, confirming that the model occupies a narrow subset of the 0--9 scale.
-Panel~B shows sampled-token self-reports (temperature~$= 0.8$): sampling reduces collapse relative to greedy decoding but remains discrete and noisy, with only interest and focus showing reliable positive turn slopes.
-Panel~C calibrates the logit-based measure against the sampled-token ratings with OLS fits; the two are positively related in all four concepts (mixed-effects calibration slopes $0.02$--$0.27$, all $p < 0.01$), confirming that the logit-based method is not producing estimates disconnected from the token-level output.
+The main text argues that direct greedy self-reports are too collapsed to be a useful introspective signal and that a logit-based estimator recovers substantially more information. Appendix Fig.~2 shows the steps behind that claim.
+Panel~A quantifies how little of the 0--9 scale the model actually uses under greedy decoding: across turns and concepts, only a small subset of values ever appears. Panel~B asks whether simple stochastic sampling is enough to solve the problem. It helps somewhat, but only partially: sampled ratings are less collapsed than greedy ones while remaining discrete, noisy, and inconsistent across concepts.
+Panel~C then shows why we prefer the logit-based estimator. Its values are positively calibrated against sampled-token ratings in all four concepts (mixed-effects calibration slopes $0.02$--$0.27$, all $p < 0.01$), which means the estimator is still anchored to the model's token-level output distribution rather than producing an arbitrary post-hoc signal. This appendix therefore motivates the move from surface ratings to distribution-level self-report used throughout the paper.
 
-\paragraph{Appendix Fig.~3: Supplementary temporal and steering analyses.}
-These panels extend the turn-wise introspection and steering analyses from Fig.~3.
-Panel~A shows first-versus-last-turn comparisons with cluster-bootstrap $p$-values: the strongest improvement appears in wellbeing $\rho$ ($0.52 \to 0.79$, $\Delta = 0.26$, $p = 0.049$); the corresponding changes for interest, focus, and impulsivity are directionally consistent but do not reach individual significance ($p = 0.07$, $0.33$, and $1.00$).
-Panel~B shows histograms of within-conversation concordance trends; the mixed-effects interaction (logit\_report $\sim$ probe $\times$ turn $+$ (1$|$conversation)) is significant for all four concepts ($p = 0.002$, $< 10^{-6}$, $6 \times 10^{-6}$, and $0.004$ for wellbeing, interest, focus, and impulsivity), confirming that the probe-report coupling changes over time even when controlling for the conversation-level random effect.
-Panels~C--F show self-report drift across turns under each of the five self-steering strengths, one panel per concept: temporal drift persists under steering, but its magnitude and direction depend on $\alpha$.
+\subsection{Appendix Figure 3: Temporal structure and self-steering robustness}
 
-\paragraph{Appendix Fig.~4: Full cross-concept steering screen.}
-The main text reports the two significant conditions from the $4\times4$ cross-concept steering matrix; here we provide the complete screen.
-Panels~A--E show heatmaps of isotonic $R^2$ for each cell at $\alpha \in \{-4, -2, 0, +2, +4\}$, allowing visual comparison of how introspective fidelity shifts across the full 80-condition space.
-Panels~F--G show probe-score drift across turns for the two significant conditions (focus$\to$wellbeing and impulsivity$\to$interest), with one curve per $\alpha$ and cluster-bootstrap CIs: positive steering amplifies probe drift in both cases, more markedly for focus$\to$wellbeing, consistent with the larger overall improvement in that condition.
+Appendix Fig.~3 expands the temporal and causal analyses from Fig.~3 by showing how the probe-report relationship changes across turns and under self-steering. The goal here is to establish that the temporal effects discussed in the main text are not artifacts of a single summary statistic.
+Panel~A compares first and last turns directly. The clearest first-to-last gain appears in wellbeing $\rho$ ($0.52 \to 0.79$, $\Delta = 0.26$, $p = 0.049$), while the other concepts move in the same general direction but with weaker evidence. Panel~B complements that analysis by asking whether the coupling changes reliably over conversational time once conversation-level random effects are taken into account. The answer is yes for all four concepts: the mixed-effects interaction (logit\_report $\sim$ probe $\times$ turn $+$ (1$|$conversation)) is significant in every case.
+Panels~C--F then show the full self-steering drift curves, one concept per panel and one curve per steering strength. These plots matter because they show that steering does not simply shift a report up or down at a single turn. It changes how reports evolve across the whole conversation, and it does so in a concept-specific way.
 
-\paragraph{Appendix Fig.~5: Supplementary scale and cross-family analyses.}
-These panels provide the probe-quality validation and steering-sign checks that underpin the generalization analyses in Fig.~5.
-Panel~A shows probe quality (maximum layer-wise Cohen's $d$) across LLaMA 1B, 3B, and 8B, illustrating that probe quality varies strongly across both scale and concept, and that the same training procedure does not yield equally good probes in all models.
-Panel~B shows mean logit self-report versus steering $\alpha$ for each concept and LLaMA size; mixed-effects alpha slopes differ from zero in all twelve concept-size combinations, with the main sign-alignment failures being 1B focus and 8B impulsivity, motivating the steering-sign validation filter applied in the main text.
-Panel~C shows the normalized layer-sweep comparison for the wellbeing probe in Gemma~3 4B and Qwen~2.5 7B; Qwen yields the stronger probe (best $d = 3.54$) compared to Gemma (best $d = 1.82$), explaining the weaker introspection observed for Gemma in the main text.
+\subsection{Appendix Figure 4: The full cross-concept steering screen}
+
+The main text focuses on the two cross-concept steering conditions that survive significance testing, but the broader interpretation depends on seeing the full matrix. Appendix Fig.~4 provides that complete view.
+Panels~A--E show the full $4 \times 4$ isotonic $R^2$ matrix at each tested $\alpha$, making it possible to see both the rarity and the specificity of the improvement effect. Most cells stay flat or change only weakly, which is exactly why the significant cells are informative: the intervention is not producing a generic inflation of introspection scores across the matrix.
+Panels~F--G then revisit the two significant conditions from the point of view of probe drift across turns. These trajectories show that positive steering amplifies internal-state drift in both cases, especially for focus$\to$wellbeing, which helps explain why cross-steering improvement can coincide with richer internal dynamics rather than merely better-aligned output mapping.
+
+\subsection{Appendix Figure 5: Probe validation and cross-model generalization}
+
+Appendix Fig.~5 supports the scale and cross-family claims in Fig.~5 by making the probe-quality and sign-validation issues explicit. This appendix is important because the generalization argument depends not only on observing introspection in other models, but also on understanding where probe quality itself changes.
+Panel~A shows that probe quality varies strongly across LLaMA 1B, 3B, and 8B, even under a fixed training procedure. That variation is not a side detail: it is one of the central reasons why cross-model white-box comparison is difficult. Panel~B adds the steering-sign check for every concept-size pair. Although alpha slopes differ from zero in all twelve cases, the critical failures are the pairs where the sign is inverted rather than merely weak, namely 1B focus and 8B impulsivity. Those are the cases excluded by the validation filter in the main text.
+Panel~C provides the same interpretive context for the cross-family comparison. The wellbeing probe is much stronger in Qwen than in Gemma (best $d = 3.54$ versus $1.82$), which helps explain why Qwen shows much clearer introspection despite both models exhibiting conversational drift. Taken together, these supplementary analyses support a cautious reading of generalization: the phenomenon extends beyond the base model, but probe quality and report-channel informativeness remain major limiting factors.
 
 \end{document}

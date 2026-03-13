@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  13 MAR 2026 09:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  13 MAR 2026 09:44
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -446,14 +446,11 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) [5{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.enc}] [6] [7]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
- [8] [9] [10] [11] [12] [13] [14]
-Underfull \vbox (badness 5175) has occurred while \output is active []
-
- [15] [16] (paper.bbl [17] [18] [19])
+ [8] [9] [10] [11] [12] [13] [14] [15] [16] (paper.bbl [17] [18]) [19]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 514.
+(Font)              <9> on input line 507.
  [20]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 586.
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 579.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) [21{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}] [22] [23] [24] (paper.aux)
@@ -462,20 +459,20 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: 8CCB3B80564BD969C56113C25A4A3213;8090.
+(rerunfilecheck)             Checksum: 8B026905C433C5BD2E8AC478A36B4B44;9552.
  ) 
 Here is how much of TeX's memory you used:
- 13323 strings out of 467867
- 204860 string characters out of 5418818
- 628402 words of memory out of 5000000
- 41786 multiletter control sequences out of 15000+600000
+ 13327 strings out of 467867
+ 204936 string characters out of 5418818
+ 628410 words of memory out of 5000000
+ 41790 multiletter control sequences out of 15000+600000
  724828 words of font info for 108 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,90p,1979b,667s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,90p,1979b,639s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb>
-Output written on paper.pdf (24 pages, 512759 bytes).
+Output written on paper.pdf (24 pages, 516070 bytes).
 PDF statistics:
- 826 PDF objects out of 1000 (max. 8388607)
+ 859 PDF objects out of 1000 (max. 8388607)
  206 named destinations out of 1000 (max. 500000)
- 297 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 329 words of extra memory for PDF output out of 10000 (max. 10000000)
 
