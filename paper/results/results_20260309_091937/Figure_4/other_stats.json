@@ -1147,5 +1147,659 @@
         }
       }
     }
+  },
+  "full_decomposition": {
+    "focus→wellbeing": {
+      "probe": {
+        "metric_by_alpha": {
+          "variance": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": -4.0,
+              "mean": 0.0009903892381648237,
+              "ci_low": 0.000782763176875067,
+              "ci_high": 0.001241364085673761,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": -2.0,
+              "mean": 0.0013886300284734806,
+              "ci_low": 0.001102149892514383,
+              "ci_high": 0.0016858687286817355,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": 0.0,
+              "mean": 0.0017750178931246398,
+              "ci_low": 0.001467489266352657,
+              "ci_high": 0.0021062679899012354,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": 2.0,
+              "mean": 0.002181222032529348,
+              "ci_low": 0.0017140366774364667,
+              "ci_high": 0.0027600784662440564,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": 4.0,
+              "mean": 0.0031470190704755165,
+              "ci_low": 0.0023892271162793003,
+              "ci_high": 0.004126053196779506,
+              "n_conversations": 40
+            }
+          ],
+          "drift": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": -4.0,
+              "mean": -0.0077359102666378025,
+              "ci_low": -0.028716794177889825,
+              "ci_high": 0.013962244857102629,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": -2.0,
+              "mean": -0.0046894516795873645,
+              "ci_low": -0.03022053419612348,
+              "ci_high": 0.019374916153028603,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": 0.0,
+              "mean": 0.02867537997663021,
+              "ci_low": 0.003808766668662429,
+              "ci_high": 0.05367821509018539,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": 2.0,
+              "mean": 0.07233421467244625,
+              "ci_low": 0.04831174372695386,
+              "ci_high": 0.09721100346650928,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": 4.0,
+              "mean": 0.126365439966321,
+              "ci_low": 0.10332557728979737,
+              "ci_high": 0.14950558867771177,
+              "n_conversations": 40
+            }
+          ],
+          "entropy": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": -4.0,
+              "mean": 1.0900527197983485,
+              "ci_low": 0.9928182761473283,
+              "ci_high": 1.184344495624987,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": -2.0,
+              "mean": 1.2344238220050507,
+              "ci_low": 1.098377272442842,
+              "ci_high": 1.3756092149051002,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": 0.0,
+              "mean": 1.3731109247562698,
+              "ci_low": 1.2687315055034798,
+              "ci_high": 1.4680275059804948,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": 2.0,
+              "mean": 1.500097272764722,
+              "ci_low": 1.3592625913257914,
+              "ci_high": 1.629034729738092,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": 4.0,
+              "mean": 1.6661359585433295,
+              "ci_low": 1.5405372666777006,
+              "ci_high": 1.8004974701257395,
+              "n_conversations": 40
+            }
+          ]
+        },
+        "trend_tests": {
+          "variance": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "error": "Singular matrix"
+            }
+          },
+          "drift": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "slope": 0.01726131834089756,
+              "slope_p": 2.6887109034794015e-78,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          },
+          "entropy": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "error": "Singular matrix"
+            }
+          }
+        },
+        "entropy_bins": 20
+      },
+      "report": {
+        "metric_by_alpha": {
+          "variance": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": -4.0,
+              "mean": 0.009107169077500402,
+              "ci_low": 0.005731239866977046,
+              "ci_high": 0.014427162795055924,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": -2.0,
+              "mean": 0.020667349241362896,
+              "ci_low": 0.015353143366824586,
+              "ci_high": 0.027968921916147166,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": 0.0,
+              "mean": 0.034523876614117446,
+              "ci_low": 0.026620049603837515,
+              "ci_high": 0.04564613449720298,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": 2.0,
+              "mean": 0.0483973280933777,
+              "ci_low": 0.03806524713140261,
+              "ci_high": 0.060616712349437406,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": 4.0,
+              "mean": 0.06256950134064435,
+              "ci_low": 0.04746688245747818,
+              "ci_high": 0.07806431979768796,
+              "n_conversations": 40
+            }
+          ],
+          "drift": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": -4.0,
+              "mean": 0.08843075686721182,
+              "ci_low": 0.032601013124903544,
+              "ci_high": 0.15387290491335043,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": -2.0,
+              "mean": 0.15674661255739678,
+              "ci_low": 0.06336155453410063,
+              "ci_high": 0.2581121686134658,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": 0.0,
+              "mean": 0.2347251160930181,
+              "ci_low": 0.1191989497876081,
+              "ci_high": 0.3672867274151813,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": 2.0,
+              "mean": 0.4366331728347694,
+              "ci_low": 0.31548741464568464,
+              "ci_high": 0.5568592512479668,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": 4.0,
+              "mean": 0.6545140521468464,
+              "ci_low": 0.5513547325131931,
+              "ci_high": 0.7547341304127269,
+              "n_conversations": 40
+            }
+          ],
+          "entropy": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": -4.0,
+              "mean": 0.8747639915574051,
+              "ci_low": 0.7434686005576252,
+              "ci_high": 1.0147162532465526,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": -2.0,
+              "mean": 1.3005501218290498,
+              "ci_low": 1.179794597338688,
+              "ci_high": 1.4321953773118483,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": 0.0,
+              "mean": 1.5225866369128884,
+              "ci_low": 1.4194389918664814,
+              "ci_high": 1.6398072863619462,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": 2.0,
+              "mean": 1.6114433411843645,
+              "ci_low": 1.4739359240222394,
+              "ci_high": 1.7438052732682483,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": 4.0,
+              "mean": 1.6925642937236316,
+              "ci_low": 1.556506148858841,
+              "ci_high": 1.8250986943760865,
+              "n_conversations": 40
+            }
+          ]
+        },
+        "trend_tests": {
+          "variance": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "error": "Singular matrix"
+            }
+          },
+          "drift": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "slope": 0.07060265754183209,
+              "slope_p": 3.43032263380625e-36,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          },
+          "entropy": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "error": "Singular matrix"
+            }
+          }
+        },
+        "entropy_bins": 20
+      }
+    },
+    "impulsivity→interest": {
+      "probe": {
+        "metric_by_alpha": {
+          "variance": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": 4.0,
+              "mean": 0.0018409672889585533,
+              "ci_low": 0.0014165216265762906,
+              "ci_high": 0.0023429424372751907,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": 2.0,
+              "mean": 0.0016898637005864261,
+              "ci_low": 0.0012980961371406826,
+              "ci_high": 0.002168740924154133,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": -0.0,
+              "mean": 0.001448454627430117,
+              "ci_low": 0.0011016868625496688,
+              "ci_high": 0.001870584465552195,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": -2.0,
+              "mean": 0.0011926512770631368,
+              "ci_low": 0.0009036752304129544,
+              "ci_high": 0.0015340457297554546,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": -4.0,
+              "mean": 0.0009809097104647837,
+              "ci_low": 0.0007556284165003861,
+              "ci_high": 0.0012456574967546965,
+              "n_conversations": 40
+            }
+          ],
+          "drift": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": 4.0,
+              "mean": 0.09917462319135666,
+              "ci_low": 0.07815715532749892,
+              "ci_high": 0.12078786112368106,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": 2.0,
+              "mean": 0.09586410522460938,
+              "ci_low": 0.07563921952620149,
+              "ci_high": 0.1161956360936165,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": -0.0,
+              "mean": 0.08583721444010735,
+              "ci_low": 0.0668855676986277,
+              "ci_high": 0.10476300806738435,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": -2.0,
+              "mean": 0.07390994969755411,
+              "ci_low": 0.05634543858002871,
+              "ci_high": 0.09154371081851423,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": -4.0,
+              "mean": 0.06082824915647507,
+              "ci_low": 0.0437921741977334,
+              "ci_high": 0.07740959607064724,
+              "n_conversations": 40
+            }
+          ],
+          "entropy": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": 4.0,
+              "mean": 0.9639576942637543,
+              "ci_low": 0.8530122167849195,
+              "ci_high": 1.0727098715315089,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": 2.0,
+              "mean": 0.8921091273760805,
+              "ci_low": 0.7718948560859917,
+              "ci_high": 1.0257943144681692,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": -0.0,
+              "mean": 0.8689963461314891,
+              "ci_low": 0.7512201588950181,
+              "ci_high": 0.9876722554337373,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": -2.0,
+              "mean": 0.8215361850792263,
+              "ci_low": 0.6953523175569478,
+              "ci_high": 0.9552800713883216,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": -4.0,
+              "mean": 0.7574656056069127,
+              "ci_low": 0.6452068721551601,
+              "ci_high": 0.8605304004447484,
+              "n_conversations": 40
+            }
+          ]
+        },
+        "trend_tests": {
+          "variance": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "slope": 0.00011086637902554139,
+              "slope_p": 8.645283399856324e-39,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          },
+          "drift": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "slope": 0.004932345179840922,
+              "slope_p": 9.284501782356507e-78,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          },
+          "entropy": {
+            "exact_permutation_spearman_rho": 1.0,
+            "exact_permutation_p": 0.016666666666666666,
+            "lmm": {
+              "slope": 0.024177855980526863,
+              "slope_p": 0.00023002543881019808,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          }
+        },
+        "entropy_bins": 20
+      },
+      "report": {
+        "metric_by_alpha": {
+          "variance": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": 4.0,
+              "mean": 0.1458031783278154,
+              "ci_low": 0.12250681233395998,
+              "ci_high": 0.17066405566255516,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": 2.0,
+              "mean": 0.16515167597498256,
+              "ci_low": 0.140470729637384,
+              "ci_high": 0.1935105752317765,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": -0.0,
+              "mean": 0.17095628974947205,
+              "ci_low": 0.1427717310873558,
+              "ci_high": 0.20185880122867356,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": -2.0,
+              "mean": 0.14861641449419274,
+              "ci_low": 0.12122633937904748,
+              "ci_high": 0.1794035731894277,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": -4.0,
+              "mean": 0.1105331665707741,
+              "ci_low": 0.08795538423754343,
+              "ci_high": 0.13485524326127832,
+              "n_conversations": 40
+            }
+          ],
+          "drift": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": 4.0,
+              "mean": 1.153537097926249,
+              "ci_low": 1.0414163178110465,
+              "ci_high": 1.2702761069508965,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": 2.0,
+              "mean": 1.242194690104563,
+              "ci_low": 1.1284533199571385,
+              "ci_high": 1.3552126010111516,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": -0.0,
+              "mean": 1.2637790880160131,
+              "ci_low": 1.1426156664479097,
+              "ci_high": 1.3871226878344025,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": -2.0,
+              "mean": 1.1775336059377728,
+              "ci_low": 1.0478896729614318,
+              "ci_high": 1.316728799558587,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": -4.0,
+              "mean": 0.9911044914956453,
+              "ci_low": 0.8648093932137415,
+              "ci_high": 1.1257870258482354,
+              "n_conversations": 40
+            }
+          ],
+          "entropy": [
+            {
+              "raw_alpha": -4.0,
+              "display_alpha": 4.0,
+              "mean": 2.1579163627431805,
+              "ci_low": 2.017259703818489,
+              "ci_high": 2.2723341503172074,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": -2.0,
+              "display_alpha": 2.0,
+              "mean": 2.211409728877178,
+              "ci_low": 2.0693389715879373,
+              "ci_high": 2.341807655303119,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 0.0,
+              "display_alpha": -0.0,
+              "mean": 2.1705229567305757,
+              "ci_low": 2.0389753059474676,
+              "ci_high": 2.2939783891864294,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 2.0,
+              "display_alpha": -2.0,
+              "mean": 2.1621428239224576,
+              "ci_low": 2.037636766677992,
+              "ci_high": 2.2813308684960365,
+              "n_conversations": 40
+            },
+            {
+              "raw_alpha": 4.0,
+              "display_alpha": -4.0,
+              "mean": 2.0923524565202243,
+              "ci_low": 1.9707359261867456,
+              "ci_high": 2.209793312568131,
+              "n_conversations": 40
+            }
+          ]
+        },
+        "trend_tests": {
+          "variance": {
+            "exact_permutation_spearman_rho": 0.3,
+            "exact_permutation_p": 0.6833333333333333,
+            "lmm": {
+              "slope": 0.004353764249743623,
+              "slope_p": 1.1895260183482373e-05,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          },
+          "drift": {
+            "exact_permutation_spearman_rho": 0.3,
+            "exact_permutation_p": 0.6833333333333333,
+            "lmm": {
+              "slope": 0.019476314851399876,
+              "slope_p": 9.67723233082261e-06,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          },
+          "entropy": {
+            "exact_permutation_spearman_rho": 0.4,
+            "exact_permutation_p": 0.5166666666666667,
+            "lmm": {
+              "slope": 0.00901973587003166,
+              "slope_p": 0.10645977263629207,
+              "n_obs": 200,
+              "n_groups": 40,
+              "converged": true
+            }
+          }
+        },
+        "entropy_bins": 20
+      }
+    }
   }
 }

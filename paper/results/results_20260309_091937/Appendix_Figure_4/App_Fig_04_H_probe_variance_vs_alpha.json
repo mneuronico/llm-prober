@@ -1,0 +1,119 @@
+{
+  "panel_id": "App_Fig_04_H",
+  "title": "Probe Variance vs. Steering",
+  "description": "Full decomposition panel requested in manuscript comments: variance computed for probe at all five alpha levels in both significant steering conditions.",
+  "signal": "probe",
+  "metric": "variance",
+  "conditions": {
+    "focus→wellbeing": {
+      "signal": "probe",
+      "metric": "variance",
+      "by_alpha": [
+        {
+          "raw_alpha": -4.0,
+          "display_alpha": -4.0,
+          "mean": 0.0009903892381648237,
+          "ci_low": 0.000782763176875067,
+          "ci_high": 0.001241364085673761,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": -2.0,
+          "display_alpha": -2.0,
+          "mean": 0.0013886300284734806,
+          "ci_low": 0.001102149892514383,
+          "ci_high": 0.0016858687286817355,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 0.0,
+          "display_alpha": 0.0,
+          "mean": 0.0017750178931246398,
+          "ci_low": 0.001467489266352657,
+          "ci_high": 0.0021062679899012354,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 2.0,
+          "display_alpha": 2.0,
+          "mean": 0.002181222032529348,
+          "ci_low": 0.0017140366774364667,
+          "ci_high": 0.0027600784662440564,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 4.0,
+          "display_alpha": 4.0,
+          "mean": 0.0031470190704755165,
+          "ci_low": 0.0023892271162793003,
+          "ci_high": 0.004126053196779506,
+          "n_conversations": 40
+        }
+      ],
+      "trend_tests": {
+        "exact_permutation_spearman_rho": 1.0,
+        "exact_permutation_p": 0.016666666666666666,
+        "lmm": {
+          "error": "Singular matrix"
+        }
+      }
+    },
+    "impulsivity→interest": {
+      "signal": "probe",
+      "metric": "variance",
+      "by_alpha": [
+        {
+          "raw_alpha": 4.0,
+          "display_alpha": -4.0,
+          "mean": 0.0009809097104647837,
+          "ci_low": 0.0007556284165003861,
+          "ci_high": 0.0012456574967546965,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 2.0,
+          "display_alpha": -2.0,
+          "mean": 0.0011926512770631368,
+          "ci_low": 0.0009036752304129544,
+          "ci_high": 0.0015340457297554546,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 0.0,
+          "display_alpha": -0.0,
+          "mean": 0.001448454627430117,
+          "ci_low": 0.0011016868625496688,
+          "ci_high": 0.001870584465552195,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": -2.0,
+          "display_alpha": 2.0,
+          "mean": 0.0016898637005864261,
+          "ci_low": 0.0012980961371406826,
+          "ci_high": 0.002168740924154133,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": -4.0,
+          "display_alpha": 4.0,
+          "mean": 0.0018409672889585533,
+          "ci_low": 0.0014165216265762906,
+          "ci_high": 0.0023429424372751907,
+          "n_conversations": 40
+        }
+      ],
+      "trend_tests": {
+        "exact_permutation_spearman_rho": 1.0,
+        "exact_permutation_p": 0.016666666666666666,
+        "lmm": {
+          "slope": 0.00011086637902554139,
+          "slope_p": 8.645283399856324e-39,
+          "n_obs": 200,
+          "n_groups": 40,
+          "converged": true
+        }
+      }
+    }
+  }
+}

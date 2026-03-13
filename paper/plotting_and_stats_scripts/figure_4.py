@@ -45,6 +45,35 @@ SHORTHANDS = SHORTHANDS_ORDERED
 ALPHAS = [-4.0, -2.0, 0.0, 2.0, 4.0]
 
 
+def _shannon_entropy_binned(values, bin_edges):
+    """Shannon entropy (bits) for continuous values using fixed histogram bins."""
+    values = np.asarray(values, dtype=float)
+    if values.size == 0:
+        return np.nan
+    hist, _ = np.histogram(values, bins=bin_edges, density=False)
+    probs = hist.astype(float)
+    s = probs.sum()
+    if s <= 0:
+        return np.nan
+    probs = probs / s
+    probs = probs[probs > 0]
+    return float(-(probs * np.log2(probs)).sum())
+
+
+def _bootstrap_mean_ci(values, n_boot=1000, seed=42):
+    """Bootstrap 95% CI for the mean of a 1D array."""
+    arr = np.asarray(values, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    if arr.size == 0:
+        return np.nan, np.nan, np.nan
+    if arr.size == 1:
+        v = float(arr[0])
+        return v, v, v
+    rng = np.random.default_rng(seed)
+    boots = [float(np.mean(rng.choice(arr, size=arr.size, replace=True))) for _ in range(n_boot)]
+    return float(np.mean(arr)), float(np.percentile(boots, 2.5)), float(np.percentile(boots, 97.5))
+
+
 def _concept_order_from_summary():
     """Get concept order used in matrix analysis."""
     try:
@@ -842,6 +871,178 @@ def generate_figure_4(results_dir):
         'drift_vs_alpha_stats': l_stats,
     })
 
+    # ──────────────────────────────────────────────────────────────
+    # Comprehensive decomposition (requested):
+    #   metrics {variance, drift, entropy} × signals {probe, report}
+    #   for both significant conditions and all alphas
+    # ──────────────────────────────────────────────────────────────
+    decomposition_full = {}
+    for _, data in sig_data.items():
+        cond_key = f"{data['steer_short']}→{data['meas_short']}"
+        df_full = data['df'].copy()
+        df_full['probe_display'] = flip_if_needed(
+            data['meas_concept'], df_full['probe_score'].values)
+
+        decomposition_full[cond_key] = {}
+        for signal_name, signal_col in [('probe', 'probe_display'), ('report', 'logit_rating')]:
+            all_vals = df_full[signal_col].dropna().values
+            if len(all_vals) > 1:
+                bin_edges = np.histogram_bin_edges(all_vals, bins=20)
+                if len(bin_edges) < 2 or np.allclose(bin_edges[0], bin_edges[-1]):
+                    c = float(np.mean(all_vals))
+                    bin_edges = np.linspace(c - 1e-6, c + 1e-6, 21)
+            else:
+                bin_edges = np.linspace(-1, 1, 21)
+
+            metric_by_alpha = {'variance': [], 'drift': [], 'entropy': []}
+            metric_rows = {'variance': [], 'drift': [], 'entropy': []}
+
+            for a_idx, a in enumerate(ALPHAS):
+                da = float(data['display_alphas'][a_idx])
+                sub_a = df_full[np.isclose(df_full['alpha'], a)].copy()
+
+                per_conv_variance = []
+                per_conv_drift = []
+                per_conv_entropy = []
+
+                for conv_id in sorted(sub_a['conversation_index'].dropna().unique()):
+                    cv = sub_a[sub_a['conversation_index'] == conv_id].sort_values('turn')
+                    vals = cv[signal_col].dropna().values
+                    if len(vals) < 2:
+                        continue
+
+                    v = float(np.var(vals))
+                    d = float(vals[-1] - vals[0])
+                    e = _shannon_entropy_binned(vals, bin_edges)
+
+                    per_conv_variance.append(v)
+                    per_conv_drift.append(d)
+                    if np.isfinite(e):
+                        per_conv_entropy.append(float(e))
+
+                    metric_rows['variance'].append({
+                        'conv': int(conv_id), 'display_alpha': da, 'metric_value': v})
+                    metric_rows['drift'].append({
+                        'conv': int(conv_id), 'display_alpha': da, 'metric_value': d})
+                    if np.isfinite(e):
+                        metric_rows['entropy'].append({
+                            'conv': int(conv_id), 'display_alpha': da, 'metric_value': float(e)})
+
+                for m_name, arr in [
+                    ('variance', per_conv_variance),
+                    ('drift', per_conv_drift),
+                    ('entropy', per_conv_entropy),
+                ]:
+                    m_mean, m_lo, m_hi = _bootstrap_mean_ci(arr, n_boot=1000, seed=42)
+                    metric_by_alpha[m_name].append({
+                        'raw_alpha': float(a),
+                        'display_alpha': da,
+                        'mean': m_mean,
+                        'ci_low': m_lo,
+                        'ci_high': m_hi,
+                        'n_conversations': int(len(arr)),
+                    })
+
+            trend_tests = {}
+            for m_name in ['variance', 'drift', 'entropy']:
+                entries = metric_by_alpha[m_name]
+                valid_entries = [e for e in entries if np.isfinite(e['mean'])]
+                valid_entries = sorted(valid_entries, key=lambda x: x['display_alpha'])
+
+                if len(valid_entries) >= 3:
+                    xs = [e['display_alpha'] for e in valid_entries]
+                    ys = [e['mean'] for e in valid_entries]
+                    rho_m, p_m = exact_permutation_spearman_p(xs, ys)
+                else:
+                    rho_m, p_m = np.nan, np.nan
+
+                lmm_result = {}
+                rows_df = pd.DataFrame(metric_rows[m_name])
+                if len(rows_df) > 5 and rows_df['conv'].nunique() > 1:
+                    try:
+                        import statsmodels.formula.api as smf
+                        md_m = smf.mixedlm('metric_value ~ display_alpha', rows_df,
+                                           groups=rows_df['conv'])
+                        res_m = md_m.fit(reml=True, method='lbfgs')
+                        lmm_result = {
+                            'slope': float(res_m.fe_params.get('display_alpha', res_m.fe_params.iloc[1])),
+                            'slope_p': float(res_m.pvalues.get('display_alpha', res_m.pvalues.iloc[1])),
+                            'n_obs': int(len(rows_df)),
+                            'n_groups': int(rows_df['conv'].nunique()),
+                            'converged': bool(res_m.converged),
+                        }
+                    except Exception as e:
+                        lmm_result = {'error': str(e)}
+
+                trend_tests[m_name] = {
+                    'exact_permutation_spearman_rho': round(float(rho_m), 4) if np.isfinite(rho_m) else None,
+                    'exact_permutation_p': float(p_m) if np.isfinite(p_m) else None,
+                    'lmm': lmm_result,
+                }
+
+            decomposition_full[cond_key][signal_name] = {
+                'metric_by_alpha': metric_by_alpha,
+                'trend_tests': trend_tests,
+                'entropy_bins': 20,
+            }
+
+    # Missing decomposition plots requested in comments
+    missing_plot_specs = [
+        ('H', 'probe', 'variance', 'App_Fig_04_H_probe_variance_vs_alpha',
+         'Probe Variance vs. Steering', 'Probe Variance Across Turns'),
+        ('I', 'report', 'drift', 'App_Fig_04_I_report_drift_vs_alpha',
+         'Report Drift vs. Steering', 'Report Drift (last − first)'),
+        ('J', 'probe', 'entropy', 'App_Fig_04_J_probe_entropy_vs_alpha',
+         'Probe Entropy vs. Steering', 'Probe Shannon Entropy (bits)'),
+        ('K', 'report', 'entropy', 'App_Fig_04_K_report_entropy_vs_alpha',
+         'Report Entropy vs. Steering', 'Report Shannon Entropy (bits)'),
+    ]
+
+    for panel_label, signal_name, metric_name, fname, title, ylabel in missing_plot_specs:
+        fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+        panel_stats = {}
+        for idx, (_, data) in enumerate(sig_data.items()):
+            color = sig_cond_colors[idx]
+            cond_key = f"{data['steer_short']}→{data['meas_short']}"
+            cond_entries = decomposition_full[cond_key][signal_name]['metric_by_alpha'][metric_name]
+            cond_entries = sorted(cond_entries, key=lambda x: x['display_alpha'])
+
+            xs = [e['display_alpha'] for e in cond_entries]
+            ys = [e['mean'] for e in cond_entries]
+            lo = [e['ci_low'] for e in cond_entries]
+            hi = [e['ci_high'] for e in cond_entries]
+
+            plot_line_with_ci(ax, xs, ys, lo, hi, color=color, label=data['label'])
+            panel_stats[cond_key] = {
+                'signal': signal_name,
+                'metric': metric_name,
+                'by_alpha': cond_entries,
+                'trend_tests': decomposition_full[cond_key][signal_name]['trend_tests'][metric_name],
+            }
+
+        ax.set_xlabel('Steering α (display-corrected)')
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
+        if metric_name == 'drift':
+            ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
+        ax.legend(fontsize=8)
+        add_panel_label(ax, panel_label)
+        plt.tight_layout()
+
+        prefix = os.path.join(appendix_dir, fname)
+        savefig(fig, prefix)
+        save_panel_json(prefix, {
+            'panel_id': f'App_Fig_04_{panel_label}',
+            'title': title,
+            'description': ('Full decomposition panel requested in manuscript comments: '
+                            f'{metric_name} computed for {signal_name} at all five alpha '
+                            'levels in both significant steering conditions.'),
+            'signal': signal_name,
+            'metric': metric_name,
+            'conditions': panel_stats,
+        })
+
     # ── Save other_stats ──
     other_stats = {
         'description': ('Figure 4 presents the 4×4 steering matrix. Two conditions show '
@@ -851,6 +1052,7 @@ def generate_figure_4(results_dir):
                         'Drift statistics include per-alpha Spearman rho of turn vs probe score.'),
         'significant_conditions': [],
         'drift_decomposition': drift_decomposition,
+        'full_decomposition': decomposition_full,
     }
     for idx, (key, data) in enumerate(sig_data.items()):
         alpha0_idx = ALPHAS.index(0.0)

@@ -201,6 +201,57 @@ def _bootstrap_size_mean_slope(size_to_values, alternative='greater',
     }
 
 
+def _bootstrap_group_diff(a_vals, b_vals, n_bootstrap=10000, seed=42):
+    """Bootstrap mean difference (b - a) with percentile CI and two-sided p."""
+    a = np.asarray(a_vals, dtype=float)
+    b = np.asarray(b_vals, dtype=float)
+    a = a[np.isfinite(a)]
+    b = b[np.isfinite(b)]
+    if len(a) == 0 or len(b) == 0:
+        return {
+            'mean_diff_b_minus_a': np.nan,
+            'ci_95': [np.nan, np.nan],
+            'p_two_sided': np.nan,
+            'n_bootstrap': n_bootstrap,
+            'n_a': int(len(a)),
+            'n_b': int(len(b)),
+        }
+    rng = np.random.default_rng(seed)
+    boots = np.zeros(n_bootstrap, dtype=float)
+    for i in range(n_bootstrap):
+        a_s = rng.choice(a, size=len(a), replace=True)
+        b_s = rng.choice(b, size=len(b), replace=True)
+        boots[i] = float(np.mean(b_s) - np.mean(a_s))
+    obs = float(np.mean(b) - np.mean(a))
+    ci = np.percentile(boots, [2.5, 97.5])
+    p_le_zero = (np.sum(boots <= 0) + 1) / (len(boots) + 1)
+    p_ge_zero = (np.sum(boots >= 0) + 1) / (len(boots) + 1)
+    p_two_sided = float(min(1.0, 2 * min(p_le_zero, p_ge_zero)))
+    return {
+        'mean_diff_b_minus_a': obs,
+        'ci_95': [float(ci[0]), float(ci[1])],
+        'p_two_sided': p_two_sided,
+        'n_bootstrap': n_bootstrap,
+        'n_a': int(len(a)),
+        'n_b': int(len(b)),
+    }
+
+
+def _shannon_entropy_binned(values, n_bins=20):
+    """Shannon entropy (bits) for continuous values via histogram binning."""
+    arr = np.asarray(values, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    if len(arr) == 0:
+        return np.nan
+    if np.allclose(np.min(arr), np.max(arr)):
+        return 0.0
+    hist, _ = np.histogram(arr, bins=n_bins)
+    probs = hist.astype(float)
+    probs = probs / np.sum(probs)
+    probs = probs[probs > 0]
+    return float(-(probs * np.log2(probs)).sum())
+
+
 def _first_last_metric_bootstrap(sub, x_col, y_col, metric_fn, n_bootstrap=2000, seed=42):
     """
     Cluster bootstrap test for metric(last_turn) - metric(first_turn).
@@ -721,6 +772,11 @@ def generate_figure_5(results_dir):
             ci_hi_list.append(0.0)
 
     d_bootstrap = _bootstrap_size_mean_slope(validated_r2, alternative='greater')
+    d_pairwise = {
+        '1B_vs_3B': _bootstrap_group_diff(validated_r2['1B'], validated_r2['3B']),
+        '3B_vs_8B': _bootstrap_group_diff(validated_r2['3B'], validated_r2['8B']),
+        '1B_vs_8B': _bootstrap_group_diff(validated_r2['1B'], validated_r2['8B']),
+    }
     colors = [MODEL_SIZE_COLORS[s] for s in LLAMA_SIZES]
     ax.bar(range(len(LLAMA_SIZES)), d_means, color=colors,
            edgecolor='white', linewidth=0.5)
@@ -747,6 +803,7 @@ def generate_figure_5(results_dir):
         'ci_95_low': [round(float(v), 4) for v in ci_lo_list],
         'ci_95_high': [round(float(v), 4) for v in ci_hi_list],
         'size_trend_bootstrap': d_bootstrap,
+        'pairwise_bootstrap_tests': d_pairwise,
     }
     save_panel_json(prefix, d_json)
 
@@ -861,6 +918,47 @@ def generate_figure_5(results_dir):
         'drift_stats': eii_json_stats,
         'size_trend_bootstrap': eii_trend,
     })
+
+    # Scale-control for probe drift: check if absolute probe scale changes with size
+    probe_scale_control = {}
+    normalized_drift_by_size = {}
+    for size in LLAMA_SIZES:
+        model_key, exp_dirs = LLAMA_MODELS[size]
+        exp_dir = exp_dirs.get(example_concept)
+        if exp_dir is None or not os.path.isdir(exp_dir):
+            continue
+        try:
+            results = load_results(exp_dir)
+            df = results_to_dataframe(results, probe_name=concept_name)
+            sub = df[np.isclose(df['alpha'], 0.0)].copy()
+            sub['probe_display'] = flip_if_needed(concept_name, sub['probe_score'].values)
+            vals = sub['probe_display'].dropna().values
+            if len(vals) == 0:
+                continue
+            mean_abs = float(np.mean(np.abs(vals)))
+            std_val = float(np.std(vals))
+            iqr_val = float(np.percentile(vals, 75) - np.percentile(vals, 25))
+
+            drifts = drift_stats_e.get(size, {}).get('per_conv_drifts', [])
+            if len(drifts) > 0 and std_val > 0:
+                norm = [float(d / std_val) for d in drifts]
+            else:
+                norm = []
+
+            probe_scale_control[size] = {
+                'mean_abs_probe_score': mean_abs,
+                'std_probe_score': std_val,
+                'iqr_probe_score': iqr_val,
+                'n_obs': int(len(vals)),
+                'normalized_drift_values': norm,
+                'mean_normalized_drift': float(np.mean(norm)) if len(norm) > 0 else np.nan,
+            }
+            normalized_drift_by_size[size] = norm
+        except Exception as e:
+            print(f"    Warning: probe scale control error for {size}: {e}")
+
+    probe_scale_control['normalized_drift_size_trend_bootstrap'] = _bootstrap_size_mean_slope(
+        normalized_drift_by_size, alternative='greater')
 
     # ──────────────────────────────────────────────────────────────
     # Panel F: Self-report drift — one concept, 3 sizes
@@ -1129,10 +1227,12 @@ def generate_figure_5(results_dir):
                 sub_corr['probe_display'] = probe_vals
                 corrected_ij = corrected_correlation_stats(
                     sub_corr, 'probe_display', 'logit_rating', alpha_val=0.0)
+                logit_entropy_bits = _shannon_entropy_binned(ratings, n_bins=20)
                 cross_scatter_stats[model_name] = {
                     'spearman_rho': round(float(rho_val), 4),
                     'spearman_p_POOLED': float(p_val),
                     'isotonic_r2': round(float(r2_val), 4),
+                    'logit_entropy_bits': round(float(logit_entropy_bits), 4),
                     'n_POOLED': len(probe_vals),
                     'corrected_stats': corrected_ij,
                 }
@@ -1262,6 +1362,7 @@ def generate_figure_5(results_dir):
         'validated_mean_r2': d_json,
         'drift_probe': drift_stats_e,
         'drift_probe_size_trend_bootstrap': eii_trend,
+        'probe_scale_control': probe_scale_control,
         'drift_report': drift_stats_f,
         'drift_report_size_trend_bootstrap': fii_trend,
         'rho_matrix_steering': rho_matrix.tolist(),

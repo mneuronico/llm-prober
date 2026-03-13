@@ -5,6 +5,7 @@
     "spearman_rho": 0.2808,
     "spearman_p_POOLED": 1.1031122364368862e-08,
     "isotonic_r2": 0.1141,
+    "logit_entropy_bits": 2.2483,
     "n_POOLED": 400,
     "corrected_stats": {
       "per_conv_rhos": {
