@@ -1,4 +1,4 @@
-\begin{thebibliography}{58}
+\begin{thebibliography}{67}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -47,6 +47,14 @@ Annika Boldt and Sam~J. Gilbert.
 \newblock Confidence and metacognitive control.
 \newblock \emph{Consciousness and Cognition}, 101:\penalty0 103315, 2022.
 
+\bibitem[Bricken et~al.(2023)]{Bricken2023}
+Trenton Bricken et~al.
+\newblock Towards monosemanticity: Decomposing language models with dictionary
+  learning.
+\newblock Transformer Circuits, 2023.
+\newblock URL
+  \url{https://transformer-circuits.pub/2023/monosemantic-features/index.html}.
+
 \bibitem[Burns et~al.(2022)Burns, Ye, Klein, and Steinhardt]{Burns2022}
 Collin Burns, Haotian Ye, Dan Klein, and Jacob Steinhardt.
 \newblock Discovering latent knowledge in language models without supervision.
@@ -56,15 +64,6 @@ Collin Burns, Haotian Ye, Dan Klein, and Jacob Steinhardt.
 Yeonseok Choi et~al.
 \newblock Identity drift in conversational {LLMs}.
 \newblock \emph{arXiv preprint}, 2024.
-
-\bibitem[Coda-Forno et~al.(2022)Coda-Forno, Witte, Jagadish, Binz, Akata, and
-  Schulz]{CodaForno2022}
-Julian Coda-Forno, Kristin Witte, Akshay~K. Jagadish, Marcel Binz, Zeynep
-  Akata, and Eric Schulz.
-\newblock Inducing anxiety in large language models increases exploration and
-  bias.
-\newblock In \emph{NeurIPS Workshop on Foundation Models for Decision Making},
-  2022.
 
 \bibitem[Coda-Forno et~al.(2023)Coda-Forno, Witte, Jagadish, Binz, Akata, and
   Schulz]{CodaForno2023}
@@ -76,7 +75,7 @@ Julian Coda-Forno, Kristin Witte, Akshay~K. Jagadish, Marcel Binz, Zeynep
 \bibitem[Comsa \& Shanahan(2025)Comsa and Shanahan]{ComShanahan2025}
 Iulia-Maria Comsa and Murray Shanahan.
 \newblock Can large language models introspect?
-\newblock \emph{arXiv preprint arXiv:2502.XXXXX}, 2025.
+\newblock \emph{arXiv preprint arXiv:2506.05068}, 2025.
 
 \bibitem[Csikszentmihalyi \& Larson(1987)Csikszentmihalyi and
   Larson]{CsikszentmihalyiLarson1987}
@@ -121,6 +120,11 @@ Lennart Frising and Martin Balcells.
 \newblock Steering personality in {LLMs}.
 \newblock \emph{arXiv preprint}, 2025.
 
+\bibitem[{Gemma Team}(2025)]{Gemma32025}
+{Gemma Team}.
+\newblock Gemma 3 technical report.
+\newblock \emph{arXiv preprint arXiv:2503.19786}, 2025.
+
 \bibitem[Geng et~al.(2024)Geng, Cai, Wang, Koeppl, Nakov, and
   Gurevych]{Geng2024}
 Jiahui Geng, Fengyu Cai, Yuxia Wang, Heinz Koeppl, Preslav Nakov, and Iryna
@@ -133,6 +137,12 @@ Jiahui Geng, Fengyu Cai, Yuxia Wang, Heinz Koeppl, Preslav Nakov, and Iryna
 Wes Gurnee and Max Tegmark.
 \newblock Language models represent space and time.
 \newblock \emph{arXiv preprint arXiv:2310.02207}, 2023.
+
+\bibitem[Hagendorff et~al.(2023)Hagendorff, Fabi, and Kosinski]{Hagendorff2023}
+Thilo Hagendorff, Sarah Fabi, and Michal Kosinski.
+\newblock Machine psychology: Investigating emergent capabilities and behavior
+  in large language models using psychological methods.
+\newblock \emph{arXiv preprint arXiv:2303.13988}, 2023.
 
 \bibitem[Han et~al.(2025)Han, Rho, Baek, Moon, Kim, Ahn, Kim, Lee, Kim, Lee,
   and Kang]{Han2025}
@@ -165,7 +175,7 @@ Philip Jackson et~al.
 \bibitem[Ji-An et~al.(2025)Ji-An, Bai, and Behrens]{JiAn2025}
 Qiu Ji-An, Hailey Bai, and Timothy E.~H. Behrens.
 \newblock Metacognitive monitoring in large language models.
-\newblock \emph{arXiv preprint arXiv:2502.XXXXX}, 2025.
+\newblock \emph{arXiv preprint arXiv:2505.13763}, 2025.
 
 \bibitem[Kadavath et~al.(2022)Kadavath, Conerly, Askell, Henighan, Drain,
   Perez, Schiefer, Hatfield-Dodds, DasSarma, Tran-Johnson,
@@ -243,6 +253,11 @@ Xiao Lu et~al.
 \newblock The assistant axis: Tracking persona drift in conversational {LLMs}.
 \newblock \emph{arXiv preprint}, 2026.
 
+\bibitem[McClelland(2024)]{McClelland2024}
+Tom~C. McClelland.
+\newblock Agnosticism about artificial consciousness.
+\newblock \emph{arXiv preprint arXiv:2412.13145}, 2024.
+
 \bibitem[Panickssery et~al.(2023)Panickssery, Gabrieli, Schulz, Tong, Hubinger,
   and Turner]{Panickssery2023}
 Nina Panickssery, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, and
@@ -257,12 +272,27 @@ Thomas Pearson-Vogel, Jack Lindsey, Darren Harding, Monte Chan, Leo Harrison,
 \newblock Latent-space introspection in large language models.
 \newblock \emph{arXiv preprint}, 2026.
 
+\bibitem[Perez \& Long(2023)Perez and Long]{PerezLong2023}
+Ethan Perez and Robert Long.
+\newblock Towards evaluating {AI} systems for moral status using self-reports.
+\newblock \emph{arXiv preprint arXiv:2311.08576}, 2023.
+
 \bibitem[Pimentel et~al.(2020)Pimentel, Valvoda, Hall~Maudslay, Zmigrod,
   Williams, and Cotterell]{Pimentel2020}
 Tiago Pimentel, Josef Valvoda, Rowan Hall~Maudslay, Ran Zmigrod, Adina
   Williams, and Ryan Cotterell.
 \newblock Information-theoretic probing with minimum description length.
 \newblock \emph{EMNLP}, 2020.
+
+\bibitem[Prestes(2025)]{Prestes2025}
+Lucas Prestes.
+\newblock Diachronic self-consistency failures in language models.
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[{Qwen Team}(2024)]{Qwen252024}
+{Qwen Team}.
+\newblock Qwen2.5 technical report.
+\newblock \emph{arXiv preprint arXiv:2412.15115}, 2024.
 
 \bibitem[Rahwan et~al.(2019)Rahwan, Cebrian, Obradovich, Bongard, Bonnefon,
   Breazeal, Crandall, Christakis, Couzin, Jackson, et~al.]{Rahwan2019}
@@ -276,6 +306,12 @@ Iyad Rahwan, Manuel Cebrian, Nick Obradovich, Josh Bongard, Jean-François
 Gabriel~F. Rivera.
 \newblock Training introspective detection in small language models.
 \newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Russell(1980)]{Russell1980}
+James~A. Russell.
+\newblock A circumplex model of affect.
+\newblock \emph{Journal of Personality and Social Psychology}, 39\penalty0
+  (6):\penalty0 1161--1178, 1980.
 
 \bibitem[Sabour et~al.(2024)]{Sabour2024}
 Sahand Sabour et~al.
@@ -291,6 +327,11 @@ Saul Shiffman, Arthur~A. Stone, and Maribeth~R. Hufford.
 \bibitem[Song et~al.(2025)]{Song2025}
 Sowon Song et~al.
 \newblock Can language models introspect on their grammatical knowledge?
+\newblock \emph{arXiv preprint}, 2025.
+
+\bibitem[Steyvers et~al.(2025)]{Steyvers2025}
+Mark Steyvers et~al.
+\newblock Metacognitive training transfers across domains in {LLMs}.
 \newblock \emph{arXiv preprint}, 2025.
 
 \bibitem[Tavast et~al.(2022)Tavast, Kunnari, and
@@ -341,6 +382,11 @@ Rui Zhang and Qi~Zhong.
 \newblock Decoding emotion in the deep: How {LLMs} represent, retain, and
   express emotion.
 \newblock \emph{arXiv preprint arXiv:2510.04064}, 2025.
+
+\bibitem[Zhang et~al.(2026)Zhang, Du, et~al.]{ZhangMultiturn2026}
+Yifei Zhang, Hao Du, et~al.
+\newblock Multi-turn confidence inflation in large language models.
+\newblock \emph{arXiv preprint}, 2026.
 
 \bibitem[Zou et~al.(2023)Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin,
   Mazeika, Dombrowski, et~al.]{Zou2023}

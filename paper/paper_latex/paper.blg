@@ -5,44 +5,44 @@ Reallocating 'name_of_file' (item size: 1) to 11 items.
 Reallocating 'name_of_file' (item size: 1) to 5 items.
 The style file: tmlr.bst
 Database file #1: references.bib
-You've used 58 entries,
+You've used 67 entries,
             2773 wiz_defined-function locations,
-            890 strings with 14284 characters,
-and the built_in function-call counts, 26816 in all, are:
-= -- 2192
-> -- 2137
-< -- 30
-+ -- 721
-- -- 663
-* -- 2158
-:= -- 4389
-add.period$ -- 174
-call.type$ -- 58
-change.case$ -- 379
-chr.to.int$ -- 58
-cite$ -- 116
-duplicate$ -- 1154
-empty$ -- 1875
-format.name$ -- 760
-if$ -- 5443
+            937 strings with 15462 characters,
+and the built_in function-call counts, 29715 in all, are:
+= -- 2457
+> -- 2250
+< -- 38
++ -- 763
+- -- 696
+* -- 2326
+:= -- 4859
+add.period$ -- 202
+call.type$ -- 67
+change.case$ -- 414
+chr.to.int$ -- 67
+cite$ -- 134
+duplicate$ -- 1319
+empty$ -- 2150
+format.name$ -- 806
+if$ -- 6051
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 58
-newline$ -- 298
-num.names$ -- 232
-pop$ -- 758
+missing$ -- 66
+newline$ -- 344
+num.names$ -- 268
+pop$ -- 830
 preamble$ -- 1
-purify$ -- 321
+purify$ -- 347
 quote$ -- 0
-skip$ -- 958
+skip$ -- 1081
 stack$ -- 0
-substring$ -- 281
-swap$ -- 62
+substring$ -- 330
+swap$ -- 70
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 638
+type$ -- 737
 warning$ -- 0
-while$ -- 188
+while$ -- 217
 width$ -- 0
-write$ -- 712
+write$ -- 823
