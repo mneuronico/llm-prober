@@ -39,6 +39,10 @@
 \citation{Han2025}
 \citation{Jackson2025}
 \citation{Song2025}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{3}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Self-report and introspection in language models}{3}{subsection.2.1}\protected@file@percent }
+\newlabel{sec:rw-introspection}{{2.1}{3}{Self-report and introspection in language models}{subsection.2.1}{}}
 \citation{Kim2018}
 \citation{AlainBengio2018}
 \citation{Pimentel2020}
@@ -48,12 +52,6 @@
 \citation{Belinkov2022,HewittLiang2019}
 \citation{HewittLiang2019}
 \citation{Belinkov2022}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
-\newlabel{sec:related}{{2}{3}{Related Work}{section.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Self-report and introspection in language models}{3}{subsection.2.1}\protected@file@percent }
-\newlabel{sec:rw-introspection}{{2.1}{3}{Self-report and introspection in language models}{subsection.2.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Internal probing and activation steering}{3}{subsection.2.2}\protected@file@percent }
-\newlabel{sec:rw-probing}{{2.2}{3}{Internal probing and activation steering}{subsection.2.2}{}}
 \citation{Turner2024,Panickssery2023,Zou2023,Li2023}
 \citation{Arditi2024}
 \citation{Konen2024}
@@ -72,14 +70,15 @@
 \citation{Dubey2024}
 \citation{Gemma32025}
 \citation{Qwen252024}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Internal probing and activation steering}{4}{subsection.2.2}\protected@file@percent }
+\newlabel{sec:rw-probing}{{2.2}{4}{Internal probing and activation steering}{subsection.2.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Temporal dynamics in multi-turn conversation}{4}{subsection.2.3}\protected@file@percent }
 \newlabel{sec:rw-temporal}{{2.3}{4}{Temporal dynamics in multi-turn conversation}{subsection.2.3}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Methods}{4}{section.3}\protected@file@percent }
 \newlabel{sec:methods}{{3}{4}{Methods}{section.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview and experimental design}{4}{subsection.3.1}\protected@file@percent }
 \newlabel{sec:methods-overview}{{3.1}{4}{Overview and experimental design}{subsection.3.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Conversation dataset.}{4}{section*.1}\protected@file@percent }
-\citation{Zou2023}
+\@writefile{toc}{\contentsline {paragraph}{Conversation dataset.}{5}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Self-report elicitation.}{5}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Open-source library.}{5}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Measurement definitions}{5}{subsection.3.2}\protected@file@percent }
@@ -88,36 +87,40 @@
 \newlabel{eq:logit-rating}{{1}{5}{Self-report}{equation.1}{}}
 \@writefile{toc}{\contentsline {paragraph}{Internal state (probe score).}{5}{section*.5}\protected@file@percent }
 \newlabel{eq:probe-score}{{2}{5}{Internal state (probe score)}{equation.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Introspection.}{5}{section*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Concept probes}{5}{subsection.3.3}\protected@file@percent }
-\newlabel{sec:methods-probes}{{3.3}{5}{Concept probes}{subsection.3.3}{}}
+\citation{Zou2023}
+\@writefile{toc}{\contentsline {paragraph}{Introspection.}{6}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Concept probes}{6}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:methods-probes}{{3.3}{6}{Concept probes}{subsection.3.3}{}}
 \newlabel{eq:concept-vector}{{3}{6}{Concept probes}{equation.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Activation steering}{6}{subsection.3.4}\protected@file@percent }
 \newlabel{sec:methods-steering}{{3.4}{6}{Activation steering}{subsection.3.4}{}}
 \newlabel{eq:steering}{{4}{6}{Activation steering}{equation.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Metrics and statistical analysis}{6}{subsection.3.5}\protected@file@percent }
-\newlabel{sec:methods-stats}{{3.5}{6}{Metrics and statistical analysis}{subsection.3.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Linear probes recover four interpretable internal directions in LLaMA-3.2-3B-Instruct. Panels~A, C, E, and~G show layer-wise Cohen's $d$ sweeps for the sad-vs-happy (wellbeing), bored-vs-interested (interest), distracted-vs-focused (focus), and planning-vs-impulsive (impulsivity) probes; dashed lines mark the selected layers and the gray band marks the searched layer range. The best layers are 16, 14, 10, and 13, with peak $d$ values 3.34, 1.67, 1.99, and 3.60. For wellbeing and impulsivity, scores were sign-corrected so that larger values align with larger self-reported values in later experiments. Panels~B, D, F, and~H show the selected-layer score distributions on held-out evaluation prompts; boxplots show prompt-level scores. The two poles separate in all four cases (Welch's $t$-test: wellbeing, $d = 3.34$, $p = 7.21 \times 10^{-13}$; interest, $d = 1.67$, $p = 9.45 \times 10^{-6}$; focus, $d = 1.99$, $p = 5.73 \times 10^{-7}$; impulsivity, $d = 3.60$, $p = 3.58 \times 10^{-13}$).}}{7}{figure.caption.7}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:1}{{1}{7}{Linear probes recover four interpretable internal directions in LLaMA-3.2-3B-Instruct. Panels~A, C, E, and~G show layer-wise Cohen's $d$ sweeps for the sad-vs-happy (wellbeing), bored-vs-interested (interest), distracted-vs-focused (focus), and planning-vs-impulsive (impulsivity) probes; dashed lines mark the selected layers and the gray band marks the searched layer range. The best layers are 16, 14, 10, and 13, with peak $d$ values 3.34, 1.67, 1.99, and 3.60. For wellbeing and impulsivity, scores were sign-corrected so that larger values align with larger self-reported values in later experiments. Panels~B, D, F, and~H show the selected-layer score distributions on held-out evaluation prompts; boxplots show prompt-level scores. The two poles separate in all four cases (Welch's $t$-test: wellbeing, $d = 3.34$, $p = 7.21 \times 10^{-13}$; interest, $d = 1.67$, $p = 9.45 \times 10^{-6}$; focus, $d = 1.99$, $p = 5.73 \times 10^{-7}$; impulsivity, $d = 3.60$, $p = 3.58 \times 10^{-13}$)}{figure.caption.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Metrics and statistical analysis}{7}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:methods-stats}{{3.5}{7}{Metrics and statistical analysis}{subsection.3.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{8}{section.4}\protected@file@percent }
+\newlabel{sec:results}{{4}{8}{Results}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Default self-reports mask internal-state drift}{8}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:results-collapse}{{4.1}{8}{Default self-reports mask internal-state drift}{subsection.4.1}{}}
 \citation{Kumar2024,Geng2024,Yona2024}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{7}{section.4}\protected@file@percent }
-\newlabel{sec:results}{{4}{7}{Results}{section.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Default self-reports mask internal-state drift}{7}{subsection.4.1}\protected@file@percent }
-\newlabel{sec:results-collapse}{{4.1}{7}{Default self-reports mask internal-state drift}{subsection.4.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Logit-based self-report recovers richer signal.}{8}{section*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Self-reports track internal state: evidence for introspection}{8}{subsection.4.2}\protected@file@percent }
-\newlabel{sec:results-introspection}{{4.2}{8}{Self-reports track internal state: evidence for introspection}{subsection.4.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Introspection is present from the first turn and evolves over time}{8}{subsection.4.3}\protected@file@percent }
-\newlabel{sec:results-temporal}{{4.3}{8}{Introspection is present from the first turn and evolves over time}{subsection.4.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Logit-based self-report recovers richer signal.}{9}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Self-reports track internal state: evidence for introspection}{9}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:results-introspection}{{4.2}{9}{Self-reports track internal state: evidence for introspection}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Introspection is present from the first turn and evolves over time}{9}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:results-temporal}{{4.3}{9}{Introspection is present from the first turn and evolves over time}{subsection.4.3}{}}
 \citation{ZhangMultiturn2026,Prestes2025}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Self-steering confirms causal dependence}{9}{subsection.4.4}\protected@file@percent }
-\newlabel{sec:results-causal}{{4.4}{9}{Self-steering confirms causal dependence}{subsection.4.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Cross-concept steering can improve introspection}{10}{subsection.4.5}\protected@file@percent }
-\newlabel{sec:results-cross}{{4.5}{10}{Cross-concept steering can improve introspection}{subsection.4.5}{}}
-\@writefile{toc}{\contentsline {paragraph}{What changes when introspection improves.}{11}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Generalization across model sizes and families}{11}{subsection.4.6}\protected@file@percent }
-\newlabel{sec:results-generalization}{{4.6}{11}{Generalization across model sizes and families}{subsection.4.6}{}}
-\@writefile{toc}{\contentsline {paragraph}{Introspection scales with model size.}{11}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Internal-state drift generalizes across scales.}{12}{section*.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Cross-family replication.}{12}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Self-steering confirms causal dependence}{10}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:results-causal}{{4.4}{10}{Self-steering confirms causal dependence}{subsection.4.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Cross-concept steering can improve introspection}{11}{subsection.4.5}\protected@file@percent }
+\newlabel{sec:results-cross}{{4.5}{11}{Cross-concept steering can improve introspection}{subsection.4.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{What changes when introspection improves.}{12}{section*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Generalization across model sizes and families}{12}{subsection.4.6}\protected@file@percent }
+\newlabel{sec:results-generalization}{{4.6}{12}{Generalization across model sizes and families}{subsection.4.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Introspection scales with model size.}{12}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Internal-state drift generalizes across scales.}{13}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Cross-family replication.}{13}{section*.16}\protected@file@percent }
 \citation{ComShanahan2025}
 \citation{McClelland2024}
 \citation{Rahwan2019,Hagendorff2023,PerezLong2023,Long2024,DungTagliabue2025,Lu2026,Das2026}
@@ -126,21 +129,22 @@
 \citation{Belinkov2022,HewittLiang2019,Pimentel2020}
 \citation{Belinkov2022,HewittLiang2019,Pimentel2020}
 \citation{Xiong2024,Kumar2024,Yona2024,Han2025,Jackson2025}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{13}{section.5}\protected@file@percent }
-\newlabel{sec:discussion}{{5}{13}{Discussion}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Scope of the claim}{13}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Numeric introspection as a complement to white-box methods}{13}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{14}{section.5}\protected@file@percent }
+\newlabel{sec:discussion}{{5}{14}{Discussion}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Scope of the claim}{14}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Numeric introspection as a complement to white-box methods}{14}{subsection.5.2}\protected@file@percent }
 \citation{Song2025,Binder2025,JiAn2025}
 \citation{FrisingBalcells2025,Zou2023}
 \citation{BoldtGilbert2022,Fleming2024}
 \citation{Xiong2024,Kumar2024,Yona2024,PearsonVogel2026}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Introspection is concept-specific and only locally improvable in our experiments}{14}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Two components of introspective ability}{14}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Introspection is concept-specific and only locally improvable in our experiments}{15}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Two components of introspective ability}{15}{subsection.5.4}\protected@file@percent }
 \citation{AlainBengio2018,Kim2018,Burns2022,GurneeTegmark2023,AzariaMitchell2023,Zou2023}
 \citation{Belinkov2022,Pimentel2020}
 \citation{JiAn2025,Rivera2025,Lindsey2026}
+\citation{Lindsey2026,PearsonVogel2026,JiAn2025}
 \citation{FlemingLau2014,Lapate2020,KieferKammer2024}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Generalization to other models and limitations of this work}{15}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Generalization to other models and limitations of this work}{16}{subsection.5.5}\protected@file@percent }
 \bibdata{references}
 \bibcite{Abdulhai2025}{{1}{2025}{{Abdulhai et~al.}}{{Abdulhai, Shlegeris, and Greenblatt}}}
 \bibcite{AlainBengio2018}{{2}{2018}{{Alain \& Bengio}}{{Alain and Bengio}}}
@@ -155,12 +159,12 @@
 \bibcite{CodaForno2023}{{11}{2023}{{Coda-Forno et~al.}}{{Coda-Forno, Witte, Jagadish, Binz, Akata, and Schulz}}}
 \bibcite{ComShanahan2025}{{12}{2025}{{Comsa \& Shanahan}}{{Comsa and Shanahan}}}
 \bibcite{CsikszentmihalyiLarson1987}{{13}{1987}{{Csikszentmihalyi \& Larson}}{{Csikszentmihalyi and Larson}}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{17}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{6}{17}{Conclusion}{section.6}{}}
 \bibcite{Das2026}{{14}{2026}{{Das \& Fioretto}}{{Das and Fioretto}}}
 \bibcite{Dubey2024}{{15}{2024}{{Dubey et~al.}}{{}}}
 \bibcite{DungTagliabue2025}{{16}{2025}{{Dung \& Tagliabue}}{{Dung and Tagliabue}}}
 \bibcite{Fazzi2025}{{17}{2025}{{Fazzi et~al.}}{{Fazzi, Zagatti, Mattei, and Cuskley}}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{16}{section.6}\protected@file@percent }
-\newlabel{sec:conclusion}{{6}{16}{Conclusion}{section.6}{}}
 \bibcite{Fleming2024}{{18}{2024}{{Fleming}}{{}}}
 \bibcite{FlemingLau2014}{{19}{2014}{{Fleming \& Lau}}{{Fleming and Lau}}}
 \bibcite{FrisingBalcells2025}{{20}{2025}{{Frising \& Balcells}}{{Frising and Balcells}}}
@@ -212,26 +216,42 @@
 \bibcite{ZhangMultiturn2026}{{66}{2026}{{Zhang et~al.}}{{Zhang, Du, et~al.}}}
 \bibcite{Zou2023}{{67}{2023}{{Zou et~al.}}{{Zou, Phan, Chen, Campbell, Guo, Ren, Pan, Yin, Mazeika, Dombrowski, et~al.}}}
 \bibstyle{tmlr}
-\@writefile{toc}{\contentsline {section}{\numberline {A}Experimental Design Details}{19}{appendix.A}\protected@file@percent }
-\newlabel{app:experimental}{{A}{19}{Experimental Design Details}{appendix.A}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Conversation generation}{19}{subsection.A.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Topic selection}{19}{subsection.A.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Self-report query structure}{20}{subsection.A.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Independence across conditions}{21}{subsection.A.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {B}Probe Training Details}{21}{appendix.B}\protected@file@percent }
-\newlabel{app:probes}{{B}{21}{Probe Training Details}{appendix.B}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Training procedure}{21}{subsection.B.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Concept pair system prompts}{21}{subsection.B.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Sad vs.\ happy (wellbeing).}{21}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bored vs.\ interested (interest).}{21}{section*.14}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Distracted vs.\ focused (focus).}{22}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Impulsive vs.\ planning (impulsivity).}{22}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.3}Training questions}{22}{subsection.B.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.4}Evaluation texts}{22}{subsection.B.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {C}Supplementary Analyses}{22}{appendix.C}\protected@file@percent }
-\newlabel{app:figures}{{C}{22}{Supplementary Analyses}{appendix.C}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.1}Appendix Figure 2: Recovering informative self-reports}{22}{subsection.C.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.2}Appendix Figure 3: Temporal structure and self-steering robustness}{23}{subsection.C.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.3}Appendix Figure 4: The full cross-concept steering screen}{23}{subsection.C.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {C.4}Appendix Figure 5: Probe validation and cross-model generalization}{23}{subsection.C.4}\protected@file@percent }
-\gdef \@abspage@last{23}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Experimental Design Details}{20}{appendix.A}\protected@file@percent }
+\newlabel{app:experimental}{{A}{20}{Experimental Design Details}{appendix.A}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Conversation generation}{20}{subsection.A.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Topic selection}{20}{subsection.A.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Self-report query structure}{22}{subsection.A.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Independence across conditions}{22}{subsection.A.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {B}Probe Training Details}{22}{appendix.B}\protected@file@percent }
+\newlabel{app:probes}{{B}{22}{Probe Training Details}{appendix.B}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Training procedure}{22}{subsection.B.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Concept pair system prompts}{22}{subsection.B.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sad vs.\ happy (wellbeing).}{23}{section*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bored vs.\ interested (interest).}{23}{section*.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Distracted vs.\ focused (focus).}{23}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Impulsive vs.\ planning (impulsivity).}{23}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.3}Training questions}{23}{subsection.B.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.4}Evaluation texts}{23}{subsection.B.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {C}Supplementary Analyses}{24}{appendix.C}\protected@file@percent }
+\newlabel{app:figures}{{C}{24}{Supplementary Analyses}{appendix.C}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.1}Figure 6: Recovering informative self-reports}{24}{subsection.C.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.2}Figure 7: Temporal structure and self-steering robustness}{24}{subsection.C.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.3}Figure 8: The full cross-concept steering screen}{24}{subsection.C.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C.4}Figure 9: Probe validation and cross-model generalization}{25}{subsection.C.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Internal-state drift is tracked by numeric self-reports of the same concept. All panels use 40 ten-turn conversations; shaded bands denote cluster-bootstrap 95\% CIs across conversations. Panel~A shows greedy integer self-reports across turns, with thin lines for individual conversations and thick lines for per-turn means. Greedy ratings are largely collapsed, with clear positive drift only for interest (mixed-effects turn slope $= 0.1358$, $p = 4.98 \times 10^{-42}$) and smaller positive trends for wellbeing and focus (slopes $= 0.0289$ and $0.0217$, $p = 8.38 \times 10^{-4}$ and $3.37 \times 10^{-6}$); impulsivity does not drift reliably (slope $= 0.0021$, $p = 0.199$). Panel~B shows the average number of distinct greedy responses used for each concept across the 40 conversations, averaging across turns. Panel~C shows probe scores from the trained concept directions across turns. Probe scores drift strongly for interest and focus (slopes $= 0.00488$ and $0.00164$, $p = 4.12 \times 10^{-14}$ and $1.75 \times 10^{-10}$), are flat for wellbeing (slope $= -0.00036$, $p = 0.642$), and show only a weak effect for impulsivity (LMM slope $= 0.00142$, $p = 0.00233$). Panel~D shows logit-based self-reports, defined as the probability-weighted average over the digit-token logits. Unlike greedy or sampled outputs, the logit-based measure shows robust drift in all four concepts, with positive slopes for wellbeing, interest, and focus and a negative slope for impulsivity (all $p < 10^{-6}$). Panel~E shows Shannon entropy of the self-report distribution. The logit-based method is most informative in all four concepts.}}{26}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:2}{{2}{26}{Internal-state drift is tracked by numeric self-reports of the same concept. All panels use 40 ten-turn conversations; shaded bands denote cluster-bootstrap 95\% CIs across conversations. Panel~A shows greedy integer self-reports across turns, with thin lines for individual conversations and thick lines for per-turn means. Greedy ratings are largely collapsed, with clear positive drift only for interest (mixed-effects turn slope $= 0.1358$, $p = 4.98 \times 10^{-42}$) and smaller positive trends for wellbeing and focus (slopes $= 0.0289$ and $0.0217$, $p = 8.38 \times 10^{-4}$ and $3.37 \times 10^{-6}$); impulsivity does not drift reliably (slope $= 0.0021$, $p = 0.199$). Panel~B shows the average number of distinct greedy responses used for each concept across the 40 conversations, averaging across turns. Panel~C shows probe scores from the trained concept directions across turns. Probe scores drift strongly for interest and focus (slopes $= 0.00488$ and $0.00164$, $p = 4.12 \times 10^{-14}$ and $1.75 \times 10^{-10}$), are flat for wellbeing (slope $= -0.00036$, $p = 0.642$), and show only a weak effect for impulsivity (LMM slope $= 0.00142$, $p = 0.00233$). Panel~D shows logit-based self-reports, defined as the probability-weighted average over the digit-token logits. Unlike greedy or sampled outputs, the logit-based measure shows robust drift in all four concepts, with positive slopes for wellbeing, interest, and focus and a negative slope for impulsivity (all $p < 10^{-6}$). Panel~E shows Shannon entropy of the self-report distribution. The logit-based method is most informative in all four concepts}{figure.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Self-reports track the probe-defined internal state from the first turn, and direct self-steering shifts self-reports causally in the predicted direction. Panel~A shows probe score versus logit-based self-report, with one point per conversation-turn observation and black isotonic fits. Descriptive associations are positive for all four concepts (pooled $\rho = 0.40$--$0.76$; isotonic $R^2 = 0.12$--$0.54$), and mixed-effects probe slopes are positive in all cases (all $p < 10^{-5}$). Panel~B shows turn-wise Spearman $\rho $ (introspective strength) for the four concepts; panel~C shows turn-wise isotonic $R^2$ (introspective fidelity). Shaded bands denote bootstrap 95\% CIs. Introspection is already present at turn~1 and remains positive through turn~10, although its trajectory is concept-dependent. Panel~D shows mean logit-based self-report versus steering alpha; shaded bands denote cluster-bootstrap 95\% CIs. Steering shifts self-report monotonically in the expected direction for all four concepts (mixed-effects alpha slopes $0.067$--$0.402$, all $p < 10^{-12}$). Panel~E shows drift magnitude (last minus first turn) versus steering alpha, with cluster-bootstrap 95\% CIs. Wellbeing drift becomes slightly more positive with alpha (LMM slope $= 0.0118$, $p = 4.30 \times 10^{-6}$), impulsivity drift becomes more negative with alpha (LMM slope $= -0.0284$, $p = 8.92 \times 10^{-53}$), and interest and focus drift decrease with alpha (fallback per-conversation slope means $= -0.0949$ and $-0.1093$; $p = 7.45 \times 10^{-14}$ and $1.57 \times 10^{-14}$, because the corresponding LMMs are singular).}}{27}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:3}{{3}{27}{Self-reports track the probe-defined internal state from the first turn, and direct self-steering shifts self-reports causally in the predicted direction. Panel~A shows probe score versus logit-based self-report, with one point per conversation-turn observation and black isotonic fits. Descriptive associations are positive for all four concepts (pooled $\rho = 0.40$--$0.76$; isotonic $R^2 = 0.12$--$0.54$), and mixed-effects probe slopes are positive in all cases (all $p < 10^{-5}$). Panel~B shows turn-wise Spearman $\rho $ (introspective strength) for the four concepts; panel~C shows turn-wise isotonic $R^2$ (introspective fidelity). Shaded bands denote bootstrap 95\% CIs. Introspection is already present at turn~1 and remains positive through turn~10, although its trajectory is concept-dependent. Panel~D shows mean logit-based self-report versus steering alpha; shaded bands denote cluster-bootstrap 95\% CIs. Steering shifts self-report monotonically in the expected direction for all four concepts (mixed-effects alpha slopes $0.067$--$0.402$, all $p < 10^{-12}$). Panel~E shows drift magnitude (last minus first turn) versus steering alpha, with cluster-bootstrap 95\% CIs. Wellbeing drift becomes slightly more positive with alpha (LMM slope $= 0.0118$, $p = 4.30 \times 10^{-6}$), impulsivity drift becomes more negative with alpha (LMM slope $= -0.0284$, $p = 8.92 \times 10^{-53}$), and interest and focus drift decrease with alpha (fallback per-conversation slope means $= -0.0949$ and $-0.1093$; $p = 7.45 \times 10^{-14}$ and $1.57 \times 10^{-14}$, because the corresponding LMMs are singular)}{figure.caption.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Steering one concept can selectively improve introspection for another. Panel~A shows the maximum increase in isotonic $R^2$ relative to $\alpha = 0$ for each steering/measured pair; red boxes mark cells with significant cluster-bootstrap improvements. Only focus$\to $wellbeing and impulsivity$\to $interest survive this criterion ($\Delta R^2 = 0.2987$, $p = 9.99 \times 10^{-4}$; $\Delta R^2 = 0.0976$, $p = 0.0120$). Panels~B and~C show isotonic $R^2$ and Spearman $\rho $ versus steering alpha for those two significant cells; shaded bands denote bootstrap 95\% CIs. For impulsivity$\to $interest, the mixed-effects alpha slopes are positive for both metrics ($0.0177$ and $0.0204$; $p = 2.95 \times 10^{-10}$ and $1.60 \times 10^{-12}$). For focus$\to $wellbeing, the corresponding LMMs are singular, but fallback per-conversation alpha-correlation tests remain positive (mean correlations $= 0.4625$ and $0.5128$; $p = 1.57 \times 10^{-5}$ and $1.20 \times 10^{-6}$). Panels~D and~E show the alpha-extreme scatter plots for the same two conditions. In focus$\to $wellbeing, correlation increases from $\rho = 0.4241$, $R^2 = 0.3403$ at $\alpha = -4$ to $\rho = 0.8456$, $R^2 = 0.7530$ at $\alpha = +4$; in impulsivity$\to $interest, it increases from $\rho = 0.7031$, $R^2 = 0.4562$ to $\rho = 0.8263$, $R^2 = 0.6873$. Panels~F and~G show Shannon entropy of the previous-turn probe scores and logit-based self-reports, respectively, as functions of alpha. For focus$\to $wellbeing, both probe entropy and report entropy increase monotonically with alpha (from 1.09 to 1.67 bits and from 0.875 to 1.693 bits; exact-permutation trend tests, both $p = 0.0167$). For impulsivity$\to $interest, only probe entropy shows a robust increase (LMM slope $= 0.0242$, $p = 2.30 \times 10^{-4}$), whereas report entropy does not ($p = 0.106$).}}{28}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:4}{{4}{28}{Steering one concept can selectively improve introspection for another. Panel~A shows the maximum increase in isotonic $R^2$ relative to $\alpha = 0$ for each steering/measured pair; red boxes mark cells with significant cluster-bootstrap improvements. Only focus$\to $wellbeing and impulsivity$\to $interest survive this criterion ($\Delta R^2 = 0.2987$, $p = 9.99 \times 10^{-4}$; $\Delta R^2 = 0.0976$, $p = 0.0120$). Panels~B and~C show isotonic $R^2$ and Spearman $\rho $ versus steering alpha for those two significant cells; shaded bands denote bootstrap 95\% CIs. For impulsivity$\to $interest, the mixed-effects alpha slopes are positive for both metrics ($0.0177$ and $0.0204$; $p = 2.95 \times 10^{-10}$ and $1.60 \times 10^{-12}$). For focus$\to $wellbeing, the corresponding LMMs are singular, but fallback per-conversation alpha-correlation tests remain positive (mean correlations $= 0.4625$ and $0.5128$; $p = 1.57 \times 10^{-5}$ and $1.20 \times 10^{-6}$). Panels~D and~E show the alpha-extreme scatter plots for the same two conditions. In focus$\to $wellbeing, correlation increases from $\rho = 0.4241$, $R^2 = 0.3403$ at $\alpha = -4$ to $\rho = 0.8456$, $R^2 = 0.7530$ at $\alpha = +4$; in impulsivity$\to $interest, it increases from $\rho = 0.7031$, $R^2 = 0.4562$ to $\rho = 0.8263$, $R^2 = 0.6873$. Panels~F and~G show Shannon entropy of the previous-turn probe scores and logit-based self-reports, respectively, as functions of alpha. For focus$\to $wellbeing, both probe entropy and report entropy increase monotonically with alpha (from 1.09 to 1.67 bits and from 0.875 to 1.693 bits; exact-permutation trend tests, both $p = 0.0167$). For impulsivity$\to $interest, only probe entropy shows a robust increase (LMM slope $= 0.0242$, $p = 2.30 \times 10^{-4}$), whereas report entropy does not ($p = 0.106$)}{figure.caption.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Results generalize unevenly across model scales and families. Panel~A shows isotonic $R^2$ versus model size; panel~B shows Spearman $\rho $ versus model size. Introspection increases strongly with size for wellbeing and interest, but remains weak for focus and impulsivity. Panel~C shows probe score versus logit self-report for the two strongest LLaMA 8B probes, wellbeing and interest, with black isotonic fits. Both show near-ceiling introspection ($\rho = 0.9335$ and $0.9580$; isotonic $R^2 = 0.9022$ and $0.9313$), and mixed-effects probe slopes are strongly positive in both cases ($p < 10^{-10}$). Panel~D shows the pooled Spearman $\rho (\alpha ,\text  {self-report})$ from the self-steering analysis across concept and LLaMA size, as a descriptive sign-validation heatmap. Panel~E shows mean isotonic $R^2$ across the subset of concept-model pairs that pass the steering-sign validation filter, with bootstrap 95\% CIs. Mean validated $R^2$ increases from 1B to 3B to 8B (0.119, 0.369, 0.614), and a bootstrap test on the slope of size-wise means versus log model size is positive but only marginally significant (mean slope $= 0.237$, $p = 0.072$). Panels~F and~G show probe-score drift across turns for the wellbeing direction and the corresponding mean first-to-last probe drift by size; probe-drift magnitude increases with scale (bootstrap slope versus $\log (\text  {size}) = 0.0413$, $p < 2 \times 10^{-4}$). Panels~H and~I show the analogous logit self-report drift analyses; unlike probe drift, report drift does not increase with scale, and the size-slope is negative (mean slope $= -0.2333$, $p = 0.023$). Panel~J shows logit self-report drift through turns for wellbeing in Gemma and Qwen; mixed-effects turn slopes are positive in both families (0.0555 and 0.0261, both $p < 10^{-3}$). Panels~K and~L show probe score versus logit self-report for Gemma and Qwen, respectively. Qwen shows stronger introspection than Gemma ($\rho = 0.4890$ vs.\ $0.2808$; isotonic $R^2 = 0.7566$ vs.\ $0.1141$), although mixed-effects probe slopes are positive in both cases. Panels~M and~N show turn-wise isotonic $R^2$ and turn-wise Spearman $\rho $ for the same cross-family comparison; Qwen shows a strong first-to-last decline in turn-wise isotonic $R^2$ ($\Delta = -0.4418$, cluster-bootstrap $p = 0.001$), whereas the corresponding first-to-last $\rho $ changes are not significant in either family.}}{29}{figure.caption.14}\protected@file@percent }
+\newlabel{fig:5}{{5}{29}{Results generalize unevenly across model scales and families. Panel~A shows isotonic $R^2$ versus model size; panel~B shows Spearman $\rho $ versus model size. Introspection increases strongly with size for wellbeing and interest, but remains weak for focus and impulsivity. Panel~C shows probe score versus logit self-report for the two strongest LLaMA 8B probes, wellbeing and interest, with black isotonic fits. Both show near-ceiling introspection ($\rho = 0.9335$ and $0.9580$; isotonic $R^2 = 0.9022$ and $0.9313$), and mixed-effects probe slopes are strongly positive in both cases ($p < 10^{-10}$). Panel~D shows the pooled Spearman $\rho (\alpha ,\text {self-report})$ from the self-steering analysis across concept and LLaMA size, as a descriptive sign-validation heatmap. Panel~E shows mean isotonic $R^2$ across the subset of concept-model pairs that pass the steering-sign validation filter, with bootstrap 95\% CIs. Mean validated $R^2$ increases from 1B to 3B to 8B (0.119, 0.369, 0.614), and a bootstrap test on the slope of size-wise means versus log model size is positive but only marginally significant (mean slope $= 0.237$, $p = 0.072$). Panels~F and~G show probe-score drift across turns for the wellbeing direction and the corresponding mean first-to-last probe drift by size; probe-drift magnitude increases with scale (bootstrap slope versus $\log (\text {size}) = 0.0413$, $p < 2 \times 10^{-4}$). Panels~H and~I show the analogous logit self-report drift analyses; unlike probe drift, report drift does not increase with scale, and the size-slope is negative (mean slope $= -0.2333$, $p = 0.023$). Panel~J shows logit self-report drift through turns for wellbeing in Gemma and Qwen; mixed-effects turn slopes are positive in both families (0.0555 and 0.0261, both $p < 10^{-3}$). Panels~K and~L show probe score versus logit self-report for Gemma and Qwen, respectively. Qwen shows stronger introspection than Gemma ($\rho = 0.4890$ vs.\ $0.2808$; isotonic $R^2 = 0.7566$ vs.\ $0.1141$), although mixed-effects probe slopes are positive in both cases. Panels~M and~N show turn-wise isotonic $R^2$ and turn-wise Spearman $\rho $ for the same cross-family comparison; Qwen shows a strong first-to-last decline in turn-wise isotonic $R^2$ ($\Delta = -0.4418$, cluster-bootstrap $p = 0.001$), whereas the corresponding first-to-last $\rho $ changes are not significant in either family}{figure.caption.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Supplementary self-report analyses for Fig.~2. All panels use the same 40 ten-turn conversations. Panel~A shows the number of distinct greedy responses used at each turn across the 40 conversations. Greedy outputs occupy only a narrow subset of the 0--9 response space, especially for focus and impulsivity. Panel~B shows sampled-token self-reports at temperature $0.8$, plotted as in Fig.~2A. Sampling reduces collapse but remains discrete and noisy; only interest and focus show reliable positive turn slopes ($0.1189$ and $0.0326$, $p = 2.26 \times 10^{-17}$ and $5.57 \times 10^{-5}$), while wellbeing and impulsivity do not. Panel~C shows logit-based ratings versus sampled-token ratings, with dashed OLS fits. The two measures are positively related in all four concepts (mixed-effects calibration slopes range from $0.0205$ to $0.2725$, all $p < 0.01$), confirming that the logit-based estimator remains anchored to the model's token-level output distribution.}}{30}{figure.caption.22}\protected@file@percent }
+\newlabel{fig:6}{{6}{30}{Supplementary self-report analyses for Fig.~2. All panels use the same 40 ten-turn conversations. Panel~A shows the number of distinct greedy responses used at each turn across the 40 conversations. Greedy outputs occupy only a narrow subset of the 0--9 response space, especially for focus and impulsivity. Panel~B shows sampled-token self-reports at temperature $0.8$, plotted as in Fig.~2A. Sampling reduces collapse but remains discrete and noisy; only interest and focus show reliable positive turn slopes ($0.1189$ and $0.0326$, $p = 2.26 \times 10^{-17}$ and $5.57 \times 10^{-5}$), while wellbeing and impulsivity do not. Panel~C shows logit-based ratings versus sampled-token ratings, with dashed OLS fits. The two measures are positively related in all four concepts (mixed-effects calibration slopes range from $0.0205$ to $0.2725$, all $p < 0.01$), confirming that the logit-based estimator remains anchored to the model's token-level output distribution}{figure.caption.22}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Supplementary self-steering drift curves for Fig.~3. Panels~A--D show turn-wise logit-based self-reports under five steering strengths for wellbeing, interest, focus, and impulsivity; colored curves denote steering alpha and shaded bands denote cluster-bootstrap 95\% CIs. Temporal drift persists under steering, but its magnitude depends on alpha.}}{30}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:7}{{7}{30}{Supplementary self-steering drift curves for Fig.~3. Panels~A--D show turn-wise logit-based self-reports under five steering strengths for wellbeing, interest, focus, and impulsivity; colored curves denote steering alpha and shaded bands denote cluster-bootstrap 95\% CIs. Temporal drift persists under steering, but its magnitude depends on alpha}{figure.caption.23}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Full steering-by-measured-concept screening results for Fig.~4. All panels use the $4 \times 4$ LLaMA-3.2-3B cross-concept steering analysis, with steering alpha displayed so that positive values always mean more of the steering concept. Panels~A--E show heatmaps of isotonic $R^2$ for every steering concept by measured concept at $\alpha = -4$, $-2$, $0$, $+2$, and $+4$.}}{31}{figure.caption.24}\protected@file@percent }
+\newlabel{fig:8}{{8}{31}{Full steering-by-measured-concept screening results for Fig.~4. All panels use the $4 \times 4$ LLaMA-3.2-3B cross-concept steering analysis, with steering alpha displayed so that positive values always mean more of the steering concept. Panels~A--E show heatmaps of isotonic $R^2$ for every steering concept by measured concept at $\alpha = -4$, $-2$, $0$, $+2$, and $+4$}{figure.caption.24}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Supplementary scale and family analyses for Fig.~5. Panel~A shows probe quality across LLaMA 1B, 3B, and 8B, where each cell reports the maximum layer-wise Cohen's $d$. Probe quality varies strongly across both scale and concept, but all best-layer tests are significant in the expected direction ($p < 10^{-5}$). Panel~B shows mean logit self-report versus steering alpha for each concept and LLaMA size; shaded bands denote cluster-bootstrap 95\% CIs. Mixed-effects alpha slopes differ from zero in all twelve concept-size combinations, but the sign is inverted for 1B focus and 8B impulsivity. Panel~C shows normalized wellbeing layer-sweep comparisons for Gemma~3 4B and Qwen~2.5 7B. Qwen yields the stronger probe (best $d = 3.544$) than Gemma (best $d = 1.815$).}}{32}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:9}{{9}{32}{Supplementary scale and family analyses for Fig.~5. Panel~A shows probe quality across LLaMA 1B, 3B, and 8B, where each cell reports the maximum layer-wise Cohen's $d$. Probe quality varies strongly across both scale and concept, but all best-layer tests are significant in the expected direction ($p < 10^{-5}$). Panel~B shows mean logit self-report versus steering alpha for each concept and LLaMA size; shaded bands denote cluster-bootstrap 95\% CIs. Mixed-effects alpha slopes differ from zero in all twelve concept-size combinations, but the sign is inverted for 1B focus and 8B impulsivity. Panel~C shows normalized wellbeing layer-sweep comparisons for Gemma~3 4B and Qwen~2.5 7B. Qwen yields the stronger probe (best $d = 3.544$) than Gemma (best $d = 1.815$)}{figure.caption.25}{}}
+\gdef \@abspage@last{32}
