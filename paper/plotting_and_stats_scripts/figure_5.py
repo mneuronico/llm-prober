@@ -43,7 +43,7 @@ from shared_utils import (
     corrected_drift_stats, corrected_correlation_stats,
     corrected_steering_stats,
     savefig, save_panel_json, save_other_stats, ensure_dir,
-    add_panel_label, plot_line_with_ci, format_p,
+    add_panel_label, plot_line_with_ci, format_p, draw_vector_heatmap,
     compute_per_turn_means, compute_grouped_cluster_means,
     linear_regression_stats, exact_permutation_slope_test,
 )
@@ -334,7 +334,7 @@ def generate_figure_5(results_dir):
             d_matrix[si, ci_idx] = d_val
             d_values[size][short] = round(float(d_val), 3) if not np.isnan(d_val) else None
 
-    im = ax.imshow(d_matrix, cmap='YlGnBu', aspect='auto')
+    im = draw_vector_heatmap(ax, d_matrix, cmap='YlGnBu', aspect='auto')
     for si in range(len(LLAMA_SIZES)):
         for ci_idx in range(len(SHORTHANDS)):
             v = d_matrix[si, ci_idx]
@@ -370,7 +370,7 @@ def generate_figure_5(results_dir):
             if result is not None:
                 raw_r2_data[size][short] = result
 
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    fig, ax = plt.subplots(1, 1, figsize=(5.5 * 0.7, 4))
     b_stats = {}
     for short in SHORTHANDS:
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -428,7 +428,7 @@ def generate_figure_5(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panel Bii: Spearman Rho vs model size
     # ──────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    fig, ax = plt.subplots(1, 1, figsize=(5.5 * 0.7, 4))
     bii_stats = {}
     for short in SHORTHANDS:
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -492,7 +492,7 @@ def generate_figure_5(results_dir):
     #   (Moved here — before C — for logical ordering near size data)
     # ──────────────────────────────────────────────────────────────
     best_concepts_8b = ['wellbeing', 'interest']
-    fig, axes = plt.subplots(1, 2, figsize=(9, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(9 * 0.7, 4))
     best_scatter_stats = {}
     for i, short in enumerate(best_concepts_8b):
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -648,7 +648,7 @@ def generate_figure_5(results_dir):
             except Exception as e:
                 print(f"    Warning: Panel C error {size}/{short}: {e}")
 
-        ax.set_xlabel('Steering α (display-corrected)')
+        ax.set_xlabel('Steering α')
         ax.set_ylabel('Logit Self-Report')
         ax.set_title(f'LLaMA {size}')
         ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
@@ -656,7 +656,14 @@ def generate_figure_5(results_dir):
             ax.legend(fontsize=6, loc='upper left')
 
     # Rho heatmap (use method 1 p-values for stars)
-    im = ax_heat.imshow(rho_matrix, cmap='RdYlGn', vmin=-1, vmax=1, aspect='auto')
+    im = draw_vector_heatmap(
+        ax_heat,
+        rho_matrix,
+        cmap='RdYlGn',
+        vmin=-1,
+        vmax=1,
+        aspect='auto',
+    )
     for si in range(len(LLAMA_SIZES)):
         for ci_idx in range(len(SHORTHANDS)):
             v = rho_matrix[si, ci_idx]
@@ -698,8 +705,15 @@ def generate_figure_5(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panel D: Mean R² bar chart using sign-validated probes only
     # ──────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
-    im = ax.imshow(rho_matrix, cmap='RdYlGn', vmin=-1, vmax=1, aspect='auto')
+    fig, ax = plt.subplots(1, 1, figsize=(5.5 * 0.5, 4))
+    im = draw_vector_heatmap(
+        ax,
+        rho_matrix,
+        cmap='RdYlGn',
+        vmin=-1,
+        vmax=1,
+        aspect='auto',
+    )
     for si in range(len(LLAMA_SIZES)):
         for ci_idx in range(len(SHORTHANDS)):
             v = rho_matrix[si, ci_idx]
@@ -740,7 +754,7 @@ def generate_figure_5(results_dir):
         'p_matrix_method3_per_conv_slopes': p_matrix_m3.tolist(),
     })
 
-    fig, ax = plt.subplots(1, 1, figsize=(5, 4))
+    fig, ax = plt.subplots(1, 1, figsize=(2.5, 4))
     validated_r2 = {s: [] for s in LLAMA_SIZES}
     rng_d = np.random.default_rng(42)
 
@@ -813,7 +827,7 @@ def generate_figure_5(results_dir):
     example_concept = 'wellbeing'
     concept_name = SHORTHAND_TO_CONCEPT[example_concept]
 
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    fig, ax = plt.subplots(1, 1, figsize=(5.5 / 3, 4))
     drift_stats_e = {}
     for size in LLAMA_SIZES:
         model_key, exp_dirs = LLAMA_MODELS[size]
@@ -876,7 +890,7 @@ def generate_figure_5(results_dir):
     })
 
     # Panel Eii: Drift magnitude bar chart with error bars
-    fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+    fig, ax = plt.subplots(1, 1, figsize=(2, 3.5))
     eii_json_stats = {}
     eii_size_values = {}
     for i, size in enumerate(LLAMA_SIZES):
@@ -963,7 +977,7 @@ def generate_figure_5(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panel F: Self-report drift — one concept, 3 sizes
     # ──────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
+    fig, ax = plt.subplots(1, 1, figsize=(5.5 / 3, 4))
     drift_stats_f = {}
     for size in LLAMA_SIZES:
         model_key, exp_dirs = LLAMA_MODELS[size]
@@ -1025,7 +1039,7 @@ def generate_figure_5(results_dir):
     })
 
     # Panel Fii: Self-report drift magnitude bars (with bootstrap CI)
-    fig, ax = plt.subplots(1, 1, figsize=(4, 3.5))
+    fig, ax = plt.subplots(1, 1, figsize=(2, 3.5))
     fii_stats = {}
     fii_size_values = {}
     rng_fii = np.random.default_rng(42)
@@ -1206,7 +1220,7 @@ def generate_figure_5(results_dir):
             probe_vals = flip_if_needed(cross_concept, sub['probe_score'].values)
             ratings = sub['logit_rating'].values
 
-            fig, ax = plt.subplots(1, 1, figsize=(5, 4))
+            fig, ax = plt.subplots(1, 1, figsize=(5 * 0.5, 4))
             color = cross_colors[model_name]
             ax.scatter(probe_vals, ratings, color=color, alpha=0.3, s=15,
                        edgecolors='none')
@@ -1256,7 +1270,7 @@ def generate_figure_5(results_dir):
     # Panels K–L: Turnwise R² and Rho — Gemma, Qwen
     #   Flip Rho for sad_vs_happy
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(5, 4))
     cross_turnwise = {}
     flip_rho_sign = -1 if cross_concept in FLIP_CONCEPTS else 1
 

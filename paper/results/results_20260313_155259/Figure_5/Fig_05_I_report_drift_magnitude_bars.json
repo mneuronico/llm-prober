@@ -1,0 +1,59 @@
+{
+  "panel_id": "Fig_05_I",
+  "title": "Report Drift Magnitude Bars (bootstrap CI)",
+  "drift_stats": {
+    "1B": {
+      "mean_drift": 1.7709,
+      "ci_95": [
+        1.3944,
+        2.1391
+      ],
+      "n_conversations": 40,
+      "std_drift": 1.1887
+    },
+    "3B": {
+      "mean_drift": 0.381,
+      "ci_95": [
+        0.2627,
+        0.5011
+      ],
+      "n_conversations": 40,
+      "std_drift": 0.3887
+    },
+    "8B": {
+      "mean_drift": 1.3327,
+      "ci_95": [
+        1.1268,
+        1.5359
+      ],
+      "n_conversations": 40,
+      "std_drift": 0.66
+    }
+  },
+  "size_trend_bootstrap": {
+    "sizes": [
+      "1B",
+      "3B",
+      "8B"
+    ],
+    "x_log_size": [
+      0.0,
+      1.0986122886681098,
+      2.0794415416798357
+    ],
+    "mean_by_size": {
+      "1B": 1.770941752772719,
+      "3B": 0.3810279022154761,
+      "8B": 1.3326925980824844
+    },
+    "observed_slope": -0.23176609953307853,
+    "bootstrap_slope_mean": -0.23330680884035046,
+    "bootstrap_slope_ci_95": [
+      -0.43435456383539356,
+      -0.03260538458995344
+    ],
+    "one_sided_p": 0.9886011398860114,
+    "two_sided_p": 0.022997700229977002,
+    "n_bootstrap": 10000
+  }
+}

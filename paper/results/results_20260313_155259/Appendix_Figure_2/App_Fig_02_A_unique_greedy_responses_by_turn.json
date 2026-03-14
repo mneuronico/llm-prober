@@ -1,0 +1,77 @@
+{
+  "panel_id": "App_Fig_02_A",
+  "title": "Unique Greedy Responses per Turn (Grouped Bar)",
+  "description": "Number of unique discrete ratings (out of 10 possible: 0–9) given by the model across conversations at each turn. Low counts indicate high response stereotypy. Grouped bar chart with one bar per concept per turn.",
+  "data_sources": {
+    "wellbeing": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\wellbeing_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "interest": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\interest_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "focus": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\focus_no_steering_3b_alpha0_greedy_token_primary_20260303_172502",
+    "impulsivity": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4-reruns-token-primary-greedy\\impulsivity_no_steering_3b_alpha0_greedy_token_primary_20260303_172502"
+  },
+  "per_concept_unique": {
+    "wellbeing": {
+      "per_turn_unique": {
+        "1": 4,
+        "2": 4,
+        "3": 4,
+        "4": 3,
+        "5": 4,
+        "6": 4,
+        "7": 4,
+        "8": 4,
+        "9": 4,
+        "10": 4
+      },
+      "mean_unique": 3.9,
+      "max_unique": 4
+    },
+    "interest": {
+      "per_turn_unique": {
+        "1": 3,
+        "2": 3,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2
+      },
+      "mean_unique": 2.2,
+      "max_unique": 3
+    },
+    "focus": {
+      "per_turn_unique": {
+        "1": 3,
+        "2": 2,
+        "3": 2,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1
+      },
+      "mean_unique": 1.4,
+      "max_unique": 3
+    },
+    "impulsivity": {
+      "per_turn_unique": {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 2,
+        "10": 1
+      },
+      "mean_unique": 1.1,
+      "max_unique": 2
+    }
+  }
+}

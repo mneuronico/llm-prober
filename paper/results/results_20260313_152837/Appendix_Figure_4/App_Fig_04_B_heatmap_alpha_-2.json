@@ -1,0 +1,41 @@
+{
+  "panel_id": "App_Fig_04_B",
+  "title": "Isotonic R² Matrix (α = -2)",
+  "description": "4×4 heatmap of isotonic R² values for each steering × measured concept combination at α = -2.",
+  "alpha": -2.0,
+  "vmin": 0.055655518091993095,
+  "vmax": 0.7638161369993273,
+  "matrix": [
+    [
+      0.195687554424676,
+      0.37279917042373,
+      0.6438397128064237,
+      0.1921088418403155
+    ],
+    [
+      0.1859009298868948,
+      0.4337806556133337,
+      0.6453130753399947,
+      0.2824352219177561
+    ],
+    [
+      0.1960528167921152,
+      0.4712093411727462,
+      0.6268085848705118,
+      0.3085406389420999
+    ],
+    [
+      0.1807914949731954,
+      0.5168113304644159,
+      0.6676977653051231,
+      0.2631211104180221
+    ]
+  ],
+  "concept_order": [
+    "focus",
+    "wellbeing",
+    "interest",
+    "impulsivity"
+  ],
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\matrix_analysis_with_rerun6_20260225_105534\\isotonic_r2_values_by_cell_alpha.csv"
+}

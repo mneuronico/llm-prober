@@ -1,0 +1,14 @@
+{
+  "description": "Appendix Figure 4 contains the alpha heatmap series and the two appendix drift panels.",
+  "heatmap_alphas": [
+    -4.0,
+    -2.0,
+    0.0,
+    2.0,
+    4.0
+  ],
+  "drift_panels": [
+    "focus->wellbeing",
+    "impulsivity->interest"
+  ]
+}

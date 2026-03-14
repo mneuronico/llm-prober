@@ -163,7 +163,7 @@ def generate_figure_3(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panels A (4 subplots): Scatter — probe score vs logit self-report
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+    fig, axes = plt.subplots(4, 1, figsize=(4.5, 16))
     scatter_stats = {}
     for i, short in enumerate(SHORTHANDS):
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -365,7 +365,7 @@ def generate_figure_3(results_dir):
         'turnwise_rho': turnwise_rho_data,
     })
 
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(5, 4))
     random_stats = {}
 
     # Compute R²/Rho from random scoring experiments as control
@@ -510,7 +510,7 @@ def generate_figure_3(results_dir):
     # ──────────────────────────────────────────────────────────────
     # Panels C (4 stacked): Turn-wise R² per concept
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(4, 1, figsize=(6, 12), sharex=True)
+    fig, axes = plt.subplots(4, 1, figsize=(2, 12), sharex=True)
     turnwise_data = {}
 
     for j, short in enumerate(SHORTHANDS):
@@ -562,7 +562,7 @@ def generate_figure_3(results_dir):
     # Panels D (4 stacked): Turn-wise Spearman rho per concept
     #   — Flip Rho sign for FLIP concepts
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(4, 1, figsize=(6, 12), sharex=True)
+    fig, axes = plt.subplots(4, 1, figsize=(2, 12), sharex=True)
     turnwise_rho_data = {}
 
     for j, short in enumerate(SHORTHANDS):
@@ -977,7 +977,7 @@ def generate_figure_3(results_dir):
             'corrected_steering': corrected_steer,
         }
 
-    ax.set_xlabel('Steering α (display-corrected)')
+    ax.set_xlabel('Steering α')
     ax.set_ylabel('Mean Logit Self-Report')
     ax.set_title('Self-Steering: Self-Report vs. Alpha')
     ax.legend(fontsize=8)
@@ -1011,7 +1011,11 @@ def generate_figure_3(results_dir):
         alphas_found = sorted(df['alpha'].unique())
         drift_by_alpha = {}
 
-        for a in alphas_found:
+        alpha_pairs = sorted(
+            [(float(flip_alpha_scalar(short, a)), float(a)) for a in alphas_found],
+            key=lambda pair: pair[0],
+        )
+        for display_a, a in alpha_pairs:
             sub = df[np.isclose(df['alpha'], a)]
             per_turn = compute_grouped_cluster_means(
                 sub.dropna(subset=['conversation_index', 'logit_rating']).copy(),
@@ -1025,9 +1029,7 @@ def generate_figure_3(results_dir):
             ci_lo = per_turn['ci_low'].tolist()
             ci_hi = per_turn['ci_high'].tolist()
 
-            c = ALPHA_COLORS.get(a, 'gray')
-            # Display alpha label (flipped for FLIP concepts)
-            display_a = flip_alpha_scalar(short, a)
+            c = ALPHA_COLORS.get(display_a, 'gray')
             plot_line_with_ci(ax, turns, means, ci_lo, ci_hi,
                               color=c, label=f'α = {display_a:+.0f}', alpha_fill=0.12)
 
@@ -1124,7 +1126,7 @@ def generate_figure_3(results_dir):
             'corrected_alpha_drift': corrected_alpha_drift,
         }
 
-    ax.set_xlabel('Steering α (display-corrected)')
+    ax.set_xlabel('Steering α')
     ax.set_ylabel('Drift (last - first turn)')
     ax.set_title('Self-Report Drift Magnitude vs. Alpha')
     ax.axvline(0, color='gray', linestyle=':', alpha=0.5)

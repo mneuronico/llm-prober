@@ -1,0 +1,165 @@
+{
+  "panel_id": "Fig_05_M_N",
+  "title": "Turnwise Introspection — Gemma vs Qwen (Rho Flipped)",
+  "description": "Isotonic R² (K) and Spearman ρ (L, sign-flipped for sad_vs_happy) per turn for cross-family models.",
+  "cross_turnwise": {
+    "Gemma 3 4B": {
+      "turns": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "r2": [
+        0.1892,
+        0.0864,
+        0.3494,
+        0.1568,
+        0.1552,
+        0.1098,
+        0.0958,
+        0.2149,
+        0.2093,
+        0.2644
+      ],
+      "rho_flipped": [
+        0.0084,
+        0.0028,
+        0.3612,
+        0.2126,
+        0.2347,
+        0.149,
+        0.1653,
+        0.2696,
+        0.2366,
+        0.3398
+      ],
+      "rho_p": [
+        0.9587641851465312,
+        0.9862495028206264,
+        0.022041216795400827,
+        0.1878752367669312,
+        0.14489206724076908,
+        0.3589254511473219,
+        0.3080728605440201,
+        0.09249478538139437,
+        0.14161383136311265,
+        0.031948370482622564
+      ],
+      "rho_sign_flipped": true,
+      "first_last_tests": {
+        "r2_last_minus_first": {
+          "first_turn": 1,
+          "last_turn": 10,
+          "first_metric": 0.1272365450582983,
+          "last_metric": 0.2176118948789142,
+          "difference_last_minus_first": 0.0903753498206159,
+          "bootstrap_ci_95": [
+            -0.26748257452940805,
+            0.38259161130784647
+          ],
+          "bootstrap_p_two_sided": 0.567,
+          "n_conversations": 40
+        },
+        "rho_last_minus_first": {
+          "first_turn": 1,
+          "last_turn": 10,
+          "first_metric": 0.008442776735459663,
+          "last_metric": 0.3397748592870544,
+          "difference_last_minus_first": 0.33133208255159474,
+          "bootstrap_ci_95": [
+            -0.13374667607022891,
+            0.7478077605382647
+          ],
+          "bootstrap_p_two_sided": 0.154,
+          "n_conversations": 40
+        }
+      }
+    },
+    "Qwen 2.5 7B": {
+      "turns": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "r2": [
+        0.8708,
+        0.8233,
+        0.837,
+        0.6434,
+        0.6587,
+        0.4937,
+        0.453,
+        0.5125,
+        0.4299,
+        0.3925
+      ],
+      "rho_flipped": [
+        0.6428,
+        0.5315,
+        0.6495,
+        0.6231,
+        0.548,
+        0.525,
+        0.457,
+        0.3919,
+        0.3795,
+        0.418
+      ],
+      "rho_p": [
+        7.738910558456044e-06,
+        0.00041671420413941815,
+        5.767078919552767e-06,
+        1.7544803240744172e-05,
+        0.0002516433627030068,
+        0.0005056873268804565,
+        0.003029524597660002,
+        0.012378565515787924,
+        0.01571264158683233,
+        0.007274104524401447
+      ],
+      "rho_sign_flipped": true,
+      "first_last_tests": {
+        "r2_last_minus_first": {
+          "first_turn": 1,
+          "last_turn": 10,
+          "first_metric": 0.9034874234457511,
+          "last_metric": 0.46165489475651034,
+          "difference_last_minus_first": -0.4418325286892407,
+          "bootstrap_ci_95": [
+            -0.6804964530528376,
+            -0.23019842161958784
+          ],
+          "bootstrap_p_two_sided": 0.001,
+          "n_conversations": 40
+        },
+        "rho_last_minus_first": {
+          "first_turn": 1,
+          "last_turn": 10,
+          "first_metric": 0.6427767354596623,
+          "last_metric": 0.41801125703564734,
+          "difference_last_minus_first": -0.22476547842401495,
+          "bootstrap_ci_95": [
+            -0.5340110211494018,
+            0.0758510422593612
+          ],
+          "bootstrap_p_two_sided": 0.165,
+          "n_conversations": 40
+        }
+      }
+    }
+  }
+}

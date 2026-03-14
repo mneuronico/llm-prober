@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  13 MAR 2026 10:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  14 MAR 2026 14:02
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -393,7 +393,6 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
 Package hyperref Info: Link coloring OFF on input line 24.
- (paper.out) (paper.out)
 \@outlinefile=\write3
 \openout3 = `paper.out'.
 
@@ -437,22 +436,535 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <8> on input line 27.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <6> on input line 27.
- [1
 
-{C:/Users/Nico/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}] [2] [3] [4]
+
+Package natbib Warning: Citation `JiAn2025' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `Steyvers2025' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `PerezLong2023' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `Long2024' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `DungTagliabue2025' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `FlemingLau2014' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `Fleming2024' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `KieferKammer2024' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `Hagendorff2023' on page 1 undefined on input line 44.
+
+
+Package natbib Warning: Citation `AlainBengio2018' on page 1 undefined on input line 46.
+
+
+Package natbib Warning: Citation `Kim2018' on page 1 undefined on input line 46.
+
+
+Package natbib Warning: Citation `GurneeTegmark2023' on page 1 undefined on input line 46.
+
+
+Package natbib Warning: Citation `Belinkov2022' on page 1 undefined on input line 46.
+
+
+Package natbib Warning: Citation `HewittLiang2019' on page 1 undefined on input line 46.
+
+
+Package natbib Warning: Citation `Pimentel2020' on page 1 undefined on input line 46.
+
+
+Package natbib Warning: Citation `Bricken2023' on page 1 undefined on input line 46.
+
+[1
+
+{C:/Users/Nico/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}]
+
+Package natbib Warning: Citation `Likert1932' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `Watson1988' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `CsikszentmihalyiLarson1987' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `Shiffman2008' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `Binder2025' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `JiAn2025' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `Lindsey2026' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `PearsonVogel2026' on page 2 undefined on input line 48.
+
+
+Package natbib Warning: Citation `CodaForno2023' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `Fazzi2025' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `Choi2024' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `ZhangZhong2025' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `WangEmotion2025' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `ComShanahan2025' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `FlemingLau2014' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `Lapate2020' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `McClelland2024' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `Tavast2022' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `Binder2025' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `JiAn2025' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `Lindsey2026' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `PearsonVogel2026' on page 2 undefined on input line 51.
+
+
+Package natbib Warning: Citation `Kadavath2022' on page 2 undefined on input line 78.
+
+
+Package natbib Warning: Citation `Yin2023' on page 2 undefined on input line 78.
+
+
+Package natbib Warning: Citation `Binder2025' on page 2 undefined on input line 78.
+
+
+Package natbib Warning: Citation `Xiong2024' on page 2 undefined on input line 78.
+
+
+Package natbib Warning: Citation `Kumar2024' on page 2 undefined on input line 78.
+
+
+Package natbib Warning: Citation `Yona2024' on page 2 undefined on input line 78.
+
+
+Package natbib Warning: Citation `Geng2024' on page 2 undefined on input line 78.
+
+[2]
+
+Package natbib Warning: Citation `Tavast2022' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `CodaForno2023' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `Huang2023' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `Sabour2024' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `Fazzi2025' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `Russell1980' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `IshikawaYoshino2025' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `ZhangZhong2025' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `WangEmotion2025' on page 3 undefined on input line 80.
+
+
+Package natbib Warning: Citation `ComShanahan2025' on page 3 undefined on input line 82.
+
+
+Package natbib Warning: Citation `JiAn2025' on page 3 undefined on input line 82.
+
+
+Package natbib Warning: Citation `Lindsey2026' on page 3 undefined on input line 82.
+
+
+Package natbib Warning: Citation `PearsonVogel2026' on page 3 undefined on input line 82.
+
+
+Package natbib Warning: Citation `Rivera2025' on page 3 undefined on input line 82.
+
+
+Package natbib Warning: Citation `Han2025' on page 3 undefined on input line 84.
+
+
+Package natbib Warning: Citation `Jackson2025' on page 3 undefined on input line 84.
+
+
+Package natbib Warning: Citation `Song2025' on page 3 undefined on input line 84.
+
+
+Package natbib Warning: Citation `Kim2018' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `AlainBengio2018' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `Pimentel2020' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `Burns2022' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `AzariaMitchell2023' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `GurneeTegmark2023' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `ZhangZhong2025' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `Belinkov2022' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `HewittLiang2019' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `HewittLiang2019' on page 3 undefined on input line 89.
+
+
+Package natbib Warning: Citation `Belinkov2022' on page 3 undefined on input line 89.
+
+[3]
+
+Package natbib Warning: Citation `Turner2024' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `Panickssery2023' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `Zou2023' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `Li2023' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `Arditi2024' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `Konen2024' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `FrisingBalcells2025' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `Li2023' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `WangEmotion2025' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `JiAn2025' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `FrisingBalcells2025' on page 4 undefined on input line 91.
+
+
+Package natbib Warning: Citation `Kim2020' on page 4 undefined on input line 96.
+
+
+Package natbib Warning: Citation `Abdulhai2025' on page 4 undefined on input line 96.
+
+
+Package natbib Warning: Citation `Choi2024' on page 4 undefined on input line 96.
+
+
+Package natbib Warning: Citation `LiInstruction2024' on page 4 undefined on input line 96.
+
+
+Package natbib Warning: Citation `Das2026' on page 4 undefined on input line 96.
+
+
+Package natbib Warning: Citation `Lu2026' on page 4 undefined on input line 96.
+
+
+Package natbib Warning: Citation `Fazzi2025' on page 4 undefined on input line 98.
+
+
+Package natbib Warning: Citation `ZhangZhong2025' on page 4 undefined on input line 98.
+
+
+Package natbib Warning: Citation `WangEmotion2025' on page 4 undefined on input line 98.
+
+
+Package natbib Warning: Citation `ZhangMultiturn2026' on page 4 undefined on input line 98.
+
+
+Package natbib Warning: Citation `Prestes2025' on page 4 undefined on input line 98.
+
+
+Package natbib Warning: Citation `Dubey2024' on page 4 undefined on input line 107.
+
+
+Package natbib Warning: Citation `Gemma32025' on page 4 undefined on input line 107.
+
+
+Package natbib Warning: Citation `Qwen252024' on page 4 undefined on input line 107.
+
+
+LaTeX Warning: Reference `app:experimental' on page 4 undefined on input line 110.
+
+
+LaTeX Warning: Reference `app:experimental' on page 4 undefined on input line 115.
+
+[4]
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 126.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [5{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.enc}] [6] [7]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+)
 
- [8] [9]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+LaTeX Warning: Reference `sec:methods-probes' on page 5 undefined on input line 145.
 
- [10] [11] [12]
+
+LaTeX Warning: Reference `sec:methods-probes' on page 5 undefined on input line 151.
+
+
+LaTeX Warning: Reference `sec:methods-steering' on page 5 undefined on input line 162.
+
+
+Package natbib Warning: Citation `Zou2023' on page 5 undefined on input line 168.
+
+[5{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.enc}]
+
+LaTeX Warning: Reference `app:probes' on page 6 undefined on input line 182.
+
+[6]
+
+LaTeX Warning: Reference `sec:results-generalization' on page 7 undefined on input line 226.
+
+
+LaTeX Warning: Reference `sec:methods-probes' on page 7 undefined on input line 241.
+
+
+Package natbib Warning: Citation `Kumar2024' on page 7 undefined on input line 250.
+
+
+Package natbib Warning: Citation `Geng2024' on page 7 undefined on input line 250.
+
+
+Package natbib Warning: Citation `Yona2024' on page 7 undefined on input line 250.
+
+
+LaTeX Warning: Reference `eq:logit-rating' on page 7 undefined on input line 252.
+
+
+Underfull \vbox (badness 2221) has occurred while \output is active []
+
+ [7] [8]
+
+Package natbib Warning: Citation `ZhangMultiturn2026' on page 9 undefined on input line 289.
+
+
+Package natbib Warning: Citation `Prestes2025' on page 9 undefined on input line 289.
+
+[9] [10]
+Underfull \vbox (badness 2828) has occurred while \output is active []
+
+ [11]
+
+LaTeX Warning: Reference `eq:logit-rating' on page 12 undefined on input line 372.
+
+[12]
+
+Package natbib Warning: Citation `ComShanahan2025' on page 13 undefined on input line 390.
+
+
+Package natbib Warning: Citation `McClelland2024' on page 13 undefined on input line 390.
+
+
+Package natbib Warning: Citation `Rahwan2019' on page 13 undefined on input line 392.
+
+
+Package natbib Warning: Citation `Hagendorff2023' on page 13 undefined on input line 392.
+
+
+Package natbib Warning: Citation `PerezLong2023' on page 13 undefined on input line 392.
+
+
+Package natbib Warning: Citation `Long2024' on page 13 undefined on input line 392.
+
+
+Package natbib Warning: Citation `DungTagliabue2025' on page 13 undefined on input line 392.
+
+
+Package natbib Warning: Citation `Lu2026' on page 13 undefined on input line 392.
+
+
+Package natbib Warning: Citation `Das2026' on page 13 undefined on input line 392.
+
+
+Package natbib Warning: Citation `Likert1932' on page 13 undefined on input line 400.
+
+
+Package natbib Warning: Citation `Watson1988' on page 13 undefined on input line 400.
+
+
+Package natbib Warning: Citation `CsikszentmihalyiLarson1987' on page 13 undefined on input line 400.
+
+
+Package natbib Warning: Citation `Shiffman2008' on page 13 undefined on input line 400.
+
+
+Package natbib Warning: Citation `FlemingLau2014' on page 13 undefined on input line 400.
+
+
+Package natbib Warning: Citation `AlainBengio2018' on page 13 undefined on input line 404.
+
+
+Package natbib Warning: Citation `Kim2018' on page 13 undefined on input line 404.
+
+
+Package natbib Warning: Citation `GurneeTegmark2023' on page 13 undefined on input line 404.
+
+
+Package natbib Warning: Citation `Belinkov2022' on page 13 undefined on input line 405.
+
+
+Package natbib Warning: Citation `HewittLiang2019' on page 13 undefined on input line 405.
+
+
+Package natbib Warning: Citation `Pimentel2020' on page 13 undefined on input line 405.
+
+
+Package natbib Warning: Citation `Belinkov2022' on page 13 undefined on input line 410.
+
+
+Package natbib Warning: Citation `HewittLiang2019' on page 13 undefined on input line 410.
+
+
+Package natbib Warning: Citation `Pimentel2020' on page 13 undefined on input line 410.
+
+
+Package natbib Warning: Citation `Xiong2024' on page 13 undefined on input line 413.
+
+
+Package natbib Warning: Citation `Kumar2024' on page 13 undefined on input line 413.
+
+
+Package natbib Warning: Citation `Yona2024' on page 13 undefined on input line 413.
+
+
+Package natbib Warning: Citation `Han2025' on page 13 undefined on input line 413.
+
+
+Package natbib Warning: Citation `Jackson2025' on page 13 undefined on input line 413.
+
+[13]
+
+Package natbib Warning: Citation `Song2025' on page 14 undefined on input line 428.
+
+
+Package natbib Warning: Citation `Binder2025' on page 14 undefined on input line 428.
+
+
+Package natbib Warning: Citation `JiAn2025' on page 14 undefined on input line 428.
+
+
+Package natbib Warning: Citation `FrisingBalcells2025' on page 14 undefined on input line 429.
+
+
+Package natbib Warning: Citation `Zou2023' on page 14 undefined on input line 429.
+
+
+Package natbib Warning: Citation `BoldtGilbert2022' on page 14 undefined on input line 437.
+
+
+Package natbib Warning: Citation `Fleming2024' on page 14 undefined on input line 437.
+
+
+Package natbib Warning: Citation `Xiong2024' on page 14 undefined on input line 443.
+
+
+Package natbib Warning: Citation `Kumar2024' on page 14 undefined on input line 443.
+
+
+Package natbib Warning: Citation `Yona2024' on page 14 undefined on input line 443.
+
+
+Package natbib Warning: Citation `PearsonVogel2026' on page 14 undefined on input line 443.
+
+[14]
+
+Package natbib Warning: Citation `AlainBengio2018' on page 15 undefined on input line 449.
+
+
+Package natbib Warning: Citation `Kim2018' on page 15 undefined on input line 449.
+
+
+Package natbib Warning: Citation `Burns2022' on page 15 undefined on input line 449.
+
+
+Package natbib Warning: Citation `GurneeTegmark2023' on page 15 undefined on input line 449.
+
+
+Package natbib Warning: Citation `AzariaMitchell2023' on page 15 undefined on input line 449.
+
+
+Package natbib Warning: Citation `Zou2023' on page 15 undefined on input line 449.
+
+
+Package natbib Warning: Citation `Belinkov2022' on page 15 undefined on input line 453.
+
+
+Package natbib Warning: Citation `Pimentel2020' on page 15 undefined on input line 453.
+
+
+Package natbib Warning: Citation `JiAn2025' on page 15 undefined on input line 459.
+
+
+Package natbib Warning: Citation `Rivera2025' on page 15 undefined on input line 459.
+
+
+Package natbib Warning: Citation `Lindsey2026' on page 15 undefined on input line 459.
+
+
+Package natbib Warning: Citation `FlemingLau2014' on page 15 undefined on input line 470.
+
+
+Package natbib Warning: Citation `Lapate2020' on page 15 undefined on input line 470.
+
+
+Package natbib Warning: Citation `KieferKammer2024' on page 15 undefined on input line 470.
+
+
 Underfull \vbox (badness 5175) has occurred while \output is active []
 
- [13] [14] (paper.bbl [15]
+ [15] (paper.bbl
 Underfull \hbox (badness 2253) in paragraph at lines 51--57
 []\T1/lmr/m/n/10 Trenton Bricken et al.  To-wards monose-man-tic-ity: De-com-pos-ing lan-guage mod-els with dic-tio-
  []
@@ -462,33 +974,108 @@ Underfull \hbox (badness 1888) in paragraph at lines 51--57
 \T1/lmr/m/n/10 nary learn-ing.  Trans-former Cir-cuits, 2023.  URL []$\T1/lmtt/m/n/10 https : / / transformer-[]circuits . pub / 2023 /
  []
 
-[16] [17]) [18]
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 491.
- [19]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 563.
+[16] [17] [18]) [19]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 560.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [20{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}] [21] [22] [23] (paper.aux)
+)
+
+LaTeX Warning: Reference `eq:logit-rating' on page 20 undefined on input line 566.
+
+[20{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}]
+
+LaTeX Warning: Reference `eq:concept-vector' on page 21 undefined on input line 586.
+
+
+LaTeX Warning: Reference `eq:probe-score' on page 21 undefined on input line 589.
+
+[21] [22]
+Underfull \vbox (badness 2073) has occurred while \output is active []
+
+ [23]
+c:/Users/Nico/Documents/GitHub/llm-prober/paper/paper_latex/paper.tex:684: Missing $ inserted.
+<inserted text> 
+                $
+l.684 !!!(I haven't updated paper\figure_
+                                         text_updated.txt after the figure c...
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+c:/Users/Nico/Documents/GitHub/llm-prober/paper/paper_latex/paper.tex:685: Missing $ inserted.
+<inserted text> 
+                $
+l.685 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+
+Overfull \hbox (1247.9591pt too wide) in paragraph at lines 684--685
+[]$[]\OML/lmm/m/it/10 ext[]pdated:txtafterthefigurechanges\OT1/lmr/m/n/10 ; \OML/lmm/m/it/10 somepanelshavechangedorder=letterlabel; otherpanelshavedisappearedfromfiguresandleftonlyinthepaperbody; thoseshouldberemovedfromfiguretext\OT1/lmr/m/n/10 ; \OML/lmm/m/it/10 thenothershavebeenaddedandshouldbeappropriatelydescribedinthefiguretext\OT1/lmr/m/n/10 ; \OML/lmm/m/it/10 thenalsoappendixfiguresshouldnowbecalledfigs\OT1/lmr/m/n/10 6\OML/lmm/m/it/10 ; \OT1/lmr/m/n/10 7\OML/lmm/m/it/10 ; \OT1/lmr/m/n/10 8\OML/lmm/m/it/10 and\OT1/lmr/m/n/10 9; \OML/lmm/m/it/10 wemustcreatepaper=figure[]ext[]inal:txtwiththesechanges\OT1/lmr/m/n/10 )$ 
+ []
+
+
+Package natbib Warning: There were undefined citations.
+
+(paper.aux
+
+Package natbib Warning: Citation(s) may have changed.
+(natbib)                Rerun to get citations correct.
+
+)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-Package rerunfilecheck Info: File `paper.out' has not changed.
-(rerunfilecheck)             Checksum: 8B026905C433C5BD2E8AC478A36B4B44;9552.
- ) 
-Here is how much of TeX's memory you used:
- 13347 strings out of 467867
- 205525 string characters out of 5418818
- 629695 words of memory out of 5000000
- 41817 multiletter control sequences out of 15000+600000
- 724828 words of font info for 108 fonts, out of 8000000 for 9000
- 1141 hyphenation exceptions out of 8191
- 75i,12n,90p,1979b,649s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb>
-Output written on paper.pdf (23 pages, 521902 bytes).
-PDF statistics:
- 891 PDF objects out of 1000 (max. 8388607)
- 199 named destinations out of 1000 (max. 500000)
- 329 words of extra memory for PDF output out of 10000 (max. 10000000)
 
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `paper.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `paper.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  8EF74137EFEAD200104FBCAC2EFC1F8B;9382.
+c:/Users/Nico/Documents/GitHub/llm-prober/paper/paper_latex/paper.tex:686: You can't use `\end' in internal vertical mode.
+\enddocument ...cument/end}\deadcycles \z@ \@@end 
+                                                  
+l.686 \end{document}
+                    
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+c:/Users/Nico/Documents/GitHub/llm-prober/paper/paper_latex/paper.tex:686: Missing } inserted.
+<inserted text> 
+                }
+l.686 \end{document}
+                    
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+)
+! Emergency stop.
+<*> ...tHub/llm-prober/paper/paper_latex/paper.tex
+                                                  
+*** (job aborted, no legal \end found)
+
+ 
+Here is how much of TeX's memory you used:
+ 13277 strings out of 467867
+ 204375 string characters out of 5418818
+ 623241 words of memory out of 5000000
+ 41757 multiletter control sequences out of 15000+600000
+ 717211 words of font info for 100 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 75i,12n,90p,2080b,679s stack positions out of 10000i,1000n,20000p,200000b,200000s
+!  ==> Fatal error occurred, no output PDF file produced!

@@ -276,7 +276,7 @@ def setup_style():
         'savefig.pad_inches': 0.1,
         'axes.spines.top': False,
         'axes.spines.right': False,
-        'axes.grid': True,
+        'axes.grid': False,
         'grid.alpha': 0.25,
         'grid.linewidth': 0.5,
         'font.family': 'sans-serif',
@@ -659,6 +659,54 @@ def plot_line_with_ci(ax, x, y_mean, y_ci_low, y_ci_high, color, label=None,
     """Plot a line with filled confidence interval band."""
     ax.plot(x, y_mean, color=color, label=label, linewidth=linewidth, **kwargs)
     ax.fill_between(x, y_ci_low, y_ci_high, color=color, alpha=alpha_fill)
+
+
+def draw_vector_heatmap(ax, matrix, cmap, vmin=None, vmax=None, aspect='equal'):
+    """Draw a cell-by-cell heatmap that stays editable in vector exports."""
+    matrix = np.asarray(matrix, dtype=float)
+    if matrix.ndim != 2:
+        raise ValueError('matrix must be 2D')
+
+    finite = matrix[np.isfinite(matrix)]
+    if finite.size == 0:
+        if vmin is None:
+            vmin = 0.0
+        if vmax is None:
+            vmax = 1.0
+    else:
+        if vmin is None:
+            vmin = float(np.min(finite))
+        if vmax is None:
+            vmax = float(np.max(finite))
+        if vmax <= vmin:
+            vmax = vmin + 1e-9
+
+    norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax, clip=True)
+    cmap_obj = plt.get_cmap(cmap)
+
+    n_rows, n_cols = matrix.shape
+    for row_idx in range(n_rows):
+        for col_idx in range(n_cols):
+            val = matrix[row_idx, col_idx]
+            facecolor = (0, 0, 0, 0) if not np.isfinite(val) else cmap_obj(norm(val))
+            rect = plt.Rectangle(
+                (col_idx - 0.5, row_idx - 0.5),
+                1.0,
+                1.0,
+                facecolor=facecolor,
+                edgecolor='none',
+                linewidth=0,
+                antialiased=False,
+            )
+            ax.add_patch(rect)
+
+    ax.set_xlim(-0.5, n_cols - 0.5)
+    ax.set_ylim(n_rows - 0.5, -0.5)
+    ax.set_aspect(aspect)
+
+    sm = matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap_obj)
+    sm.set_array([])
+    return sm
 
 
 def cluster_bootstrap_mean(cluster_ids, values, n_bootstrap=1000, ci=0.95, seed=42):

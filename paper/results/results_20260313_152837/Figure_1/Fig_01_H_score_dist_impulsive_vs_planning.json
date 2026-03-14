@@ -1,0 +1,31 @@
+{
+  "panel_id": "Fig_01_H",
+  "title": "Score Distribution - Impulsive / Planning",
+  "description": "Boxplot of probe scores for positive (planning) and negative (impulsive) evaluation texts at best layer 13. One score per eval text. Scores flipped for intuitive direction. Mann-Whitney U test on 20 vs 20 independent scores.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\outputs\\impulsive_vs_planning\\20260120_181954\\scores/",
+  "model": "LLaMA-3.2-3B-Instruct",
+  "concept": "impulsive_vs_planning",
+  "best_layer": 13,
+  "pos_label": "planning",
+  "neg_label": "impulsive",
+  "n_eval_prompts": 12,
+  "statistics": {
+    "high_label": "Impulsive",
+    "low_label": "Planning",
+    "high_n_eval_texts": 20,
+    "low_n_eval_texts": 20,
+    "note": "Each eval text produces one independent score at the best layer. Both Mann-Whitney U and Welch t-test compare n_high vs n_low independent prompt-level scores.",
+    "high_median": -0.1203,
+    "low_median": -0.344,
+    "high_mean": -0.1169,
+    "low_mean": -0.3412,
+    "high_std": 0.0511,
+    "low_std": 0.072,
+    "mean_difference": 0.2243,
+    "cohens_d": 3.595,
+    "welch_t": 11.368258852289152,
+    "welch_p": 3.5809938030078844e-13,
+    "mann_whitney_U": 400.0,
+    "mann_whitney_p": 6.795615128173358e-08
+  }
+}

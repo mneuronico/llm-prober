@@ -1,0 +1,179 @@
+{
+  "panel_id": "Fig_05_A",
+  "title": "Isotonic R² vs. Model Size (Recomputed from Raw Data)",
+  "description": "Isotonic R² at alpha=0 for each concept across LLaMA 1B/3B/8B, recomputed from raw experiment directories (not pre-computed CSV).",
+  "per_concept": {
+    "wellbeing": {
+      "per_size": {
+        "1B": 0.2587268384780036,
+        "3B": 0.4519686865919622,
+        "8B": 0.9021964598524299
+      },
+      "size_trend": {
+        "x_log_size": [
+          0.0,
+          1.0986122886681098,
+          2.0794415416798357
+        ],
+        "y_values": [
+          0.2587268384780036,
+          0.4519686865919622,
+          0.9021964598524299
+        ],
+        "ols": {
+          "slope": 0.3067820598717738,
+          "intercept": 0.212640694821624,
+          "pearson_r": 0.9665673595023976,
+          "pearson_p": 0.1650813124342585,
+          "stderr": 0.08138372921959869,
+          "r_squared": 0.9342524604554371,
+          "n": 3
+        },
+        "exact_permutation": {
+          "slope": 0.3067820598717738,
+          "intercept": 0.212640694821624,
+          "pearson_r": 0.9665673595023976,
+          "pearson_p": 0.1650813124342585,
+          "stderr": 0.08138372921959869,
+          "r_squared": 0.9342524604554371,
+          "n": 3,
+          "exact_permutation_p": 0.16666666666666666
+        }
+      }
+    },
+    "interest": {
+      "per_size": {
+        "1B": 0.05268399255216072,
+        "3B": 0.6571928527740474,
+        "8B": 0.9312830549215491
+      },
+      "size_trend": {
+        "x_log_size": [
+          0.0,
+          1.0986122886681098,
+          2.0794415416798357
+        ],
+        "y_values": [
+          0.05268399255216072,
+          0.6571928527740474,
+          0.9312830549215491
+        ],
+        "ols": {
+          "slope": 0.42506234246187086,
+          "intercept": 0.09676296488337949,
+          "pearson_r": 0.9836430023109347,
+          "pearson_p": 0.11530301928097257,
+          "stderr": 0.07783925631159887,
+          "r_squared": 0.9675535559952695,
+          "n": 3
+        },
+        "exact_permutation": {
+          "slope": 0.42506234246187086,
+          "intercept": 0.09676296488337949,
+          "pearson_r": 0.9836430023109347,
+          "pearson_p": 0.11530301928097257,
+          "stderr": 0.07783925631159887,
+          "r_squared": 0.9675535559952695,
+          "n": 3,
+          "exact_permutation_p": 0.16666666666666666
+        }
+      }
+    },
+    "focus": {
+      "per_size": {
+        "1B": 0.0011434422123003385,
+        "3B": 0.037086772088292586,
+        "8B": 0.00725394772752852
+      },
+      "size_trend": {
+        "x_log_size": [
+          0.0,
+          1.0986122886681098,
+          2.0794415416798357
+        ],
+        "y_values": [
+          0.0011434422123003385,
+          0.037086772088292586,
+          0.00725394772752852
+        ],
+        "ols": {
+          "slope": 0.0035319778258670748,
+          "intercept": 0.01141978212330686,
+          "pearson_r": 0.19104622116718561,
+          "pearson_p": 0.8776239248892561,
+          "stderr": 0.01814703505942266,
+          "r_squared": 0.036498658622261204,
+          "n": 3
+        },
+        "exact_permutation": {
+          "slope": 0.0035319778258670748,
+          "intercept": 0.01141978212330686,
+          "pearson_r": 0.19104622116718561,
+          "pearson_p": 0.8776239248892561,
+          "stderr": 0.01814703505942266,
+          "r_squared": 0.036498658622261204,
+          "n": 3,
+          "exact_permutation_p": 0.5
+        }
+      }
+    },
+    "impulsivity": {
+      "per_size": {
+        "1B": 0.04625495878443697,
+        "3B": 0.33042601334893273,
+        "8B": 0.002658505147386636
+      },
+      "size_trend": {
+        "x_log_size": [
+          0.0,
+          1.0986122886681098,
+          2.0794415416798357
+        ],
+        "y_values": [
+          0.04625495878443697,
+          0.33042601334893273,
+          0.002658505147386636
+        ],
+        "ols": {
+          "slope": -0.015392826467066516,
+          "intercept": 0.14275290279809943,
+          "pearson_r": -0.08996393882397712,
+          "pearson_p": 0.9426496386450176,
+          "stderr": 0.17040615514309318,
+          "r_squared": 0.008093510288724298,
+          "n": 3
+        },
+        "exact_permutation": {
+          "slope": -0.015392826467066516,
+          "intercept": 0.14275290279809943,
+          "pearson_r": -0.08996393882397712,
+          "pearson_p": 0.9426496386450176,
+          "stderr": 0.17040615514309318,
+          "r_squared": 0.008093510288724298,
+          "n": 3,
+          "exact_permutation_p": 0.6666666666666666
+        }
+      }
+    }
+  },
+  "data_sources": {
+    "1B": {
+      "wellbeing": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\wellbeing_self_steering_1b_alpha_m4_to_p4_20260222_160146",
+      "interest": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\interest_self_steering_1b_alpha_m4_to_p4_20260222_160146",
+      "focus": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\focus_self_steering_1b_alpha_m4_to_p4_20260222_160146",
+      "impulsivity": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-1b-self-steering\\impulsivity_self_steering_1b_alpha_m4_to_p4_20260222_160146"
+    },
+    "3B": {
+      "wellbeing": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\wellbeing_self_steering_alpha_m4_to_p4_20260220_142358",
+      "interest": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\interest_self_steering_alpha_m4_to_p4_20260221_134238",
+      "focus": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\focus_self_steering_alpha_m4_to_p4_20260220_142358",
+      "impulsivity": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-3b-4by4\\impulsivity_self_steering_alpha_m4_to_p4_20260221_134238"
+    },
+    "8B": {
+      "wellbeing": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\wellbeing_self_steering_8b_alpha_m4_to_p4_20260223_170145",
+      "interest": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\interest_self_steering_8b_alpha_m4_to_p4_20260223_170145",
+      "focus": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\focus_self_steering_8b_alpha_m4_to_p4_20260223_170145",
+      "impulsivity": "c:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\analysis\\llama-8b-self-steering\\impulsivity_self_steering_8b_alpha_m4_to_p4_20260223_170145"
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "panel_id": "App_Fig_04_J",
+  "title": "Probe Entropy vs. Steering",
+  "description": "Full decomposition panel requested in manuscript comments: entropy computed for probe at all five alpha levels in both significant steering conditions.",
+  "signal": "probe",
+  "metric": "entropy",
+  "conditions": {
+    "focus→wellbeing": {
+      "signal": "probe",
+      "metric": "entropy",
+      "by_alpha": [
+        {
+          "raw_alpha": -4.0,
+          "display_alpha": -4.0,
+          "mean": 1.0900527197983485,
+          "ci_low": 0.9928182761473283,
+          "ci_high": 1.184344495624987,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": -2.0,
+          "display_alpha": -2.0,
+          "mean": 1.2344238220050507,
+          "ci_low": 1.098377272442842,
+          "ci_high": 1.3756092149051002,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 0.0,
+          "display_alpha": 0.0,
+          "mean": 1.3731109247562698,
+          "ci_low": 1.2687315055034798,
+          "ci_high": 1.4680275059804948,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 2.0,
+          "display_alpha": 2.0,
+          "mean": 1.500097272764722,
+          "ci_low": 1.3592625913257914,
+          "ci_high": 1.629034729738092,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 4.0,
+          "display_alpha": 4.0,
+          "mean": 1.6661359585433295,
+          "ci_low": 1.5405372666777006,
+          "ci_high": 1.8004974701257395,
+          "n_conversations": 40
+        }
+      ],
+      "trend_tests": {
+        "exact_permutation_spearman_rho": 1.0,
+        "exact_permutation_p": 0.016666666666666666,
+        "lmm": {
+          "error": "Singular matrix"
+        }
+      }
+    },
+    "impulsivity→interest": {
+      "signal": "probe",
+      "metric": "entropy",
+      "by_alpha": [
+        {
+          "raw_alpha": 4.0,
+          "display_alpha": -4.0,
+          "mean": 0.7574656056069127,
+          "ci_low": 0.6452068721551601,
+          "ci_high": 0.8605304004447484,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 2.0,
+          "display_alpha": -2.0,
+          "mean": 0.8215361850792263,
+          "ci_low": 0.6953523175569478,
+          "ci_high": 0.9552800713883216,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": 0.0,
+          "display_alpha": -0.0,
+          "mean": 0.8689963461314891,
+          "ci_low": 0.7512201588950181,
+          "ci_high": 0.9876722554337373,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": -2.0,
+          "display_alpha": 2.0,
+          "mean": 0.8921091273760805,
+          "ci_low": 0.7718948560859917,
+          "ci_high": 1.0257943144681692,
+          "n_conversations": 40
+        },
+        {
+          "raw_alpha": -4.0,
+          "display_alpha": 4.0,
+          "mean": 0.9639576942637543,
+          "ci_low": 0.8530122167849195,
+          "ci_high": 1.0727098715315089,
+          "n_conversations": 40
+        }
+      ],
+      "trend_tests": {
+        "exact_permutation_spearman_rho": 1.0,
+        "exact_permutation_p": 0.016666666666666666,
+        "lmm": {
+          "slope": 0.024177855980526863,
+          "slope_p": 0.00023002543881019808,
+          "n_obs": 200,
+          "n_groups": 40,
+          "converged": true
+        }
+      }
+    }
+  }
+}

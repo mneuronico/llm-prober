@@ -38,7 +38,7 @@ from shared_utils import (
     per_conversation_spearman, one_sample_test, lmm_test,
     corrected_drift_stats,
     savefig, save_panel_json, save_other_stats, ensure_dir,
-    add_panel_label, plot_line_with_ci, format_p,
+    add_panel_label, plot_line_with_ci, format_p, draw_vector_heatmap,
 )
 
 SHORTHANDS = SHORTHANDS_ORDERED
@@ -122,8 +122,14 @@ def generate_figure_4(results_dir):
                 mi = concept_order.index(meas)
                 matrix[si, mi] = float(val)
 
-        im = ax.imshow(matrix, cmap='YlOrRd', vmin=vmin_global, vmax=vmax_global,
-                       aspect='equal')
+        im = draw_vector_heatmap(
+            ax,
+            matrix,
+            cmap='YlOrRd',
+            vmin=vmin_global,
+            vmax=vmax_global,
+            aspect='equal',
+        )
         for si in range(len(concept_order)):
             for mi in range(len(concept_order)):
                 v = matrix[si, mi]
@@ -184,7 +190,12 @@ def generate_figure_4(results_dir):
             if sig:
                 significant_cells.append((si, mi, float(inc_val)))
 
-    im = ax.imshow(increase_matrix, cmap='Greens', aspect='equal')
+    im = draw_vector_heatmap(
+        ax,
+        increase_matrix,
+        cmap='Greens',
+        aspect='equal',
+    )
     for si in range(len(concept_order)):
         for mi in range(len(concept_order)):
             v = increase_matrix[si, mi]
@@ -400,7 +411,7 @@ def generate_figure_4(results_dir):
             'per_conv_r2_lmm': lmm_g_r2_result,
             'per_conv_r2_rhos_ttest': per_conv_rhos_g_result,
         }
-    ax.set_xlabel('Steering α (display-corrected)')
+    ax.set_xlabel('Steering α')
     ax.set_ylabel('Isotonic R²')
     ax.set_title('Introspection vs. Steering Strength')
     ax.legend(fontsize=8)
@@ -484,7 +495,7 @@ def generate_figure_4(results_dir):
             'per_conv_rho_lmm': lmm_h_result,
             'per_conv_rhos_ttest': per_conv_rhos_h_result,
         }
-    ax.set_xlabel('Steering α (display-corrected)')
+    ax.set_xlabel('Steering α')
     ax.set_ylabel('Spearman ρ')
     ax.set_title('Introspection Correlation vs. Steering Strength')
     ax.legend(fontsize=8)
@@ -517,6 +528,89 @@ def generate_figure_4(results_dir):
     })
 
     # ──────────────────────────────────────────────────────────────
+    # Panels F–G: Scatter plots at display alpha extremes for significant cells
+    # ──────────────────────────────────────────────────────────────
+    alpha_extreme_stats = {}
+    scatter_panel_labels = ['F', 'G']
+    for idx, (_, data) in enumerate(sig_data.items()):
+        fig, ax = plt.subplots(1, 1, figsize=(3.2, 5.0))
+        condition_stats = {}
+
+        for display_alpha in (-4.0, 4.0):
+            raw_matches = [
+                raw_alpha
+                for raw_alpha, shown_alpha in zip(data['raw_alphas'], data['display_alphas'])
+                if np.isclose(shown_alpha, display_alpha)
+            ]
+            if not raw_matches:
+                continue
+            raw_alpha = raw_matches[0]
+            sub = data['df'][np.isclose(data['df']['alpha'], raw_alpha)].dropna(
+                subset=['probe_score', 'logit_rating']
+            ).copy()
+            if sub.empty:
+                continue
+
+            probe_vals = flip_if_needed(data['meas_concept'], sub['probe_score'].values)
+            ratings = sub['logit_rating'].values
+            color = ALPHA_COLORS[display_alpha]
+
+            ax.scatter(
+                probe_vals,
+                ratings,
+                color=color,
+                alpha=0.3,
+                s=12,
+                edgecolors='none',
+                label=f'α = {display_alpha:+.0f}',
+            )
+
+            group_stats = {
+                'display_alpha': float(display_alpha),
+                'raw_alpha': float(raw_alpha),
+                'n_pooled': int(len(probe_vals)),
+            }
+            if len(probe_vals) > 5:
+                ir = IsotonicRegression(out_of_bounds='clip')
+                sort_idx = np.argsort(probe_vals)
+                x_sorted = probe_vals[sort_idx]
+                y_pred = ir.fit_transform(x_sorted, ratings[sort_idx])
+                ax.plot(x_sorted, y_pred, color=color, linewidth=2.0, alpha=0.9)
+
+                rho_val, p_val = stats.spearmanr(probe_vals, ratings)
+                r2_val = isotonic_r2(probe_vals, ratings)
+                group_stats.update({
+                    'spearman_rho_POOLED': round(float(rho_val), 4),
+                    'spearman_p_POOLED': float(p_val),
+                    'isotonic_r2': round(float(r2_val), 4),
+                })
+
+            condition_stats[f'{display_alpha:+.0f}'] = group_stats
+
+        ax.set_xlabel('Probe Score')
+        ax.set_ylabel('Logit Self-Report')
+        ax.set_title(f"{data['label']} — α = -4 vs +4")
+        ax.legend(fontsize=8, loc='best')
+        add_panel_label(ax, scatter_panel_labels[idx])
+        plt.tight_layout()
+
+        prefix = os.path.join(
+            fig_dir,
+            f"Fig_04_{scatter_panel_labels[idx]}_scatter_{data['steer_short']}_to_{data['meas_short']}_alpha_extremes",
+        )
+        savefig(fig, prefix)
+        save_panel_json(prefix, {
+            'panel_id': f'Fig_04_{scatter_panel_labels[idx]}',
+            'title': f"{data['label']} — Scatter at Display α Extremes",
+            'description': ('Scatter of polarity-corrected probe score vs logit self-report '
+                            'for display-corrected α = -4 and α = +4. Separate isotonic fits '
+                            'are shown for each alpha group.'),
+            'condition': data['label'],
+            'statistics_by_display_alpha': condition_stats,
+        })
+        alpha_extreme_stats[f"{data['steer_short']}→{data['meas_short']}"] = condition_stats
+
+    # ──────────────────────────────────────────────────────────────
     # Panels I–J: Probe score drift — alpha labels flipped
     # ──────────────────────────────────────────────────────────────
     panel_labels_drift = ['F', 'G']
@@ -530,8 +624,12 @@ def generate_figure_4(results_dir):
 
         fig, ax = plt.subplots(1, 1, figsize=(5.5, 4))
         drift_by_alpha = {}
+        alpha_pairs = sorted(
+            [(float(flip_alpha_scalar(steer_short, a)), float(a)) for a in ALPHAS],
+            key=lambda pair: pair[0],
+        )
 
-        for a in ALPHAS:
+        for display_a, a in alpha_pairs:
             sub = df[np.isclose(df['alpha'], a)].copy()
             sub['probe_display'] = flip_if_needed(meas_concept, sub['probe_score'].values)
             turns = sorted(sub['turn'].unique())
@@ -545,8 +643,7 @@ def generate_figure_4(results_dir):
                 ci_lo_list.append(np.percentile(boots, 2.5))
                 ci_hi_list.append(np.percentile(boots, 97.5))
 
-            c = ALPHA_COLORS.get(a, 'gray')
-            display_a = flip_alpha_scalar(steer_short, a)
+            c = ALPHA_COLORS.get(display_a, 'gray')
             plot_line_with_ci(ax, turns, means, ci_lo_list, ci_hi_list,
                               color=c, label=f'α = {display_a:+.0f}', alpha_fill=0.1)
 
@@ -737,7 +834,7 @@ def generate_figure_4(results_dir):
             'per_turn_variance_lmm': lmm_var_result,
             'jonckheere_terpstra_trend': jt_result,
         }
-    ax.set_xlabel('Steering α (display-corrected)')
+    ax.set_xlabel('Steering α')
     ax.set_ylabel('Self-Report Variance')
     ax.set_title('Report Informativeness vs. Steering')
     ax.legend(fontsize=8)
@@ -852,7 +949,7 @@ def generate_figure_4(results_dir):
                 'per_conv_drift_lmm': lmm_l_result,
                 'per_conv_drift_rhos_ttest': per_conv_rhos_l_result,
             }
-    ax.set_xlabel('Steering α (display-corrected)')
+    ax.set_xlabel('Steering α')
     ax.set_ylabel('Drift (Δ Probe Score, last − first)')
     ax.set_title('Internal State Drift vs. Steering')
     ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
@@ -1020,7 +1117,7 @@ def generate_figure_4(results_dir):
                 'trend_tests': decomposition_full[cond_key][signal_name]['trend_tests'][metric_name],
             }
 
-        ax.set_xlabel('Steering α (display-corrected)')
+        ax.set_xlabel('Steering α')
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         ax.axvline(0, color='gray', linestyle=':', alpha=0.5)
@@ -1051,6 +1148,7 @@ def generate_figure_4(results_dir):
                         'so positive α consistently means "more of the concept." '
                         'Drift statistics include per-alpha Spearman rho of turn vs probe score.'),
         'significant_conditions': [],
+        'alpha_extreme_scatter': alpha_extreme_stats,
         'drift_decomposition': drift_decomposition,
         'full_decomposition': decomposition_full,
     }

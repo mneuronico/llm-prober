@@ -1,0 +1,31 @@
+{
+  "panel_id": "Fig_01_F",
+  "title": "Score Distribution - Focused / Distracted",
+  "description": "Boxplot of probe scores for positive (focused) and negative (distracted) evaluation texts at best layer 10. One score per eval text. Mann-Whitney U test on 20 vs 20 independent scores.",
+  "data_source": "C:\\Users\\Nico\\Documents\\GitHub\\llm-prober\\outputs\\distracted_vs_focused\\20260122_095601\\scores/",
+  "model": "LLaMA-3.2-3B-Instruct",
+  "concept": "distracted_vs_focused",
+  "best_layer": 10,
+  "pos_label": "focused",
+  "neg_label": "distracted",
+  "n_eval_prompts": 12,
+  "statistics": {
+    "high_label": "Focused",
+    "low_label": "Distracted",
+    "high_n_eval_texts": 20,
+    "low_n_eval_texts": 20,
+    "note": "Each eval text produces one independent score at the best layer. Both Mann-Whitney U and Welch t-test compare n_high vs n_low independent prompt-level scores.",
+    "high_median": -0.0249,
+    "low_median": -0.1328,
+    "high_mean": -0.0219,
+    "low_mean": -0.131,
+    "high_std": 0.0396,
+    "low_std": 0.067,
+    "mean_difference": 0.1092,
+    "cohens_d": 1.985,
+    "welch_t": 6.277088047884841,
+    "welch_p": 5.734720822973592e-07,
+    "mann_whitney_U": 379.0,
+    "mann_whitney_p": 1.3760616388700263e-06
+  }
+}

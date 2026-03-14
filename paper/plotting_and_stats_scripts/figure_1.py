@@ -99,9 +99,10 @@ def _plot_score_dist_boxplot(ax, probe_dir, concept_name, color, n_eval):
             low_label = concept_info['neg_label'].capitalize()
             high_data, low_data = all_pos, all_neg
 
+        box_positions = [1.0, 1.45]
         bp = ax.boxplot([low_data, high_data], vert=True,
-                        labels=[low_label, high_label],
-                        patch_artist=True, widths=0.6,
+                        positions=box_positions,
+                        patch_artist=True, widths=0.38,
                         showfliers=False, showmeans=True,
                         meanprops=dict(marker='D', markerfacecolor='black',
                                        markeredgecolor='black', markersize=4))
@@ -115,6 +116,9 @@ def _plot_score_dist_boxplot(ax, probe_dir, concept_name, color, n_eval):
 
         ax.set_ylabel('Probe Score')
         ax.set_title(CONCEPT_DISPLAY[concept_name])
+        ax.set_xticks(box_positions)
+        ax.set_xticklabels([low_label, high_label])
+        ax.set_xlim(0.7, 1.75)
 
         if len(high_data) > 0 and len(low_data) > 0:
             u_stat, u_p = mannwhitneyu(high_data, low_data, alternative='two-sided')
@@ -238,7 +242,7 @@ def generate_figure_1(results_dir):
         # ---- Panel: Score distribution (boxplot) ----
         label = panel_labels[panel_idx]
         n_eval = metrics['n_eval']
-        fig, ax = plt.subplots(1, 1, figsize=(4.5, 3))
+        fig, ax = plt.subplots(1, 1, figsize=(1.5, 3))
         dist_stats = _plot_score_dist_boxplot(ax, probe_dir, concept, color, n_eval)
         add_panel_label(ax, label)
         prefix = os.path.join(fig_dir, f'Fig_01_{label}_score_dist_{concept}')

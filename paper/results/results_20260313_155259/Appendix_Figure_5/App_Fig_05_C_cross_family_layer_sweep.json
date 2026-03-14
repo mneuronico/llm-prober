@@ -1,0 +1,23 @@
+{
+  "panel_id": "App_Fig_05_C",
+  "title": "Normalized Layer Sweep — Happy / Sad",
+  "description": "Layer sweep with normalized x-axis (0-1) for cross-family comparison. Layer search range shaded. Negative d values allowed.",
+  "sweep_info": {
+    "Gemma 3 4B": {
+      "best_layer": 15,
+      "best_layer_normalized": 0.455,
+      "best_d": 1.815,
+      "num_layers": 34
+    },
+    "Qwen 2.5 7B": {
+      "best_layer": 20,
+      "best_layer_normalized": 0.741,
+      "best_d": 3.544,
+      "num_layers": 28
+    }
+  },
+  "layer_search_range_frac": [
+    0.2,
+    0.8
+  ]
+}

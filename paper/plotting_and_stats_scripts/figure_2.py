@@ -60,7 +60,7 @@ def generate_figure_2(results_dir):
     # Panel A: Greedy self-report vs turn (4 concepts)
     #   - NO sharey, individual trace alpha=0.2
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 4, figsize=(16, 3.5))
+    fig, axes = plt.subplots(1, 4, figsize=(16 / 3, 3.5))
     greedy_stats = {}
     for i, short in enumerate(SHORTHANDS_ORDERED):
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -77,7 +77,7 @@ def generate_figure_2(results_dir):
             for ci in df['conversation_index'].unique():
                 conv = df[df['conversation_index'] == ci].sort_values('turn')
                 ax.plot(conv['turn'], conv['token_rating'],
-                        color=color, alpha=0.5, linewidth=0.5)
+                        color=color, alpha=0.12, linewidth=0.5)
             greedy_var = df.groupby('turn')['token_rating'].var().mean()
             n_conv = df['conversation_index'].nunique()
             # Spearman of turn vs rating
@@ -125,7 +125,7 @@ def generate_figure_2(results_dir):
     # Panel B: Probe score drift vs turn (4 concepts)
     #   - trace alpha=0.15, per-panel y-axes
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 4, figsize=(16, 3.5))
+    fig, axes = plt.subplots(1, 4, figsize=(16 / 3, 3.5))
     drift_stats = {}
     for i, short in enumerate(SHORTHANDS_ORDERED):
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -152,7 +152,7 @@ def generate_figure_2(results_dir):
             for ci_idx in sub['conversation_index'].unique():
                 conv = sub[sub['conversation_index'] == ci_idx].sort_values('turn')
                 ax.plot(conv['turn'], conv['probe_display'],
-                        color=color, alpha=0.3, linewidth=0.5)
+                        color=color, alpha=0.12, linewidth=0.5)
 
             rho, p = stats.spearmanr(sub['turn'], sub['probe_display'])
             # First vs last turn: Wilcoxon signed-rank (paired, corrected from Mann-Whitney)
@@ -236,7 +236,7 @@ def generate_figure_2(results_dir):
             'max_unique': int(np.max(uniq_vals)),
         }
 
-    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+    fig, ax = plt.subplots(1, 1, figsize=(3, 4))
     x = np.arange(len(SHORTHANDS_ORDERED))
     mean_unique = [unique_stats.get(short, {}).get('mean_unique', np.nan) for short in SHORTHANDS_ORDERED]
     colors = [CONCEPT_COLORS[SHORTHAND_TO_CONCEPT[short]] for short in SHORTHANDS_ORDERED]
@@ -310,7 +310,7 @@ def generate_figure_2(results_dir):
     # Panel D: Non-greedy (sampled) token self-report vs turn
     #   - NO sharey, trace alpha=0.2
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 4, figsize=(16, 3.5))
+    fig, axes = plt.subplots(1, 4, figsize=(16 / 3, 3.5))
     sampled_drift = {}
     for i, short in enumerate(SHORTHANDS_ORDERED):
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -327,7 +327,7 @@ def generate_figure_2(results_dir):
             for ci_idx in sub_a0['conversation_index'].unique():
                 conv = sub_a0[sub_a0['conversation_index'] == ci_idx].sort_values('turn')
                 ax.plot(conv['turn'], conv['token_rating'],
-                        color=color, alpha=0.5, linewidth=0.5)
+                        color=color, alpha=0.12, linewidth=0.5)
             rho_s, p_s = stats.spearmanr(sub_a0['turn'], sub_a0['token_rating'].dropna())
             corrected_d = corrected_drift_stats(sub_a0, 'token_rating', alpha_val=0.0)
             sampled_drift[short] = {
@@ -369,7 +369,7 @@ def generate_figure_2(results_dir):
     # Panel E: Logit-based self-report vs turn
     #   - NO sharey, trace alpha=0.2
     # ──────────────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 4, figsize=(16, 3.5))
+    fig, axes = plt.subplots(1, 4, figsize=(16 / 3, 3.5))
     logit_drift_stats = {}
     for i, short in enumerate(SHORTHANDS_ORDERED):
         concept = SHORTHAND_TO_CONCEPT[short]
@@ -386,7 +386,7 @@ def generate_figure_2(results_dir):
             for ci_idx in sub_a0['conversation_index'].unique():
                 conv = sub_a0[sub_a0['conversation_index'] == ci_idx].sort_values('turn')
                 ax.plot(conv['turn'], conv['logit_rating'],
-                        color=color, alpha=0.5, linewidth=0.5)
+                        color=color, alpha=0.12, linewidth=0.5)
 
             rho, p = stats.spearmanr(sub_a0['turn'], sub_a0['logit_rating'].dropna())
             pt = per_turn
@@ -427,7 +427,7 @@ def generate_figure_2(results_dir):
     #   Measures how much information each self-report method conveys
     #   (higher entropy = more diverse/informative responses)
     # ──────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+    fig, ax = plt.subplots(1, 1, figsize=(3, 4))
     entropy_data = {'Greedy\n(token)': [], 'Sampled\n(token)': [], 'Logit-\nbased': []}
     entropy_stats_json = {}
     n_bins_logit = 20  # bin count for continuous logit-based ratings

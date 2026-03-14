@@ -1,0 +1,493 @@
+{
+  "description": "Appendix Figure 3 keeps first-vs-last-turn tests, within-conversation trend analyses, and the four steering-drift panels.",
+  "first_vs_last_turn": {
+    "wellbeing": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": true,
+      "r2_first": 0.4106,
+      "r2_last": 0.5943,
+      "r2_first_ci": [
+        0.2547,
+        0.7006
+      ],
+      "r2_last_ci": [
+        0.4847,
+        0.8207
+      ],
+      "r2_difference": 0.1837,
+      "r2_difference_bootstrap_p": 0.232,
+      "r2_difference_ci": [
+        -0.0909,
+        0.4841
+      ],
+      "rho_first": 0.5223,
+      "rho_last": 0.7856,
+      "rho_first_ci": [
+        0.2634,
+        0.7243
+      ],
+      "rho_last_ci": [
+        0.6251,
+        0.8649
+      ],
+      "rho_difference": 0.2632,
+      "rho_difference_bootstrap_p": 0.049,
+      "rho_difference_ci": [
+        0.005,
+        0.543
+      ],
+      "rho_first_p": 0.0005457896413379208,
+      "rho_last_p": 1.9331041361980485e-09
+    },
+    "interest": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": false,
+      "r2_first": 0.4505,
+      "r2_last": 0.5223,
+      "r2_first_ci": [
+        0.3067,
+        0.7188
+      ],
+      "r2_last_ci": [
+        0.3854,
+        0.8869
+      ],
+      "r2_difference": 0.0718,
+      "r2_difference_bootstrap_p": 0.612,
+      "r2_difference_ci": [
+        -0.2377,
+        0.4166
+      ],
+      "rho_first": 0.5499,
+      "rho_last": 0.7953,
+      "rho_first_ci": [
+        0.3054,
+        0.7288
+      ],
+      "rho_last_ci": [
+        0.6314,
+        0.9042
+      ],
+      "rho_difference": 0.2454,
+      "rho_difference_bootstrap_p": 0.07,
+      "rho_difference_ci": [
+        -0.0233,
+        0.5151
+      ],
+      "rho_first_p": 0.00023722925487054883,
+      "rho_last_p": 8.750870280177239e-10
+    },
+    "focus": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": false,
+      "r2_first": 0.1999,
+      "r2_last": 0.3257,
+      "r2_first_ci": [
+        0.0649,
+        0.5195
+      ],
+      "r2_last_ci": [
+        0.1936,
+        0.6358
+      ],
+      "r2_difference": 0.1258,
+      "r2_difference_bootstrap_p": 0.39,
+      "r2_difference_ci": [
+        -0.2081,
+        0.4475
+      ],
+      "rho_first": 0.2576,
+      "rho_last": 0.4722,
+      "rho_first_ci": [
+        -0.0503,
+        0.5462
+      ],
+      "rho_last_ci": [
+        0.1845,
+        0.6949
+      ],
+      "rho_difference": 0.2146,
+      "rho_difference_bootstrap_p": 0.327,
+      "rho_difference_ci": [
+        -0.2044,
+        0.6055
+      ],
+      "rho_first_p": 0.10854918990260146,
+      "rho_last_p": 0.0020937495945318324
+    },
+    "impulsivity": {
+      "first_turn": 1,
+      "last_turn": 10,
+      "n_first": 40,
+      "n_last": 40,
+      "polarity_flip_applied": true,
+      "r2_first": 0.5061,
+      "r2_last": 0.3834,
+      "r2_first_ci": [
+        0.352,
+        0.7875
+      ],
+      "r2_last_ci": [
+        0.193,
+        0.6763
+      ],
+      "r2_difference": -0.1227,
+      "r2_difference_bootstrap_p": 1.0,
+      "r2_difference_ci": [
+        -0.466,
+        0.212
+      ],
+      "rho_first": 0.6458,
+      "rho_last": 0.4086,
+      "rho_first_ci": [
+        0.4332,
+        0.797
+      ],
+      "rho_last_ci": [
+        0.0996,
+        0.6514
+      ],
+      "rho_difference": -0.2371,
+      "rho_difference_bootstrap_p": 1.0,
+      "rho_difference_ci": [
+        -0.5876,
+        0.0939
+      ],
+      "rho_first_p": 6.796689161600402e-06,
+      "rho_last_p": 0.008848734558672335
+    }
+  },
+  "within_conversation_trend": {
+    "wellbeing": {
+      "n_conversations": 40,
+      "polarity_flip_applied": true,
+      "concordance_rho_ttest": {
+        "n": 40,
+        "mean": 0.11545454545454543,
+        "std": 0.3072034330586821,
+        "t_stat": 2.376922199212939,
+        "t_p": 0.02246042251727294,
+        "wilcoxon_stat": 217.5,
+        "wilcoxon_p": 0.00899504264089046
+      },
+      "concordance_rho_mean": 0.1155,
+      "concordance_rho_std": 0.3033,
+      "concordance_rho_values": [
+        -0.6606,
+        0.0545,
+        0.4667,
+        -0.0909,
+        0.297,
+        0.2121,
+        0.3697,
+        -0.2485,
+        0.4182,
+        0.3939,
+        0.2606,
+        0.0303,
+        0.2364,
+        -0.297,
+        0.0061,
+        0.2848,
+        -0.0182,
+        -0.2364,
+        -0.2606,
+        0.1758,
+        0.4545,
+        0.4424,
+        0.503,
+        0.1515,
+        0.2242,
+        0.0667,
+        -0.1636,
+        0.2,
+        0.2606,
+        0.3455,
+        0.0182,
+        -0.1515,
+        0.1636,
+        0.1758,
+        0.1758,
+        0.7333,
+        -0.7333,
+        0.0545,
+        0.4788,
+        -0.1758
+      ],
+      "residual_rho_ttest": {
+        "n": 40,
+        "mean": -0.15,
+        "std": 0.3055520558212696,
+        "t_stat": -3.1048172642812757,
+        "t_p": 0.003538377655382777,
+        "wilcoxon_stat": 196.0,
+        "wilcoxon_p": 0.0033575435081729665
+      },
+      "residual_rho_mean": -0.15,
+      "lmm_interaction_test": {
+        "interaction_coef": 0.082001,
+        "interaction_p": 0.001512,
+        "probe_coef": 1.9659,
+        "probe_p": 5.7709244560969695e-28,
+        "turn_coef": 0.016977,
+        "turn_p": 3.86557865656645e-09,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true,
+        "interpretation": "Positive interaction means probe-rating relationship strengthens over turns; negative means it weakens."
+      }
+    },
+    "interest": {
+      "n_conversations": 40,
+      "polarity_flip_applied": false,
+      "concordance_rho_ttest": {
+        "n": 40,
+        "mean": -0.07272727272727272,
+        "std": 0.3125226558150354,
+        "t_stat": -1.4717898082022063,
+        "t_p": 0.14910178434505314,
+        "wilcoxon_stat": 309.5,
+        "wilcoxon_p": 0.17869641572360706
+      },
+      "concordance_rho_mean": -0.0727,
+      "concordance_rho_std": 0.3086,
+      "concordance_rho_values": [
+        -0.0788,
+        0.3455,
+        -0.3455,
+        -0.3697,
+        -0.1394,
+        0.297,
+        -0.103,
+        -0.5879,
+        0.0303,
+        0.2121,
+        -0.2727,
+        0.1879,
+        -0.1515,
+        -0.5758,
+        0.0788,
+        -0.4061,
+        0.1758,
+        -0.6242,
+        -0.1515,
+        0.1394,
+        0.0667,
+        0.0788,
+        -0.6606,
+        0.0182,
+        -0.4303,
+        0.0667,
+        -0.1758,
+        0.2727,
+        -0.2606,
+        -0.3212,
+        -0.297,
+        0.2606,
+        0.7212,
+        0.0303,
+        0.0424,
+        0.2485,
+        -0.4424,
+        -0.1879,
+        0.3818,
+        0.0182
+      ],
+      "residual_rho_ttest": {
+        "n": 40,
+        "mean": -0.143030303030303,
+        "std": 0.25259473791487314,
+        "t_stat": -3.5812427110201397,
+        "t_p": 0.0009357923944716507,
+        "wilcoxon_stat": 179.0,
+        "wilcoxon_p": 0.001440798383555375
+      },
+      "residual_rho_mean": -0.143,
+      "lmm_interaction_test": {
+        "interaction_coef": -0.444478,
+        "interaction_p": 0.0,
+        "probe_coef": 4.1132,
+        "probe_p": 2.8188772091050477e-42,
+        "turn_coef": 0.075907,
+        "turn_p": 9.835045872801985e-77,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true,
+        "interpretation": "Positive interaction means probe-rating relationship strengthens over turns; negative means it weakens."
+      }
+    },
+    "focus": {
+      "n_conversations": 40,
+      "polarity_flip_applied": false,
+      "concordance_rho_ttest": {
+        "n": 40,
+        "mean": 0.11757575757575756,
+        "std": 0.3579372094896362,
+        "t_stat": 2.077499526184112,
+        "t_p": 0.04438698080081379,
+        "wilcoxon_stat": 264.0,
+        "wilcoxon_p": 0.049760567819248536
+      },
+      "concordance_rho_mean": 0.1176,
+      "concordance_rho_std": 0.3534,
+      "concordance_rho_values": [
+        0.4182,
+        0.3091,
+        -0.5636,
+        -0.2848,
+        -0.0909,
+        -0.0182,
+        0.4424,
+        0.4788,
+        0.5636,
+        0.2848,
+        0.7212,
+        -0.2121,
+        0.297,
+        -0.2848,
+        0.2242,
+        -0.4788,
+        -0.4061,
+        0.697,
+        -0.4788,
+        0.4788,
+        -0.3697,
+        -0.1515,
+        0.7697,
+        0.4061,
+        0.0182,
+        0.503,
+        0.2364,
+        0.3333,
+        -0.1758,
+        -0.0424,
+        0.1394,
+        0.2,
+        0.4061,
+        -0.1758,
+        -0.0667,
+        0.3091,
+        0.103,
+        -0.1758,
+        0.3939,
+        -0.0545
+      ],
+      "residual_rho_ttest": {
+        "n": 40,
+        "mean": -0.23393939393939395,
+        "std": 0.35238966319108916,
+        "t_stat": -4.198655049008726,
+        "t_p": 0.00015051636853743528,
+        "wilcoxon_stat": 147.0,
+        "wilcoxon_p": 0.00023327588314714376
+      },
+      "residual_rho_mean": -0.2339,
+      "lmm_interaction_test": {
+        "interaction_coef": -0.582266,
+        "interaction_p": 6e-06,
+        "probe_coef": 0.7322,
+        "probe_p": 0.19250437314725344,
+        "turn_coef": 0.042364,
+        "turn_p": 1.3341039760845724e-45,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true,
+        "interpretation": "Positive interaction means probe-rating relationship strengthens over turns; negative means it weakens."
+      }
+    },
+    "impulsivity": {
+      "n_conversations": 40,
+      "polarity_flip_applied": true,
+      "concordance_rho_ttest": {
+        "n": 40,
+        "mean": -0.06242424242424242,
+        "std": 0.39686131725738744,
+        "t_stat": -0.9948199972490134,
+        "t_p": 0.3259563761097597,
+        "wilcoxon_stat": 336.5,
+        "wilcoxon_p": 0.32689447529082827
+      },
+      "concordance_rho_mean": -0.0624,
+      "concordance_rho_std": 0.3919,
+      "concordance_rho_values": [
+        -0.5273,
+        -0.2364,
+        0.3576,
+        -0.4182,
+        0.3333,
+        0.1879,
+        -0.2242,
+        0.1273,
+        -0.2121,
+        -0.2121,
+        -0.5515,
+        0.1515,
+        -0.0545,
+        0.503,
+        -0.1636,
+        0.2242,
+        0.5152,
+        0.0061,
+        0.1879,
+        0.4182,
+        -0.0667,
+        -0.7091,
+        -0.1636,
+        -0.8545,
+        0.0788,
+        -0.5273,
+        -0.4788,
+        0.4424,
+        0.4303,
+        0.2848,
+        -0.0182,
+        -0.297,
+        0.6606,
+        0.4424,
+        -0.5273,
+        -0.3333,
+        -0.7333,
+        -0.1758,
+        -0.5273,
+        0.1636
+      ],
+      "residual_rho_ttest": {
+        "n": 40,
+        "mean": -0.06757575757575755,
+        "std": 0.30827947789429955,
+        "t_stat": -1.3863609086819704,
+        "t_p": 0.1735118528756759,
+        "wilcoxon_stat": 312.0,
+        "wilcoxon_p": 0.19219595044887683
+      },
+      "residual_rho_mean": -0.0676,
+      "lmm_interaction_test": {
+        "interaction_coef": -0.122375,
+        "interaction_p": 0.003741,
+        "probe_coef": 1.9853,
+        "probe_p": 9.33248826681669e-16,
+        "turn_coef": -0.015018,
+        "turn_p": 2.1254963361603513e-10,
+        "n_obs": 400,
+        "n_groups": 40,
+        "converged": true,
+        "interpretation": "Positive interaction means probe-rating relationship strengthens over turns; negative means it weakens."
+      }
+    }
+  },
+  "steering_drift_panels": {
+    "C": "wellbeing",
+    "D": "interest",
+    "E": "focus",
+    "F": "impulsivity"
+  }
+}

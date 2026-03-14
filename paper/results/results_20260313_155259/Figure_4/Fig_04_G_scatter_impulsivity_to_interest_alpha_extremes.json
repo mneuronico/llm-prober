@@ -1,0 +1,24 @@
+{
+  "panel_id": "Fig_04_G",
+  "title": "Impulsive / Planning → Interested / Bored — Scatter at Display α Extremes",
+  "description": "Scatter of polarity-corrected probe score vs logit self-report for display-corrected α = -4 and α = +4. Separate isotonic fits are shown for each alpha group.",
+  "condition": "Impulsive / Planning → Interested / Bored",
+  "statistics_by_display_alpha": {
+    "-4": {
+      "display_alpha": -4.0,
+      "raw_alpha": 4.0,
+      "n_pooled": 400,
+      "spearman_rho_POOLED": 0.7031,
+      "spearman_p_POOLED": 6.69921103501577e-61,
+      "isotonic_r2": 0.4562
+    },
+    "+4": {
+      "display_alpha": 4.0,
+      "raw_alpha": -4.0,
+      "n_pooled": 400,
+      "spearman_rho_POOLED": 0.8263,
+      "spearman_p_POOLED": 2.868629151856145e-101,
+      "isotonic_r2": 0.6873
+    }
+  }
+}

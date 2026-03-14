@@ -39,10 +39,6 @@
 \citation{Han2025}
 \citation{Jackson2025}
 \citation{Song2025}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
-\newlabel{sec:related}{{2}{3}{Related Work}{section.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Self-report and introspection in language models}{3}{subsection.2.1}\protected@file@percent }
-\newlabel{sec:rw-introspection}{{2.1}{3}{Self-report and introspection in language models}{subsection.2.1}{}}
 \citation{Kim2018}
 \citation{AlainBengio2018}
 \citation{Pimentel2020}
@@ -52,6 +48,12 @@
 \citation{Belinkov2022,HewittLiang2019}
 \citation{HewittLiang2019}
 \citation{Belinkov2022}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{3}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Self-report and introspection in language models}{3}{subsection.2.1}\protected@file@percent }
+\newlabel{sec:rw-introspection}{{2.1}{3}{Self-report and introspection in language models}{subsection.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Internal probing and activation steering}{3}{subsection.2.2}\protected@file@percent }
+\newlabel{sec:rw-probing}{{2.2}{3}{Internal probing and activation steering}{subsection.2.2}{}}
 \citation{Turner2024,Panickssery2023,Zou2023,Li2023}
 \citation{Arditi2024}
 \citation{Konen2024}
@@ -70,15 +72,14 @@
 \citation{Dubey2024}
 \citation{Gemma32025}
 \citation{Qwen252024}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Internal probing and activation steering}{4}{subsection.2.2}\protected@file@percent }
-\newlabel{sec:rw-probing}{{2.2}{4}{Internal probing and activation steering}{subsection.2.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Temporal dynamics in multi-turn conversation}{4}{subsection.2.3}\protected@file@percent }
 \newlabel{sec:rw-temporal}{{2.3}{4}{Temporal dynamics in multi-turn conversation}{subsection.2.3}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Methods}{4}{section.3}\protected@file@percent }
 \newlabel{sec:methods}{{3}{4}{Methods}{section.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview and experimental design}{4}{subsection.3.1}\protected@file@percent }
 \newlabel{sec:methods-overview}{{3.1}{4}{Overview and experimental design}{subsection.3.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Conversation dataset.}{5}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Conversation dataset.}{4}{section*.1}\protected@file@percent }
+\citation{Zou2023}
 \@writefile{toc}{\contentsline {paragraph}{Self-report elicitation.}{5}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Open-source library.}{5}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Measurement definitions}{5}{subsection.3.2}\protected@file@percent }
@@ -87,27 +88,26 @@
 \newlabel{eq:logit-rating}{{1}{5}{Self-report}{equation.1}{}}
 \@writefile{toc}{\contentsline {paragraph}{Internal state (probe score).}{5}{section*.5}\protected@file@percent }
 \newlabel{eq:probe-score}{{2}{5}{Internal state (probe score)}{equation.2}{}}
-\citation{Zou2023}
-\@writefile{toc}{\contentsline {paragraph}{Introspection.}{6}{section*.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Concept probes}{6}{subsection.3.3}\protected@file@percent }
-\newlabel{sec:methods-probes}{{3.3}{6}{Concept probes}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Introspection.}{5}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Concept probes}{5}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:methods-probes}{{3.3}{5}{Concept probes}{subsection.3.3}{}}
 \newlabel{eq:concept-vector}{{3}{6}{Concept probes}{equation.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Activation steering}{6}{subsection.3.4}\protected@file@percent }
 \newlabel{sec:methods-steering}{{3.4}{6}{Activation steering}{subsection.3.4}{}}
 \newlabel{eq:steering}{{4}{6}{Activation steering}{equation.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Metrics and statistical analysis}{7}{subsection.3.5}\protected@file@percent }
-\newlabel{sec:methods-stats}{{3.5}{7}{Metrics and statistical analysis}{subsection.3.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Metrics and statistical analysis}{6}{subsection.3.5}\protected@file@percent }
+\newlabel{sec:methods-stats}{{3.5}{6}{Metrics and statistical analysis}{subsection.3.5}{}}
+\citation{Kumar2024,Geng2024,Yona2024}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Results}{7}{section.4}\protected@file@percent }
 \newlabel{sec:results}{{4}{7}{Results}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Default self-reports mask internal-state drift}{7}{subsection.4.1}\protected@file@percent }
 \newlabel{sec:results-collapse}{{4.1}{7}{Default self-reports mask internal-state drift}{subsection.4.1}{}}
-\citation{Kumar2024,Geng2024,Yona2024}
 \@writefile{toc}{\contentsline {paragraph}{Logit-based self-report recovers richer signal.}{8}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Self-reports track internal state: evidence for introspection}{8}{subsection.4.2}\protected@file@percent }
 \newlabel{sec:results-introspection}{{4.2}{8}{Self-reports track internal state: evidence for introspection}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Introspection is present from the first turn and evolves over time}{8}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:results-temporal}{{4.3}{8}{Introspection is present from the first turn and evolves over time}{subsection.4.3}{}}
 \citation{ZhangMultiturn2026,Prestes2025}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Introspection is present from the first turn and evolves over time}{9}{subsection.4.3}\protected@file@percent }
-\newlabel{sec:results-temporal}{{4.3}{9}{Introspection is present from the first turn and evolves over time}{subsection.4.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Self-steering confirms causal dependence}{9}{subsection.4.4}\protected@file@percent }
 \newlabel{sec:results-causal}{{4.4}{9}{Self-steering confirms causal dependence}{subsection.4.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Cross-concept steering can improve introspection}{10}{subsection.4.5}\protected@file@percent }
@@ -116,36 +116,34 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Generalization across model sizes and families}{11}{subsection.4.6}\protected@file@percent }
 \newlabel{sec:results-generalization}{{4.6}{11}{Generalization across model sizes and families}{subsection.4.6}{}}
 \@writefile{toc}{\contentsline {paragraph}{Introspection scales with model size.}{11}{section*.9}\protected@file@percent }
-\citation{ComShanahan2025}
-\citation{McClelland2024}
 \@writefile{toc}{\contentsline {paragraph}{Internal-state drift generalizes across scales.}{12}{section*.10}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Cross-family replication.}{12}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{12}{section.5}\protected@file@percent }
-\newlabel{sec:discussion}{{5}{12}{Discussion}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Scope of the claim}{12}{subsection.5.1}\protected@file@percent }
+\citation{ComShanahan2025}
+\citation{McClelland2024}
 \citation{Rahwan2019,Hagendorff2023,PerezLong2023,Long2024,DungTagliabue2025,Lu2026,Das2026}
 \citation{Likert1932,Watson1988,CsikszentmihalyiLarson1987,Shiffman2008,FlemingLau2014}
 \citation{AlainBengio2018,Kim2018,GurneeTegmark2023}
 \citation{Belinkov2022,HewittLiang2019,Pimentel2020}
 \citation{Belinkov2022,HewittLiang2019,Pimentel2020}
 \citation{Xiong2024,Kumar2024,Yona2024,Han2025,Jackson2025}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{13}{section.5}\protected@file@percent }
+\newlabel{sec:discussion}{{5}{13}{Discussion}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Scope of the claim}{13}{subsection.5.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Numeric introspection as a complement to white-box methods}{13}{subsection.5.2}\protected@file@percent }
 \citation{Song2025,Binder2025,JiAn2025}
 \citation{FrisingBalcells2025,Zou2023}
 \citation{BoldtGilbert2022,Fleming2024}
 \citation{Xiong2024,Kumar2024,Yona2024,PearsonVogel2026}
-\citation{AlainBengio2018,Kim2018,Burns2022,GurneeTegmark2023,AzariaMitchell2023,Zou2023}
-\citation{Belinkov2022,Pimentel2020}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Introspection is concept-specific and only locally improvable in our experiments}{14}{subsection.5.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Two components of introspective ability}{14}{subsection.5.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Generalization to other models and limitations of this work}{14}{subsection.5.5}\protected@file@percent }
+\citation{AlainBengio2018,Kim2018,Burns2022,GurneeTegmark2023,AzariaMitchell2023,Zou2023}
+\citation{Belinkov2022,Pimentel2020}
 \citation{JiAn2025,Rivera2025,Lindsey2026}
 \citation{FlemingLau2014,Lapate2020,KieferKammer2024}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Generalization to other models and limitations of this work}{15}{subsection.5.5}\protected@file@percent }
 \bibdata{references}
 \bibcite{Abdulhai2025}{{1}{2025}{{Abdulhai et~al.}}{{Abdulhai, Shlegeris, and Greenblatt}}}
 \bibcite{AlainBengio2018}{{2}{2018}{{Alain \& Bengio}}{{Alain and Bengio}}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{15}{section.6}\protected@file@percent }
-\newlabel{sec:conclusion}{{6}{15}{Conclusion}{section.6}{}}
 \bibcite{Arditi2024}{{3}{2024}{{Arditi et~al.}}{{Arditi, Obeso, Syed, Paleka, Panickssery, Gurnee, and Nanda}}}
 \bibcite{AzariaMitchell2023}{{4}{2023}{{Azaria \& Mitchell}}{{Azaria and Mitchell}}}
 \bibcite{Belinkov2022}{{5}{2022}{{Belinkov}}{{}}}
@@ -161,6 +159,8 @@
 \bibcite{Dubey2024}{{15}{2024}{{Dubey et~al.}}{{}}}
 \bibcite{DungTagliabue2025}{{16}{2025}{{Dung \& Tagliabue}}{{Dung and Tagliabue}}}
 \bibcite{Fazzi2025}{{17}{2025}{{Fazzi et~al.}}{{Fazzi, Zagatti, Mattei, and Cuskley}}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{16}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{6}{16}{Conclusion}{section.6}{}}
 \bibcite{Fleming2024}{{18}{2024}{{Fleming}}{{}}}
 \bibcite{FlemingLau2014}{{19}{2014}{{Fleming \& Lau}}{{Fleming and Lau}}}
 \bibcite{FrisingBalcells2025}{{20}{2025}{{Frising \& Balcells}}{{Frising and Balcells}}}
@@ -215,9 +215,6 @@
 \@writefile{toc}{\contentsline {section}{\numberline {A}Experimental Design Details}{19}{appendix.A}\protected@file@percent }
 \newlabel{app:experimental}{{A}{19}{Experimental Design Details}{appendix.A}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Conversation generation}{19}{subsection.A.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Conversation generation hyperparameters.}}{19}{table.caption.13}\protected@file@percent }
-\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{tab:gen-params}{{1}{19}{Conversation generation hyperparameters}{table.caption.13}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Topic selection}{19}{subsection.A.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Self-report query structure}{20}{subsection.A.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {A.4}Independence across conditions}{21}{subsection.A.4}\protected@file@percent }
@@ -225,13 +222,12 @@
 \newlabel{app:probes}{{B}{21}{Probe Training Details}{appendix.B}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Training procedure}{21}{subsection.B.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Concept pair system prompts}{21}{subsection.B.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Sad vs.\ happy (wellbeing).}{21}{section*.14}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Bored vs.\ interested (interest).}{21}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Distracted vs.\ focused (focus).}{21}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Impulsive vs.\ planning (impulsivity).}{22}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Sad vs.\ happy (wellbeing).}{21}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Bored vs.\ interested (interest).}{21}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Distracted vs.\ focused (focus).}{22}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Impulsive vs.\ planning (impulsivity).}{22}{section*.16}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {B.3}Training questions}{22}{subsection.B.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {B.4}Evaluation texts}{22}{subsection.B.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B.5}Probe quality results}{22}{subsection.B.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {C}Supplementary Analyses}{22}{appendix.C}\protected@file@percent }
 \newlabel{app:figures}{{C}{22}{Supplementary Analyses}{appendix.C}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {C.1}Appendix Figure 2: Recovering informative self-reports}{22}{subsection.C.1}\protected@file@percent }
