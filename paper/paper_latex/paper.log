@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  14 MAR 2026 17:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.3.10)  14 MAR 2026 18:43
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -352,8 +352,10 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \float@box=\box55
 \@float@everytoks=\toks24
 \@floatcapt=\box56
+) (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/placeins\placeins.sty
+Package: placeins 2005/04/18  v 2.2
 )
-LaTeX Font Info:    Trying to load font information for T1+lmr on input line 25.
+LaTeX Font Info:    Trying to load font information for T1+lmr on input line 49.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmr.fd
 File: t1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
@@ -362,24 +364,24 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 ) (paper.aux)
 \openout1 = `paper.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 49.
+LaTeX Font Info:    ... okay on input line 49.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count318
@@ -395,11 +397,17 @@ LaTeX Font Info:    ... okay on input line 25.
 \everyMPtoPDFconversion=\toks26
 ) (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+ (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/grfext\grfext.sty
+Package: grfext 2019/12/03 v1.3 Manage graphics extensions (HO)
+)
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 504.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring OFF on input line 25.
+Package hyperref Info: Link coloring OFF on input line 49.
  (paper.out) (paper.out)
 \@outlinefile=\write3
 \openout3 = `paper.out'.
@@ -407,111 +415,80 @@ Package hyperref Info: Link coloring OFF on input line 25.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Trying to load font information for T1+lmss on input line 28.
+LaTeX Font Info:    Trying to load font information for T1+lmss on input line 52.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmss.fd
 File: t1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 28.
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 52.
+ (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmtt.fd
+File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 59.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OML+lmm on input line 28.
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 59.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 28.
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 59.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 28.
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 59.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 28.
+(Font)              <10> on input line 59.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 28.
+(Font)              <7> on input line 59.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 28.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 28.
+(Font)              <5> on input line 59.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 59.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 28.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 59.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 28.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 28.
- [1
+) [1
 
-{C:/Users/Nico/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}] [2] [3] [4]
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 127.
- (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmtt.fd
-File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [5{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.enc}]
+{C:/Users/Nico/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}] [2] [3] [4] [5{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.enc}]
 <../figures/figure-01.png, id=482, 859.2903pt x 444.9423pt>
 File: ../figures/figure-01.png Graphic file (type png)
 <use ../figures/figure-01.png>
-Package pdftex.def Info: ../figures/figure-01.png  used on input line 186.
+Package pdftex.def Info: ../figures/figure-01.png  used on input line 210.
 (pdftex.def)             Requested size: 469.75278pt x 243.23897pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <9> on input line 211.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 211.
  [6] [7 <../figures/figure-01.png (PNG copy)>]
-<../figures/figure-02.png, id=498, 655.248pt x 595.7457pt>
+<../figures/figure-02.png, id=504, 655.248pt x 595.7457pt>
 File: ../figures/figure-02.png Graphic file (type png)
 <use ../figures/figure-02.png>
-Package pdftex.def Info: ../figures/figure-02.png  used on input line 249.
+Package pdftex.def Info: ../figures/figure-02.png  used on input line 273.
 (pdftex.def)             Requested size: 469.76855pt x 427.10942pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [8]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [9 <../figures/figure-02.png (PNG copy)>]
-<../figures/figure-03.png, id=516, 1031.2929pt x 1042.6152pt>
+ [8] [9 <../figures/figure-02.png (PNG copy)>]
+<../figures/figure-03.png, id=522, 1031.2929pt x 1042.6152pt>
 File: ../figures/figure-03.png Graphic file (type png)
 <use ../figures/figure-03.png>
-Package pdftex.def Info: ../figures/figure-03.png  used on input line 285.
+Package pdftex.def Info: ../figures/figure-03.png  used on input line 309.
 (pdftex.def)             Requested size: 441.57469pt x 446.42264pt.
- [10]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [11]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [12 <../figures/figure-03.png (PNG copy)>] [13]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [14]
-<../figures/figure-04.png, id=545, 1048.6377pt x 672.111pt>
+ [10] [11 <../figures/figure-03.png (PNG copy)>] [12]
+<../figures/figure-04.png, id=542, 1048.6377pt x 672.111pt>
 File: ../figures/figure-04.png Graphic file (type png)
 <use ../figures/figure-04.png>
-Package pdftex.def Info: ../figures/figure-04.png  used on input line 344.
+Package pdftex.def Info: ../figures/figure-04.png  used on input line 369.
 (pdftex.def)             Requested size: 469.75449pt x 301.08316pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [15 <../figures/figure-04.png (PNG copy)>]
-<../figures/figure-05.png, id=551, 1006.962pt x 831.105pt>
+ [13] [14 <../figures/figure-04.png (PNG copy)>]
+<../figures/figure-05.png, id=554, 1006.962pt x 831.105pt>
 File: ../figures/figure-05.png Graphic file (type png)
 <use ../figures/figure-05.png>
-Package pdftex.def Info: ../figures/figure-05.png  used on input line 380.
+Package pdftex.def Info: ../figures/figure-05.png  used on input line 405.
 (pdftex.def)             Requested size: 441.57425pt x 364.45721pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [16]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [17 <../figures/figure-05.png (PNG copy)>] [18] [19]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [20] [21] (paper.bbl
+ [15] [16 <../figures/figure-05.png (PNG copy)>] [17] [18] [19] [20] (paper.bbl
 Underfull \hbox (badness 2253) in paragraph at lines 51--57
 []\T1/lmr/m/n/10 Trenton Bricken et al.  To-wards monose-man-tic-ity: De-com-pos-ing lan-guage mod-els with dic-tio-
  []
@@ -521,43 +498,34 @@ Underfull \hbox (badness 1888) in paragraph at lines 51--57
 \T1/lmr/m/n/10 nary learn-ing.  Trans-former Cir-cuits, 2023.  URL []$\T1/lmtt/m/n/10 https : / / transformer-[]circuits . pub / 2023 /
  []
 
-[22] [23] [24]) [25] [26]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 589.
+[21] [22] [23]) [24] [25]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 616.
  (C:\Users\Nico\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [27{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}]
-<../figures/figure-06.png, id=771, 1157.7654pt x 747.0309pt>
+) [26{C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}]
+<../figures/figure-06.png, id=773, 1157.7654pt x 747.0309pt>
 File: ../figures/figure-06.png Graphic file (type png)
 <use ../figures/figure-06.png>
-Package pdftex.def Info: ../figures/figure-06.png  used on input line 676.
+Package pdftex.def Info: ../figures/figure-06.png  used on input line 703.
 (pdftex.def)             Requested size: 469.75806pt x 303.10439pt.
- [28] [29 <../figures/figure-06.png (PNG copy)>]
-<../figures/figure-07.png, id=786, 1356.267pt x 274.1442pt>
+ [27] [28 <../figures/figure-06.png (PNG copy)>]
+<../figures/figure-07.png, id=788, 1356.267pt x 274.1442pt>
 File: ../figures/figure-07.png Graphic file (type png)
 <use ../figures/figure-07.png>
-Package pdftex.def Info: ../figures/figure-07.png  used on input line 693.
+Package pdftex.def Info: ../figures/figure-07.png  used on input line 720.
 (pdftex.def)             Requested size: 469.75447pt x 94.95213pt.
-<../figures/figure-08.png, id=787, 792.0792pt x 562.0197pt>
+<../figures/figure-08.png, id=789, 792.0792pt x 562.0197pt>
 File: ../figures/figure-08.png Graphic file (type png)
 <use ../figures/figure-08.png>
-Package pdftex.def Info: ../figures/figure-08.png  used on input line 706.
+Package pdftex.def Info: ../figures/figure-08.png  used on input line 733.
 (pdftex.def)             Requested size: 469.75198pt x 333.31247pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [30 <../figures/figure-07.png (PNG copy)>]
-<../figures/figure-09.png, id=793, 946.4961pt x 529.7391pt>
+ [29 <../figures/figure-07.png (PNG copy)>]
+<../figures/figure-09.png, id=795, 946.4961pt x 529.7391pt>
 File: ../figures/figure-09.png Graphic file (type png)
 <use ../figures/figure-09.png>
-Package pdftex.def Info: ../figures/figure-09.png  used on input line 718.
+Package pdftex.def Info: ../figures/figure-09.png  used on input line 745.
 (pdftex.def)             Requested size: 469.76628pt x 262.92085pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [31 <../figures/figure-08.png (PNG copy)>]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [32 <../figures/figure-09.png (PNG copy)>] [33] (paper.aux)
+ [30 <../figures/figure-08.png (PNG copy)>] [31 <../figures/figure-09.png (PNG copy)>] (paper.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -566,17 +534,17 @@ Package rerunfilecheck Info: File `paper.out' has not changed.
 (rerunfilecheck)             Checksum: D5C3ADE7C006F5F5AFE1FD69E4DAB109;8752.
  ) 
 Here is how much of TeX's memory you used:
- 13476 strings out of 467867
- 208420 string characters out of 5418818
- 652935 words of memory out of 5000000
- 41930 multiletter control sequences out of 15000+600000
- 717211 words of font info for 100 fonts, out of 8000000 for 9000
+ 13541 strings out of 467867
+ 210107 string characters out of 5418818
+ 653620 words of memory out of 5000000
+ 41989 multiletter control sequences out of 15000+600000
+ 713269 words of font info for 100 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,90p,2599b,663s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb>
-Output written on paper.pdf (33 pages, 6590209 bytes).
+ 75i,12n,90p,2599b,671s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr6.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy6.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy7.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy9.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Users/Nico/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt9.pfb>
+Output written on paper.pdf (31 pages, 6717230 bytes).
 PDF statistics:
- 926 PDF objects out of 1000 (max. 8388607)
- 215 named destinations out of 1000 (max. 500000)
+ 942 PDF objects out of 1000 (max. 8388607)
+ 213 named destinations out of 1000 (max. 500000)
  358 words of extra memory for PDF output out of 10000 (max. 10000000)
 

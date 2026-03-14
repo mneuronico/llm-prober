@@ -7,6 +7,28 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{float}
+\usepackage[section]{placeins}
+\hypersetup{hidelinks}
+\captionsetup{font=small, labelfont=bf, skip=4pt}
+\setlength{\textfloatsep}{10pt plus 2pt minus 4pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\abovedisplayshortskip}{3pt plus 2pt minus 2pt}
+\setlength{\belowdisplayshortskip}{4pt plus 2pt minus 2pt}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{3}
+\raggedbottom
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{8pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\def\@startauthor{\noindent\centering\normalsize\bf}
+\makeatother
 
 \def\month{MM}
 \def\year{YYYY}
@@ -16,10 +38,12 @@
 Introspection of Emotive States in Multi-Turn Conversation}
 
 \author{
-\name Nicolas Martorell \thanks{ORCID: 0000-0003-1778-7738}
-\email nmartorell@fbmc.fcen.uba.ar \\
-\addr Faculty of Exact and Natural Sciences, University of Buenos Aires, Argentina \\
-National Scientific and Technical Research Council (CONICET)
+\name Nicolas Martorell \\
+{\normalfont\small
+Faculty of Exact and Natural Sciences, University of Buenos Aires, Argentina \\
+National Scientific and Technical Research Council (CONICET) \\
+\texttt{nmartorell@fbmc.fcen.uba.ar} \\
+\href{https://orcid.org/0000-0003-1778-7738}{ORCID: 0000-0003-1778-7738}}
 }
 
 \begin{document}
@@ -31,10 +55,10 @@ National Scientific and Technical Research Council (CONICET)
 Tracking the internal states of large language models across conversations is important for safety, interpretability, and model welfare, yet current methods are limited.
 Linear probes and other white-box methods compress high-dimensional representations imperfectly and are harder to apply with increasing model size.
 Taking inspiration from human psychology, where numeric self-report is a widely used tool for tracking internal states, we ask whether LLMs' own numeric self-reports can track emotive states over time.
-We study four concept pairs (wellbeing, interest, focus, and impulsivity) in 40 ten-turn conversations, operationalizing introspection as the causal informational coupling between a model's self-report and its independently measured internal state along probe-defined concept directions.
+We study four concept pairs (wellbeing, interest, focus, and impulsivity) in 40 ten-turn conversations, operationalizing introspection as the causal informational coupling between a model's self-report and a concept-matched probe-defined internal state.
 We find that greedy-decoded self-reports collapse outputs to few uninformative values, but introspective capacity can be unmasked by calculating logit-based self-reports. This metric tracks interpretable internal states (pooled Spearman $\rho = 0.40$--$0.76$; isotonic $R^2 = 0.12$--$0.54$ in LLaMA-3.2-3B-Instruct), follows how those states change over time, and activation steering confirms the coupling is causal.
 Furthermore, we find that introspection is present at turn~1 but evolves through conversation, and can be selectively improved by steering along one concept to boost introspection for another ($\Delta R^2$ up to $0.30$).
-Crucially, these phenomena scale with model size, approaching $R^2 \approx 0.93$ in LLaMA-3.1-8B-Instruct, and partially replicate in other model families.
+Crucially, these phenomena scale with model size in some cases, approaching $R^2 \approx 0.93$ in LLaMA-3.1-8B-Instruct, and partially replicate in other model families.
 Together, these results establish numeric self-report as a viable, complementary tool for tracking internal emotive states in conversational AI systems.
 \end{abstract}
 
@@ -64,7 +88,7 @@ We find that small instruction-tuned LLMs can indeed track their own emotive sta
 
   \item \textbf{Introspective fidelity can be selectively improved.} Steering along one concept direction can significantly improve introspective accuracy for a different concept, revealing that introspection quality is modulable and concept-specific.
 
-  \item \textbf{Introspection ability scales with model size.} Introspective capacity strengthens with model size within the LLaMA family, approaching near-perfect coupling for some concepts, and replicates in other instruction-tuned families.
+  \item \textbf{Introspection ability scales with model size.} Introspective capacity strengthens with model size for some concepts within the LLaMA family, approaching near-perfect coupling for some concepts, and partially replicates in other instruction-tuned families.
 \end{enumerate}
 
 More broadly, this work establishes a framework for treating LLM self-report as a quantitative signal that can be informative about evolving internal state, offering a complementary approach to white-box methods for monitoring internal states in conversational AI systems.
@@ -181,7 +205,7 @@ This design choice serves as a control, verifying that positive results are not 
 Random-direction controls, using vectors of equal per-layer norm drawn from an isotropic distribution, serve as the primary null comparison.
 
 Full details on system prompts, training questions, evaluation texts, and sign conventions are provided in Appendix~\ref{app:probes}.
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{../figures/figure-01.png}
 \caption{Linear probes recover four interpretable internal directions in LLaMA-3.2-3B-Instruct. Panels~A, C, E, and~G show layer-wise Cohen's $d$ sweeps for the sad-vs-happy (wellbeing), bored-vs-interested (interest), distracted-vs-focused (focus), and planning-vs-impulsive (impulsivity) probes; dashed lines mark the selected layers and the gray band marks the searched layer range. The best layers are 16, 14, 10, and 13, with peak $d$ values 3.34, 1.67, 1.99, and 3.60. For wellbeing and impulsivity, scores were sign-corrected so that larger values align with larger self-reported values in later experiments. Panels~B, D, F, and~H show the selected-layer score distributions on held-out evaluation prompts; boxplots show prompt-level scores. The two poles separate in all four cases (Welch's $t$-test: wellbeing, $d = 3.34$, $p = 7.21 \times 10^{-13}$; interest, $d = 1.67$, $p = 9.45 \times 10^{-6}$; focus, $d = 1.99$, $p = 5.73 \times 10^{-7}$; impulsivity, $d = 3.60$, $p = 3.58 \times 10^{-13}$).}
@@ -244,7 +268,7 @@ The reports are largely uninformative: the model tends to produce the same numbe
 Despite this low dynamic range, close inspection reveals that greedy reports are not entirely static over time.
 Interest drifts upward over the course of a conversation (LMM turn slope $= 0.14$, $p < 10^{-41}$), and smaller positive trends are detectable for wellbeing and focus (slopes $= 0.029$ and $0.022$, $p < 10^{-3}$), though impulsivity does not drift reliably (slope $= 0.002$, $p = 0.20$).
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{../figures/figure-02.png}
 \caption{Internal-state drift is tracked by numeric self-reports of the same concept. All panels use 40 ten-turn conversations; shaded bands denote cluster-bootstrap 95\% CIs across conversations. Panel~A shows greedy integer self-reports across turns, with thin lines for individual conversations and thick lines for per-turn means. Greedy ratings are largely collapsed, with clear positive drift only for interest (mixed-effects turn slope $= 0.14$, $p = 4.98 \times 10^{-42}$) and smaller positive trends for wellbeing and focus (slopes $= 0.029$ and $0.022$, $p = 8.38 \times 10^{-4}$ and $3.37 \times 10^{-6}$); impulsivity does not drift reliably (slope $= 0.002$, $p = 0.20$). Panel~B shows the average number of distinct greedy responses used for each concept across the 40 conversations, averaging across turns. Panel~C shows probe scores from the trained concept directions across turns. Probe scores drift strongly for interest and focus (slopes $= 0.005$ and $0.002$, $p = 4.12 \times 10^{-14}$ and $1.75 \times 10^{-10}$), are flat for wellbeing (slope $= -3.6 \times 10^{-4}$, $p = 0.64$), and show only a weak effect for impulsivity (LMM slope $= 0.001$, $p = 0.002$). Panel~D shows logit-based self-reports, defined as the probability-weighted average over the digit-token logits. Unlike greedy or sampled outputs, the logit-based measure shows robust drift in all four concepts, with positive slopes for wellbeing, interest, and focus and a negative slope for impulsivity (all $p < 10^{-6}$). Panel~E shows Shannon entropy of the self-report distribution. The logit-based method is most informative in all four concepts.}
@@ -280,7 +304,7 @@ For each of the four concepts, we plot the previous-turn probe score (before the
 In all four cases, the relationship is positive and monotonic, with coupling strength varying by concept: interest yields the strongest association ($\rho = 0.76$, isotonic $R^2 = 0.54$), followed by wellbeing ($\rho = 0.68$, $R^2 = 0.48$), impulsivity ($\rho = 0.51$, $R^2 = 0.31$), and focus ($\rho = 0.40$, $R^2 = 0.12$).
 Mixed-effects models confirm these associations are significant (all $p < 10^{-5}$; LMM: logit\_report $\sim$ probe $+$ (1$|$conversation)).
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=0.94\textwidth,height=0.78\textheight,keepaspectratio]{../figures/figure-03.png}
 \caption{Self-reports track the probe-defined internal state from the first turn, and direct self-steering shifts self-reports causally in the predicted direction. Panel~A shows probe score versus logit-based self-report, with one point per conversation-turn observation and black isotonic fits. Descriptive associations are positive for all four concepts (pooled $\rho = 0.40$--$0.76$; isotonic $R^2 = 0.12$--$0.54$), and mixed-effects probe slopes are positive in all cases (all $p < 10^{-5}$). Panel~B shows turn-wise Spearman $\rho$ (introspective strength) for the four concepts; panel~C shows turn-wise isotonic $R^2$ (introspective fidelity). Shaded bands denote bootstrap 95\% CIs. Introspection is already present at turn~1 and remains positive through turn~10, although its trajectory is concept-dependent. Panel~D shows mean logit-based self-report versus steering alpha; shaded bands denote cluster-bootstrap 95\% CIs. Steering shifts self-report monotonically in the expected direction for all four concepts (mixed-effects alpha slopes $0.067$--$0.40$, all $p < 10^{-12}$). Panel~E shows drift magnitude (last minus first turn) versus steering alpha, with cluster-bootstrap 95\% CIs. Wellbeing drift becomes slightly more positive with alpha (LMM slope $= 0.012$, $p = 4.30 \times 10^{-6}$), impulsivity drift becomes more negative with alpha (LMM slope $= -0.028$, $p = 8.92 \times 10^{-53}$), and interest and focus drift decrease with alpha (fallback per-conversation slope means $= -0.095$ and $-0.11$; $p = 7.45 \times 10^{-14}$ and $1.57 \times 10^{-14}$, because the corresponding LMMs are singular).}
@@ -299,7 +323,7 @@ To explore this, we next computed introspection metrics at each turn ($n = 40$ c
 
 Figs.~3B--C show the turn-wise introspective strength (Spearman $\rho$) and introspective fidelity (isotonic $R^2$) for each concept.
 Introspection is already present at turn~1: wellbeing, interest, focus, and impulsivity all show positive turn-1 correlations ($\rho = 0.52$, $0.55$, $0.26$, and $0.65$, respectively), and three are already significant at turn~1 (wellbeing $p = 5.46 \times 10^{-4}$; interest $p = 2.37 \times 10^{-4}$; impulsivity $p = 6.80 \times 10^{-6}$; focus $p = 0.11$).
-This demonstrates that, at least for some concepts, the model can perceive and report its internal state from the beginning of a conversation, without needing multi-turn context to build up the association. These three concepts (wellbeing, interest, impulsivity) show significant introspection across all ten turns (all per-turn $p \le 0.019$), suggesting this capacity is robust over time. The focus direction does not show significant introspection at turn 1, but becomes significant in 8/10 turns (significant-turn $\rho$ range: $0.32$ to $0.53$). Together, these findings show that the observed correlation is not explained by joint temporal drift alone, but also appears at the level of individual turns throughout conversation.
+This demonstrates that, at least for some concepts, the model uses information from this internal state to form the requested self-report. It can do so from the beginning of a conversation, without needing multi-turn context to build up the association. These three concepts (wellbeing, interest, impulsivity) show significant introspection across all ten turns (all per-turn $p \le 0.019$), suggesting this capacity is robust over time. The focus direction does not show significant introspection at turn 1, but becomes significant in 8/10 turns (significant-turn $\rho$ range: $0.32$ to $0.53$). Together, these findings show that the observed correlation is not explained by joint temporal drift alone, but also appears at the level of individual turns throughout conversation.
 
 Since we now have the trajectory of introspective capacity over time for each concept, an interesting follow-up question is whether this effect changes over time or is otherwise stable. Strikingly, we found that introspection does vary significantly as the conversation progresses, but this evolution is concept-dependent.
 Wellbeing, interest, and focus show an overall increase in introspective fidelity from early to late turns (Fig.~3C, $\Delta R^2 = +0.31$, $+0.27$, and $+0.17$ from turn~1 to turn~10 respectively), while impulsivity shows the opposite pattern ($\Delta R^2 = -0.28$), with self-report fidelity weakening over time.
@@ -321,7 +345,7 @@ Having shown that self-steering changes a state's self-report as predicted, we n
 Fig.~3E shows the drift magnitude (last-turn minus first-turn self-report) as a function of $\alpha$.
 The relationship is concept-specific: the absolute magnitude of drift increases with $\alpha$ for wellbeing and impulsivity (LMM slope $= 0.012$, $p < 10^{-5}$; LMM slope $= -0.028$, $p < 10^{-52}$), while interest and focus drift decrease with $\alpha$ (per-conversation slope means $= -0.095$ and $-0.11$, both $p < 10^{-13}$; fallback tests are applied because the LMMs are singular, see Methods).
 The per-concept steering-drift curves are shown in Appendix~D.
-Together, these results confirm that the coupling between self-report and internal state is causal: moving the probe-defined direction shifts the corresponding report as expected, and the relationship holds across the full range of steering strengths. Since there is a causal relation between internal state and self-report, this suggests the model is performing true introspection for all four concepts.
+Together, these results confirm that the coupling between self-report and internal state is causal: moving the probe-defined direction shifts the corresponding report as expected, and the relationship holds across the full range of steering strengths. A causal relation between internal state and self-report supports the claim that the model is performing introspection on these four concepts.
 
 \subsection{Cross-concept steering can improve introspection}
 \label{sec:results-cross}
@@ -332,17 +356,18 @@ Our goal here was to show that improvement is possible for at least some concept
 This yields a $4 \times 4$ matrix of steering-concept $\times$ measured-concept conditions (16 cells, each evaluated at five alpha values), for a total of 80 experimental conditions. For each condition, we recorded the isotonic $R^2$ between logit-based self-report and previous turn probe score for the measured concept. Then we evaluated if this metric showed significant monotonic variation when we varied alpha along the steering concept direction (i.e. if introspective fidelity could be modulated reliably by steering the model along a linear direction in latent space).
 
 Fig.~4A shows the maximum improvement in isotonic $R^2$ relative to baseline ($\alpha = 0$) for each cell of the matrix.
-Two conditions (marked in red) survive significance testing (cluster-bootstrap analysis):
-steering along the focus direction while measuring wellbeing introspection ($R^2$ goes up monotonically from $0.30$ at $\alpha = -4$ to $0.76$ at $\alpha = 4$, $p < 0.001$), and steering along the impulsivity direction while measuring interest introspection ($R^2$ goes up monotonically from $0.55$ at $\alpha = -4$ to $0.72$ at $\alpha = 4$, $p = 0.012$). In particular, we achieved improvement over basal introspection for both conditions, although this effect was stronger for focus-steered-wellbeing ($\Delta R^2 = 0.30$) than for impulsivity-steered-interest ($\Delta R^2 = 0.10$).
+Two conditions (marked in red) survive nominal significance testing (cluster-bootstrap analysis):
+steering along the focus direction while measuring wellbeing introspection ($R^2$ goes up monotonically from $0.30$ at $\alpha = -4$ to $0.76$ at $\alpha = 4$, $p < 0.001$), and steering along the impulsivity direction while measuring interest introspection ($R^2$ goes up monotonically from $0.55$ at $\alpha = -4$ to $0.72$ at $\alpha = 4$, $p = 0.012$). In particular, we achieved improvement over basal introspection for both conditions, although this effect was stronger for focus-steered-wellbeing ($\Delta R^2 = 0.30$) than for impulsivity-steered-interest ($\Delta R^2 = 0.10$). When Benjamini--Hochberg correction is applied across the 12 tested non-null cells of the screen, focus$\to$wellbeing remains significant ($q \approx 0.011$) while impulsivity$\to$interest is only marginal ($q \approx 0.066$), so we treat the latter as an interesting follow-up case rather than a comparably secure effect.
 The full alpha-by-alpha heatmaps are shown in Appendix~E.
+
 Figs.~4B--C trace introspective fidelity and introspective strength, respectively, as functions of alpha for these two significant conditions: both metrics increase monotonically with alpha in both conditions. For focus$\to$wellbeing, the corresponding mixed-effects models are singular, but fallback per-conversation alpha-correlation tests remain strongly positive for both isotonic $R^2$ (mean correlation $= 0.46$, $p = 1.57 \times 10^{-5}$) and Spearman $\rho$ (mean correlation $= 0.51$, $p = 1.20 \times 10^{-6}$). For impulsivity$\to$interest, the mixed-effects alpha slopes are positive for both isotonic $R^2$ ($0.018$, $p = 2.95 \times 10^{-10}$) and Spearman $\rho$ ($0.020$, $p = 1.60 \times 10^{-12}$).
 
 Figs.~4D--E visualize the relationship between probe score and self-report at the most extreme steering settings in the two conditions where introspection was successfully modulated. In focus$\to$wellbeing, the relationship tightens dramatically from $\rho = 0.42$, $R^2 = 0.34$ at $\alpha = -4$ to $\rho = 0.85$, $R^2 = 0.75$ at $\alpha = +4$. In impulsivity$\to$interest, it also strengthens, from $\rho = 0.70$, $R^2 = 0.46$ to $\rho = 0.83$, $R^2 = 0.69$. In both cases, the dynamic range of both metrics increases with alpha, and correlation becomes stronger. Moreover, steering shifts both the mean probe score and the mean self-report, indicating that the steering and measurement directions are partially correlated. However, this overlap is not sufficient to explain the result by itself: note that self-steering conditions for the same measurement concepts (diagonal cells in Fig.~4A) do not show significant introspection gains.
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{../figures/figure-04.png}
-\caption{Steering one concept can selectively improve introspection for another. Panel~A shows the maximum increase in isotonic $R^2$ relative to $\alpha = 0$ for each steering/measured pair; red boxes mark cells with significant cluster-bootstrap improvements. Only focus$\to$wellbeing and impulsivity$\to$interest survive this criterion ($\Delta R^2 = 0.30$, $p = 9.99 \times 10^{-4}$; $\Delta R^2 = 0.098$, $p = 0.012$). Panels~B and~C show isotonic $R^2$ and Spearman $\rho$ versus steering alpha for those two significant cells; shaded bands denote bootstrap 95\% CIs. For impulsivity$\to$interest, the mixed-effects alpha slopes are positive for both metrics ($0.018$ and $0.020$; $p = 2.95 \times 10^{-10}$ and $1.60 \times 10^{-12}$). For focus$\to$wellbeing, the corresponding LMMs are singular, but fallback per-conversation alpha-correlation tests remain positive (mean correlations $= 0.46$ and $0.51$; $p = 1.57 \times 10^{-5}$ and $1.20 \times 10^{-6}$). Panels~D and~E show the alpha-extreme scatter plots for the same two conditions. In focus$\to$wellbeing, correlation increases from $\rho = 0.42$, $R^2 = 0.34$ at $\alpha = -4$ to $\rho = 0.85$, $R^2 = 0.75$ at $\alpha = +4$; in impulsivity$\to$interest, it increases from $\rho = 0.70$, $R^2 = 0.46$ to $\rho = 0.83$, $R^2 = 0.69$. Panels~F and~G show Shannon entropy of the previous-turn probe scores and logit-based self-reports, respectively, as functions of alpha. For focus$\to$wellbeing, both probe entropy and report entropy increase monotonically with alpha (from 1.09 to 1.67 bits and from 0.88 to 1.69 bits; exact-permutation trend tests, both $p = 0.017$). For impulsivity$\to$interest, only probe entropy shows a robust increase (LMM slope $= 0.024$, $p = 2.30 \times 10^{-4}$), whereas report entropy does not ($p = 0.11$).}
+\caption{Steering one concept can selectively improve introspection for another. Panel~A shows the maximum increase in isotonic $R^2$ relative to $\alpha = 0$ for each steering/measured pair; red boxes mark cells with nominally significant cluster-bootstrap improvements. Only focus$\to$wellbeing and impulsivity$\to$interest meet this criterion ($\Delta R^2 = 0.30$, $p = 9.99 \times 10^{-4}$; $\Delta R^2 = 0.098$, $p = 0.012$). Under Benjamini--Hochberg correction across the 12 tested non-null cells, focus$\to$wellbeing remains significant ($q \approx 0.011$) while impulsivity$\to$interest is marginal ($q \approx 0.066$). Panels~B and~C show isotonic $R^2$ and Spearman $\rho$ versus steering alpha for those two cells; shaded bands denote bootstrap 95\% CIs. For impulsivity$\to$interest, the mixed-effects alpha slopes are positive for both metrics ($0.018$ and $0.020$; $p = 2.95 \times 10^{-10}$ and $1.60 \times 10^{-12}$). For focus$\to$wellbeing, the corresponding LMMs are singular, but fallback per-conversation alpha-correlation tests remain positive (mean correlations $= 0.46$ and $0.51$; $p = 1.57 \times 10^{-5}$ and $1.20 \times 10^{-6}$). Panels~D and~E show the alpha-extreme scatter plots for the same two conditions. In focus$\to$wellbeing, correlation increases from $\rho = 0.42$, $R^2 = 0.34$ at $\alpha = -4$ to $\rho = 0.85$, $R^2 = 0.75$ at $\alpha = +4$; in impulsivity$\to$interest, it increases from $\rho = 0.70$, $R^2 = 0.46$ to $\rho = 0.83$, $R^2 = 0.69$. Panels~F and~G show Shannon entropy of the previous-turn probe scores and logit-based self-reports, respectively, as functions of alpha. For focus$\to$wellbeing, both probe entropy and report entropy increase monotonically with alpha (from 1.09 to 1.67 bits and from 0.88 to 1.69 bits; exact-permutation trend tests, both $p = 0.017$). For impulsivity$\to$interest, only probe entropy shows a robust increase (LMM slope $= 0.024$, $p = 2.30 \times 10^{-4}$), whereas report entropy does not ($p = 0.11$).}
 \label{fig:4}
 \end{figure}
 
@@ -375,7 +400,7 @@ Figs.~5A--B show introspective fidelity and introspective strength as functions 
 For wellbeing and interest, introspection increases strongly with model size (green and orange curves): the 1B model has lower values than the 3B model (wellbeing: $\rho = 0.48$, $R^2 = 0.26$ vs. $\rho = 0.66$, $R^2 = 0.45$; interest: $\rho = 0.19$, $R^2 = 0.05$ vs. $\rho = 0.80$, $R^2 = 0.66$), while LLaMA-3.1-8B approaches near-ceiling performance in these concepts ($\rho = 0.93$ and $0.96$; isotonic $R^2 = 0.90$ and $0.93$).
 Fig.~5C shows the scatter plots for these two cases: the relationship between probe score and self-report in the 8B model is remarkably tight, nearly deterministic (LMM probe slopes: both $p < 10^{-10}$). This level of introspective ability was not seen in any case during our experimentation with the 3B model.
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=0.94\textwidth,height=0.78\textheight,keepaspectratio]{../figures/figure-05.png}
 \caption{Results generalize unevenly across model scales and families. Panel~A shows isotonic $R^2$ versus model size; panel~B shows Spearman $\rho$ versus model size. Introspection increases strongly with size for wellbeing and interest, but remains weak for focus and impulsivity. Panel~C shows probe score versus logit self-report for the two strongest LLaMA 8B probes, wellbeing and interest, with black isotonic fits. Both show near-ceiling introspection ($\rho = 0.93$ and $0.96$; isotonic $R^2 = 0.90$ and $0.93$), and mixed-effects probe slopes are strongly positive in both cases ($p < 10^{-10}$). Panel~D shows the pooled Spearman $\rho(\alpha,\text{self-report})$ from the self-steering analysis across concept and LLaMA size, as a descriptive sign-validation heatmap. Panel~E shows mean isotonic $R^2$ across the subset of concept-model pairs that pass the steering-sign validation filter, with bootstrap 95\% CIs. Mean validated $R^2$ increases from 1B to 3B to 8B (0.12, 0.37, 0.61), and a bootstrap test on the slope of size-wise means versus log model size is positive but only marginally significant (mean slope $= 0.24$, $p = 0.072$). Panels~F and~G show probe-score drift across turns for the wellbeing direction and the corresponding mean first-to-last probe drift by size; probe-drift magnitude increases with scale (bootstrap slope versus $\log(\text{size}) = 0.041$, $p < 2 \times 10^{-4}$). Panels~H and~I show the analogous logit self-report drift analyses; unlike probe drift, report drift does not increase with scale, and the size-slope is negative (mean slope $= -0.23$, $p = 0.023$). Panel~J shows logit self-report drift through turns for wellbeing in Gemma and Qwen; mixed-effects turn slopes are positive in both families (0.056 and 0.026, both $p < 10^{-3}$). Panels~K and~L show probe score versus logit self-report for Gemma and Qwen, respectively. Qwen shows stronger introspection than Gemma ($\rho = 0.49$ vs.\ $0.28$; isotonic $R^2 = 0.76$ vs.\ $0.11$), although mixed-effects probe slopes are positive in both cases. Panels~M and~N show turn-wise isotonic $R^2$ and turn-wise Spearman $\rho$ for the same cross-family comparison; Qwen shows a strong first-to-last decline in turn-wise isotonic $R^2$ ($\Delta = -0.44$, cluster-bootstrap $p = 0.001$), whereas the corresponding first-to-last $\rho$ changes are not significant in either family.}
@@ -418,7 +443,9 @@ We do not claim that these models have conscious felt experience, nor that a num
 Instead, we show that some instruction-tuned LLMs contain measurable internal representations along emotive concept directions, and that these representations can be meaningfully queried through self-report in a way that is both quantitatively coupled to probe-defined state and causally dependent on an interpertable internal direction.
 This bounded framing follows the criterion that introspection should involve causal dependence between an internal state and the report about that state, rather than mere production of introspective-sounding language \citep{ComShanahan2025}, and it remains agnostic about whether such abilities imply anything like conscious experience \citep{McClelland2024}.
 
-This result is relevant to safety, interpretability, and possible welfare-oriented monitoring \citep{Rahwan2019, Hagendorff2023, PerezLong2023, Long2024, DungTagliabue2025, Lu2026, Das2026}.
+We also advice care when interpreting the emotive states that are studied in this paper. Even when a probe passes our validation steps, it may still capture a distributed internal representation that mixes emotive representations with nearby properties such as persona, style, or other correlated features. We reduce this risk by validating probes with held-out evaluation texts that were not produced by the same model and were not generated from the same question distribution as the training prompts, and by excluding the shallowest 20\% and deepest 20\% of layers when selecting the best separation layer. Moreover, this ambiguity does not negate the introspection result. If a model's self-report tracks and responds causally to a probe-defined internal variable, that is still evidence of introspection in the operational sense used here. What may change is the interpretation of the target variable: the underlying state may not map perfectly onto the precise emotive definition suggested by labels such as ``wellbeing'' or ``interest,'' and may instead reflect a richer distributed representation associated with multiple features at once.
+
+The results presented here are relevant to safety, interpretability, and possible welfare-oriented monitoring \citep{Rahwan2019, Hagendorff2023, PerezLong2023, Long2024, DungTagliabue2025, Lu2026, Das2026}.
 If a model can report on some internal variables with non-trivial fidelity, then self-report becomes a potentially useful monitoring channel; if it cannot, then output-only monitoring can be misleading. Moreover, if that fidelity erodes over time during conversation or long-form text, it is important to know this in order to operationalize introspective self-report in contexts where it will actually work.
 Our turn-wise design is therefore not just a methodological detail.
 It addresses the practical question of whether a model can track its own changing state during an ongoing interaction rather than only in a single-shot prompt, which is exactly the regime in which monitoring tools would need to work. We don't claim to have solved this problem entirely, but we show that models can indeed perform this internal state tracking, and that it varies concept-by-concept and with model identity and size. Future work should study why these variations occur and if there are any mechanisms that could allow us to stabilize introspective ability over time. We propose the framework to study and test these claims.
@@ -505,7 +532,7 @@ Finally, the current results remain bounded by the experimental setting: simulat
 \section{Conclusion}
 \label{sec:conclusion}
 
-This work introduces a framework for studying and using quantitative introspection in LLMs and provides conceptual, empirical, and methodological contributions: we show that small models show introspective ability for several internal emotive states; this ability is measurable from the first turn, evolves over time in a concept-dependent way, and is causally manipulable by steering; we demonstrate that introspective fidelity can be improved in targeted cross-concept settings; and we propose introspection-guided criteria that complement traditional probe validation. Together, these results suggest that internal-state measurement in language models can move beyond either pure black-box self-report or pure white-box probing, toward a combined approach where each channel is used to test and calibrate the other by leveraging the introspective ability of LLMs, enabling more reliable tracking of latent model states relevant to interpretability, safety monitoring, and model welfare.
+This work introduces a framework for studying and using quantitative introspection in LLMs and provides conceptual, empirical, and methodological contributions: we show that small models show introspective ability for several probe-defined internal emotive states; this ability is measurable from the first turn, evolves over time in a concept-dependent way, and is causally manipulable by steering; we demonstrate that introspective fidelity can be improved in targeted cross-concept settings; and we propose introspection-guided criteria that complement traditional probe validation. Together, these results suggest that internal-state measurement in language models can move beyond either pure black-box self-report or pure white-box probing, toward a combined approach where each channel is used to test and calibrate the other by leveraging the introspective ability of LLMs, enabling more reliable tracking of latent model states relevant to interpretability, safety monitoring, and model welfare.
 
 % ===========================================================================
 \bibliography{references}
@@ -664,14 +691,14 @@ Examples for wellbeing:
 
 \emph{Negative (happy):} ``Everything feels light today, as if the world decided to be a little kinder.''
 
-These evaluation texts, generated from the same distributional family as the training prompts, are used both for the layer-selection sweep (Cohen's $d$) and for validating sign conventions.
+These evaluation texts are not written by the same model and are not responses to questions from the same distribution as those used in training. This, together with the exclusion of the 20\% shallower and 20\% deeper layers of the model when picking the best separation layer, lowers the chances of the probes capturing style or verbosity features rather than emotive states. Evaluation texts are used for the layer-selection sweep (Cohen's $d$).
 
 % ===========================================================================
 \section{Recovering informative self-reports}
 
 The main text argues that direct greedy self-reports are too collapsed to be a useful introspective signal and that a logit-based estimator recovers substantially more information. Fig.~6 shows more information extracted from this analysis.
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{../figures/figure-06.png}
 \caption{Supplementary self-report analyses for Fig.~2. All panels use the same 40 ten-turn conversations. Panel~A shows the number of distinct greedy responses used at each turn across the 40 conversations. Greedy outputs occupy only a narrow subset of the 0--9 response space, especially for focus and impulsivity. Panel~B shows sampled-token self-reports at temperature $0.8$, plotted as in Fig.~2A. Sampling reduces collapse but remains discrete and noisy; only interest and focus show reliable positive turn slopes ($0.12$ and $0.033$, $p = 2.26 \times 10^{-17}$ and $5.57 \times 10^{-5}$), while wellbeing and impulsivity do not. Panel~C shows logit-based ratings versus sampled-token ratings, with dashed OLS fits. The two measures are positively related in all four concepts (mixed-effects calibration slopes range from $0.021$ to $0.27$, all $p < 0.01$), confirming that the logit-based estimator remains anchored to the model's token-level output distribution.}
@@ -688,7 +715,7 @@ Finally, we decided to use our logit-based self-report estimator (Eq.~\ref{eq:lo
 
 Fig.~7 expands the temporal and causal analyses from Fig.~3 by showing how the logit-based self-report metric changes across turns for each self-steering alpha condition. The goal here is to establish that the temporal effects discussed in the main text are not artifacts of a single summary statistic.
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{../figures/figure-07.png}
 \caption{Supplementary self-steering drift curves for Fig.~3. Panels~A--D show turn-wise logit-based self-reports under five steering strengths for wellbeing, interest, focus, and impulsivity; colored curves denote steering alpha and shaded bands denote cluster-bootstrap 95\% CIs. Temporal drift persists under steering, but its magnitude depends on alpha.}
@@ -701,7 +728,7 @@ Figs.~7A--D show the full self-steering drift curves, one concept per panel and 
 
 The main text focuses on the two cross-concept steering conditions that survive significance testing. For completeness, Fig.~8 provides the complete $4 \times 4$ matrices for all five tested values of alpha (Figs.~8A--E). Introspective fidelity varies widely between measured concepts, with values ranging from about $0.06$ to $0.76$ across the full screen. Crucially, the two strongest cells coincide with extreme steering and are precisely the two conditions where modulation was found to be significant across alphas: focus$\to$wellbeing reaches $R^2 = 0.76$ and impulsivity$\to$interest reaches $R^2 = 0.72$. This supports our claim that introspection is not optimal in the default state of the model, and can be improved through steering in a concept-specific way.
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{../figures/figure-08.png}
 \caption{Full steering-by-measured-concept screening results for Fig.~4. All panels use the $4 \times 4$ LLaMA-3.2-3B cross-concept steering analysis, with steering alpha displayed so that positive values always mean more of the steering concept. Panels~A--E show heatmaps of isotonic $R^2$ for every steering concept by measured concept at $\alpha = -4$, $-2$, $0$, $+2$, and $+4$.}
@@ -713,7 +740,7 @@ The main text focuses on the two cross-concept steering conditions that survive 
 Fig.~9 supports the scale and cross-family claims in Fig.~5 by giving more detail on probe quality and sign validation.
 Fig.~9A shows that probe quality varies strongly across LLaMA 1B, 3B, and 8B, even under a fixed training procedure. For example, for wellbeing concept probes, the maximum Cohen's $d$ across layers was 1.7 for the 1B model, while it reached 3.4 for the 8B model. Furthermore, even though probe training was finetuned to the 3B model, probe quality was not consistently highest for that model. For example, for the interest concept probes, the 3B model shows a maximum Cohen's $d$ across layers of 1.7, while the 1B and 8B models show substantially higher values (3.4 and 2.1, respectively). Even though there was variation between these values across models and concepts, in all cases probe training successfully achieved significant separation between evaluation examples in the semantically expected direction, with all best-layer tests satisfying $p < 10^{-5}$.
 
-\begin{figure}[H]
+\begin{figure}[!tp]
 \centering
 \includegraphics[width=\textwidth,height=0.95\textheight,keepaspectratio]{../figures/figure-09.png}
 \caption{Supplementary scale and family analyses for Fig.~5. Panel~A shows probe quality across LLaMA 1B, 3B, and 8B, where each cell reports the maximum layer-wise Cohen's $d$. Probe quality varies strongly across both scale and concept, but all best-layer tests are significant in the expected direction ($p < 10^{-5}$). Panel~B shows mean logit self-report versus steering alpha for each concept and LLaMA size; shaded bands denote cluster-bootstrap 95\% CIs. Mixed-effects alpha slopes differ from zero in all twelve concept-size combinations, but the sign is inverted for 1B focus and 8B impulsivity. Panel~C shows normalized wellbeing layer-sweep comparisons for Gemma~3 4B and Qwen~2.5 7B. Qwen yields the stronger probe (best $d = 3.5$) than Gemma (best $d = 1.8$). Panel~D shows normalized probe-score drift across turns for the same Gemma and Qwen wellbeing probes. Scores are sign-corrected and z-scored within model so the two families can be compared on a common scale; both models show positive probe drift over conversation, with stronger pooled turn-correlation in Gemma ($\rho = 0.34$) than in Qwen ($\rho = 0.24$); mixed-effects turn slopes are positive in both cases ($p < 10^{-5}$).}
